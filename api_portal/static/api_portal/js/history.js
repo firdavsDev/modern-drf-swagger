@@ -6,6 +6,7 @@
 class HistoryController {
   constructor() {
     this.searchInput = document.getElementById("history-search");
+    this.pageSizeSelect = document.getElementById("page-size");
     this.tableBody = document.getElementById("history-table-body");
     this.prevButton = document.getElementById("prev-page");
     this.nextButton = document.getElementById("next-page");
@@ -15,6 +16,7 @@ class HistoryController {
     this.closeModalBtn = document.getElementById("close-modal");
 
     this.currentPage = 1;
+    this.pageSize = 50;
     this.searchTerm = "";
     this.searchTimeout = null;
 
@@ -22,6 +24,13 @@ class HistoryController {
   }
 
   init() {
+    // Setup page size selector
+    this.pageSizeSelect.addEventListener("change", (e) => {
+      this.pageSize = parseInt(e.target.value);
+      this.currentPage = 1;
+      this.loadHistory();
+    });
+
     // Setup search
     this.searchInput.addEventListener("input", (e) => {
       clearTimeout(this.searchTimeout);
@@ -60,6 +69,7 @@ class HistoryController {
   async loadHistory() {
     const params = new URLSearchParams({
       page: this.currentPage,
+      per_page: this.pageSize,
       format: "json",
     });
 

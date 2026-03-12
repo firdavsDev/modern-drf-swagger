@@ -313,6 +313,16 @@ code {
   color: white;
 }
 
+.toast-error {
+  background-color: #ef4444;
+  color: white;
+}
+
+.toast-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
 .toast-info {
   background-color: #3b82f6;
   color: white;

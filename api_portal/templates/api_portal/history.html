@@ -5,12 +5,28 @@
     <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
       Request History
     </h1>
-    <input
-      type="text"
-      id="history-search"
-      placeholder="Search by endpoint..."
-      class="dark-input px-4 py-2 rounded-lg w-64 border transition-colors duration-200"
-    />
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <label for="page-size" class="text-sm text-gray-600 dark:text-gray-400">
+          Per page:
+        </label>
+        <select
+          id="page-size"
+          class="dark-input px-3 py-2 rounded-lg border transition-colors duration-200"
+        >
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+      <input
+        type="text"
+        id="history-search"
+        placeholder="Search by endpoint..."
+        class="dark-input px-4 py-2 rounded-lg w-64 border transition-colors duration-200"
+      />
+    </div>
   </div>
 
   <!-- History Table -->
