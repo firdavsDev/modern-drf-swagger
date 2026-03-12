@@ -16,7 +16,7 @@ class AnalyticsService:
             user=user if user and user.is_authenticated else None,
             endpoint=endpoint,
             method=method,
-            request_payload=json.dumps(payload) if payload else "",
+            request_payload=json.dumps(payload) if payload is not None else None,
             response_status=status,
             response_size=size,
             latency=latency,

@@ -16,10 +16,10 @@ class HistoryController {
     this.closeModalBtn = document.getElementById("close-modal");
 
     this.currentPage = 1;
-    this.pageSize = 50;
+    this.pageSize = 10;
     this.searchTerm = "";
     this.searchTimeout = null;
-
+    this.currentRequest = null;
     this.init();
   }
 
@@ -177,9 +177,9 @@ class HistoryController {
   updatePagination(pagination) {
     // Update info text
     const start =
-      ((pagination.page || 1) - 1) * (pagination.per_page || 50) + 1;
+      ((pagination.page || 1) - 1) * (pagination.per_page || 10) + 1;
     const end = Math.min(
-      start + (pagination.per_page || 50) - 1,
+      start + (pagination.per_page || 10) - 1,
       pagination.total_count || 0,
     );
     this.paginationInfo.textContent = `Showing ${start}-${end} of ${pagination.total_count || 0} requests`;
@@ -190,11 +190,18 @@ class HistoryController {
   }
 
   showDetails(request) {
+    this.currentRequest = request;
     const statusClass = this.getStatusClass(request.response_status);
     const latencyClass = this.getLatencyClass(request.latency);
 
     let requestBody = "None";
-    if (request.request_payload) {
+    let hasRequestBody = false;
+    if (
+      request.request_payload !== null &&
+      request.request_payload !== undefined &&
+      request.request_payload !== ""
+    ) {
+      hasRequestBody = true;
       try {
         const parsed = JSON.parse(request.request_payload);
         requestBody = `<pre class="whitespace-pre-wrap">${JSON.stringify(parsed, null, 2)}</pre>`;
@@ -230,7 +237,7 @@ class HistoryController {
                 
                 <div>
                     <p class="text-sm text-gray-400 mb-1">Endpoint</p>
-                    <p class="font-mono text-sm bg-gray-700 rounded p-2">${this.escapeHtml(request.endpoint)}</p>
+                    <p class="font-mono text-sm bg-gray-700 dark:bg-gray-700 rounded p-2">${this.escapeHtml(request.endpoint)}</p>
                 </div>
                 
                 <div>
@@ -239,7 +246,24 @@ class HistoryController {
                 </div>
                 
                 <div>
-                    <p class="text-sm text-gray-400 mb-2">Request Body</p>
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm text-gray-400">Request Body</p>
+                        ${
+                          hasRequestBody
+                            ? `
+                            <button 
+                                id="copy-request-body"
+                                class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition flex items-center gap-1"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                Copy
+                            </button>
+                        `
+                            : ""
+                        }
+                    </div>
                     <div class="code-block">
                         ${requestBody}
                     </div>
@@ -247,11 +271,41 @@ class HistoryController {
             </div>
         `;
 
+    // Add copy button event listener
+    if (hasRequestBody) {
+      const copyBtn = document.getElementById("copy-request-body");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", () => this.copyRequestBody());
+      }
+    }
+
     this.modal.classList.remove("hidden");
   }
 
   closeModal() {
     this.modal.classList.add("hidden");
+  }
+
+  copyRequestBody() {
+    if (!this.currentRequest || !this.currentRequest.request_payload) return;
+
+    let bodyText;
+    try {
+      const parsed = JSON.parse(this.currentRequest.request_payload);
+      bodyText = JSON.stringify(parsed, null, 2);
+    } catch (e) {
+      bodyText = this.currentRequest.request_payload;
+    }
+
+    navigator.clipboard
+      .writeText(bodyText)
+      .then(() => {
+        showToast("Request body copied to clipboard", "success");
+      })
+      .catch((err) => {
+        showToast("Failed to copy request body", "error");
+        console.error("Copy failed:", err);
+      });
   }
 
   getStatusClass(status) {

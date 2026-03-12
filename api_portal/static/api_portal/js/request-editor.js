@@ -8,6 +8,9 @@ class RequestEditor {
     this.container = document.getElementById(containerId);
     this.currentEndpoint = null;
     this.onSendCallback = null;
+    this.lastCurlCommand = null;
+    // Make globally accessible for copy button
+    window.requestEditor = this;
   }
 
   loadEndpoint(endpoint) {
@@ -119,6 +122,32 @@ class RequestEditor {
                     </div>
                 </div>
                 
+                <!-- cURL Command -->
+                <div id="curl-command-section" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hidden">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            cURL Command
+                        </h3>
+                        <button 
+                            onclick="window.requestEditor.copyCurlCommand()" 
+                            class="px-3 py-1.5 bg-purple-600 dark:bg-purple-500 hover:bg-purple-700 dark:hover:bg-purple-600 text-white rounded text-sm transition flex items-center gap-2 shadow-sm"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="code-block max-h-48 overflow-x-auto">
+                            <pre id="curl-command-text" class="whitespace-pre-wrap font-mono text-sm text-gray-900 dark:text-gray-100"></pre>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Send Button -->
                 <button id="send-request-btn" 
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
@@ -801,6 +830,9 @@ class RequestEditor {
         _headers: customHeaders,
       };
 
+      // Generate and display cURL command
+      this.generateCurlCommand(payload);
+
       if (this.onSendCallback) {
         await this.onSendCallback(payload);
       }
@@ -822,6 +854,80 @@ class RequestEditor {
 
   onSend(callback) {
     this.onSendCallback = callback;
+  }
+
+  generateCurlCommand(payload) {
+    const baseUrl = window.location.origin;
+    let url = baseUrl + payload.path;
+
+    // Add query parameters
+    if (payload.params && Object.keys(payload.params).length > 0) {
+      const queryString = new URLSearchParams(payload.params).toString();
+      url += "?" + queryString;
+    }
+
+    let curlParts = [`curl -X ${payload.method}`];
+    curlParts.push(`'${url}'`);
+
+    // Add headers
+    const headers = payload._headers || {};
+    Object.entries(headers).forEach(([key, value]) => {
+      curlParts.push(`  -H '${key}: ${value}'`);
+    });
+
+    // Add content-type header if we have data
+    if (payload.data && !(payload.data instanceof FormData)) {
+      curlParts.push(`  -H 'Content-Type: application/json'`);
+    }
+
+    // Add data
+    if (payload.data) {
+      if (payload.data instanceof FormData) {
+        // For FormData, show form fields
+        const formFields = [];
+        for (let [key, value] of payload.data.entries()) {
+          if (value instanceof File) {
+            formFields.push(`  -F '${key}=@${value.name}'`);
+          } else {
+            formFields.push(`  -F '${key}=${value}'`);
+          }
+        }
+        curlParts = curlParts.concat(formFields);
+      } else {
+        // For JSON data
+        const jsonData = JSON.stringify(payload.data);
+        // Use double quotes for curl data and escape internal double quotes
+        const escapedData = jsonData
+          .replace(/\\/g, "\\\\")
+          .replace(/"/g, '\\"');
+        curlParts.push(`  -d "${escapedData}"`);
+      }
+    }
+
+    this.lastCurlCommand = curlParts.join(" \\\n");
+
+    // Display curl command
+    const curlSection = document.getElementById("curl-command-section");
+    const curlText = document.getElementById("curl-command-text");
+
+    if (curlSection && curlText) {
+      curlText.textContent = this.lastCurlCommand;
+      curlSection.classList.remove("hidden");
+    }
+  }
+
+  copyCurlCommand() {
+    if (!this.lastCurlCommand) return;
+
+    navigator.clipboard
+      .writeText(this.lastCurlCommand)
+      .then(() => {
+        showToast("cURL command copied to clipboard", "success");
+      })
+      .catch((err) => {
+        showToast("Failed to copy cURL command", "error");
+        console.error("Copy failed:", err);
+      });
   }
 
   escapeHtml(text) {

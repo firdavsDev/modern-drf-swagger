@@ -68,15 +68,26 @@ class ResponseViewer {
                             </svg>
                             Response Body
                         </h3>
-                        <button 
-                            onclick="window.responseViewer.copyBody()" 
-                            class="px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-sm transition flex items-center gap-2 shadow-sm"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                            Copy
-                        </button>
+                        <div class="flex gap-2">
+                            <button 
+                                onclick="window.responseViewer.copyBody()" 
+                                class="px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-sm transition flex items-center gap-2 shadow-sm"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                Copy
+                            </button>
+                            <button 
+                                onclick="window.responseViewer.downloadJson()" 
+                                class="px-3 py-1.5 bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 text-white rounded text-sm transition flex items-center gap-2 shadow-sm"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Download JSON
+                            </button>
+                        </div>
                     </div>
                     <div class="p-4">
                         <div class="code-block max-h-96">
@@ -307,6 +318,32 @@ class ResponseViewer {
         showToast("Failed to copy response body", "error");
         console.error("Copy failed:", err);
       });
+  }
+
+  downloadJson() {
+    if (!this.currentResponse || !this.currentResponse.data) return;
+
+    const bodyText =
+      typeof this.currentResponse.data === "string"
+        ? this.currentResponse.data
+        : JSON.stringify(this.currentResponse.data, null, 2);
+
+    // Create blob and download
+    const blob = new Blob([bodyText], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    a.download = `response_${timestamp}.json`;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast("Response downloaded as JSON", "success");
   }
 
   displayError(error) {
