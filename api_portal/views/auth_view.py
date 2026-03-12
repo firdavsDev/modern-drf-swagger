@@ -13,7 +13,7 @@ class LoginForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 "placeholder": "Username",
-                "class": "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                "class": "dark-input w-full px-4 py-2 border rounded-lg transition-colors duration-200",
             }
         ),
     )
@@ -21,7 +21,7 @@ class LoginForm(forms.Form):
         widget=forms.PasswordInput(
             attrs={
                 "placeholder": "Password",
-                "class": "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                "class": "dark-input w-full px-4 py-2 border rounded-lg transition-colors duration-200",
             }
         )
     )
@@ -30,7 +30,7 @@ class LoginForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 "placeholder": "API Token (optional)",
-                "class": "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                "class": "dark-input w-full px-4 py-2 border rounded-lg transition-colors duration-200",
             }
         ),
         help_text="Optional: Enter your API token/key for authenticated API requests",

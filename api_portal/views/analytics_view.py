@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Q, Sum
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.generic import TemplateView
@@ -38,9 +38,9 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             UsageMetric.objects.filter(date__gte=start_date)
             .values("endpoint")
             .annotate(
-                total_requests=Count("request_count"),
+                total_requests=Sum("request_count"),
                 avg_latency=Avg("average_latency"),
-                total_errors=Count("error_count"),
+                total_errors=Sum("error_count"),
             )
             .order_by("-total_requests")[:10]
         )
@@ -75,7 +75,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             UsageMetric.objects.filter(date__gte=start_date)
             .values("date")
             .annotate(
-                total_requests=Count("request_count"), total_errors=Count("error_count")
+                total_requests=Sum("request_count"), total_errors=Sum("error_count")
             )
             .order_by("date")
         )
