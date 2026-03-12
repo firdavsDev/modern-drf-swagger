@@ -7,14 +7,16 @@ class RequestEditor {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this.currentEndpoint = null;
+    this.fullSchema = null;
     this.onSendCallback = null;
     this.lastCurlCommand = null;
     // Make globally accessible for copy button
     window.requestEditor = this;
   }
 
-  loadEndpoint(endpoint) {
+  loadEndpoint(endpoint, fullSchema = null) {
     this.currentEndpoint = endpoint;
+    this.fullSchema = fullSchema;
     this.render();
   }
 
@@ -36,6 +38,25 @@ class RequestEditor {
     const params = endpoint.parameters || [];
     const hasParams = params.length > 0;
 
+    // Determine lock icon HTML
+    const lockIcon = endpoint.requiresAuth
+      ? `<svg class="w-4 h-4 text-yellow-500 dark:text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" title="Authentication required">
+           <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+         </svg>`
+      : `<svg class="w-4 h-4 text-green-500 dark:text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" title="Public endpoint">
+           <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z"></path>
+         </svg>`;
+
+    const authBadge = endpoint.requiresAuth
+      ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 rounded-full text-xs font-medium">
+           ${lockIcon}
+           <span>Authentication Required</span>
+         </span>`
+      : `<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-full text-xs font-medium">
+           ${lockIcon}
+           <span>Public Access</span>
+         </span>`;
+
     let html = `
             <div class="space-y-4">
                 <!-- Endpoint Info -->
@@ -44,7 +65,8 @@ class RequestEditor {
                         <span class="method-badge method-${endpoint.method.toLowerCase()}">
                             ${endpoint.method}
                         </span>
-                        <span class="font-mono text-lg text-gray-900 dark:text-gray-100">${this.escapeHtml(endpoint.path)}</span>
+                        <span class="font-mono text-lg text-gray-900 dark:text-gray-100 flex-1">${this.escapeHtml(endpoint.path)}</span>
+                        ${authBadge}
                     </div>
                     ${endpoint.summary ? `<p class="text-gray-700 dark:text-gray-300 text-sm">${this.escapeHtml(endpoint.summary)}</p>` : ""}
                     ${endpoint.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${this.escapeHtml(endpoint.description)}</p>` : ""}
@@ -78,6 +100,12 @@ class RequestEditor {
                         `
                             : ""
                         }
+                        <button class="request-tab border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 px-6 py-3 text-sm font-medium transition-colors" data-tab="responses">
+                            <span class="flex items-center gap-2">
+                                Responses
+                                <span class="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs px-2 py-0.5 rounded-full">${Object.keys(endpoint.responses || {}).length}</span>
+                            </span>
+                        </button>
                     </div>
                     
                     <!-- Tab Content -->
@@ -119,6 +147,10 @@ class RequestEditor {
                         `
                             : ""
                         }
+                        
+                        <div class="tab-content" data-tab-content="responses">
+                            ${this.renderResponseSchemas(endpoint)}
+                        </div>
                     </div>
                 </div>
                 
@@ -708,6 +740,462 @@ class RequestEditor {
     `;
 
     return html;
+  }
+
+  resolveSchemaRef(schema) {
+    if (!schema) return null;
+
+    // If it's a $ref, resolve it
+    if (schema.$ref && this.fullSchema) {
+      // Parse the $ref path (e.g., "#/components/schemas/TaskList")
+      const refPath = schema.$ref.replace("#/", "").split("/");
+      let resolved = this.fullSchema;
+
+      for (const part of refPath) {
+        resolved = resolved[part];
+        if (!resolved) {
+          console.warn("Could not resolve $ref:", schema.$ref);
+          return schema;
+        }
+      }
+
+      return resolved;
+    }
+
+    return schema;
+  }
+
+  renderResponseSchemas(endpoint) {
+    const responses = endpoint.responses || {};
+
+    if (Object.keys(responses).length === 0) {
+      return `
+        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <p class="text-sm">No response schemas defined</p>
+        </div>
+      `;
+    }
+
+    let html = '<div class="space-y-4">';
+
+    // Sort response codes (2xx, 4xx, 5xx)
+    const sortedCodes = Object.keys(responses).sort((a, b) => {
+      const numA = parseInt(a) || 999;
+      const numB = parseInt(b) || 999;
+      return numA - numB;
+    });
+
+    sortedCodes.forEach((code) => {
+      const response = responses[code];
+      const description = response.description || "";
+      const statusClass = this.getStatusClassForCode(code);
+
+      // Get media type content (usually application/json)
+      const content = response.content || {};
+      const mediaTypes = Object.keys(content);
+      const hasContent = mediaTypes.length > 0;
+
+      html += `
+        <div class="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-300 dark:border-gray-600 overflow-hidden">
+          <!-- Response Code Header -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 p-4 border-b border-gray-200 dark:border-gray-600">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-3">
+                <span class="status-badge ${statusClass} text-lg font-bold px-4 py-1.5">${code}</span>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">${description}</p>
+                  ${hasContent ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Media Type: ${mediaTypes.join(", ")}</p>` : ""}
+                </div>
+              </div>
+            </div>
+          </div>
+      `;
+
+      // Render content for each media type
+      if (hasContent) {
+        mediaTypes.forEach((mediaType) => {
+          const mediaContent = content[mediaType];
+          let schema = mediaContent.schema;
+
+          if (schema) {
+            // Resolve $ref if present
+            schema = this.resolveSchemaRef(schema);
+
+            // Generate unique ID for this response
+            const responseId = `response_${code}_${mediaType.replace(/[^a-z0-9]/gi, "_")}`;
+
+            // Generate example from schema
+            const exampleJson =
+              this.generateExampleFromSchemaForResponse(schema);
+            const schemaJson = this.generateSchemaDisplay(schema);
+
+            html += `
+              <div class="p-4">
+                <!-- Tab Headers for Example/Schema -->
+                <div class="flex gap-2 mb-3 border-b border-gray-200 dark:border-gray-600">
+                  <button class="response-schema-tab active px-4 py-2 text-sm font-medium transition-colors border-b-2 border-blue-600 text-blue-600 dark:text-blue-400" 
+                          data-response-id="${responseId}" 
+                          data-tab-type="example">
+                    Example Value
+                  </button>
+                  <button class="response-schema-tab px-4 py-2 text-sm font-medium transition-colors border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200" 
+                          data-response-id="${responseId}" 
+                          data-tab-type="schema">
+                    Schema
+                  </button>
+                </div>
+
+                <!-- Example Value Tab -->
+                <div class="response-schema-content active" data-response-id="${responseId}" data-content-type="example">
+                  <div class="relative">
+                    <div class="code-block max-h-96 overflow-auto p-3 rounded-lg">
+                      <pre class="text-xs font-mono text-gray-900 dark:text-gray-100">${this.syntaxHighlightJson(exampleJson)}</pre>
+                    </div>
+                    <button 
+                      onclick="window.requestEditor.copyToClipboard(\`${this.escapeForJS(exampleJson)}\`, 'Example copied')"
+                      class="absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                      </svg>
+                      Copy
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Schema Tab -->
+                <div class="response-schema-content" data-response-id="${responseId}" data-content-type="schema">
+                  <div class="relative">
+                    <div class="code-block max-h-96 overflow-auto p-3 rounded-lg">
+                      <pre class="text-xs font-mono text-gray-900 dark:text-gray-100">${this.syntaxHighlightJson(schemaJson)}</pre>
+                    </div>
+                    <button 
+                      onclick="window.requestEditor.copyToClipboard(\`${this.escapeForJS(schemaJson)}\`, 'Schema copied')"
+                      class="absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                      </svg>
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        });
+      } else {
+        html += `
+          <div class="p-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+            No content defined for this response
+          </div>
+        `;
+      }
+
+      html += "</div>";
+    });
+
+    html += "</div>";
+
+    // Add event listener setup after render
+    setTimeout(() => this.setupResponseSchemaTabs(), 0);
+
+    return html;
+  }
+
+  setupResponseSchemaTabs() {
+    const tabs = document.querySelectorAll(".response-schema-tab");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const responseId = tab.dataset.responseId;
+        const tabType = tab.dataset.tabType;
+
+        // Get all tabs and contents for this response
+        const relatedTabs = document.querySelectorAll(
+          `[data-response-id="${responseId}"]`,
+        );
+
+        // Remove active class from all related tabs
+        relatedTabs.forEach((t) => {
+          if (t.classList.contains("response-schema-tab")) {
+            t.classList.remove(
+              "active",
+              "border-blue-600",
+              "text-blue-600",
+              "dark:text-blue-400",
+            );
+            t.classList.add(
+              "border-transparent",
+              "text-gray-600",
+              "dark:text-gray-400",
+            );
+          } else if (t.classList.contains("response-schema-content")) {
+            t.classList.remove("active");
+          }
+        });
+
+        // Add active class to clicked tab
+        tab.classList.add(
+          "active",
+          "border-blue-600",
+          "text-blue-600",
+          "dark:text-blue-400",
+        );
+        tab.classList.remove(
+          "border-transparent",
+          "text-gray-600",
+          "dark:text-gray-400",
+        );
+
+        // Show corresponding content
+        const content = document.querySelector(
+          `.response-schema-content[data-response-id="${responseId}"][data-content-type="${tabType}"]`,
+        );
+        if (content) {
+          content.classList.add("active");
+        }
+      });
+    });
+  }
+
+  getStatusClassForCode(code) {
+    const numCode = parseInt(code);
+    if (numCode >= 200 && numCode < 300) return "status-success";
+    if (numCode >= 300 && numCode < 400) return "status-redirect";
+    if (numCode >= 400 && numCode < 500) return "status-client-error";
+    if (numCode >= 500) return "status-server-error";
+    return "status-default";
+  }
+
+  generateExampleFromSchemaForResponse(schema) {
+    // Resolve any $ref first
+    schema = this.resolveSchemaRef(schema);
+
+    if (!schema) {
+      return JSON.stringify(null, null, 2);
+    }
+
+    // If there's an example, use it
+    if (schema.example) {
+      return JSON.stringify(schema.example, null, 2);
+    }
+
+    // Handle array types
+    if (schema.type === "array" && schema.items) {
+      const resolvedItems = this.resolveSchemaRef(schema.items);
+      const itemExample = this.generateExampleObjectFromSchema(resolvedItems);
+      return JSON.stringify([itemExample], null, 2);
+    }
+
+    // Handle object types
+    if (schema.type === "object" || schema.properties) {
+      const example = this.generateExampleObjectFromSchema(schema);
+      return JSON.stringify(example, null, 2);
+    }
+
+    // Handle primitive types
+    return JSON.stringify(this.getExampleForType(schema), null, 2);
+  }
+
+  generateExampleObjectFromSchema(schema) {
+    // Resolve any $ref first
+    schema = this.resolveSchemaRef(schema);
+
+    if (!schema) return null;
+
+    if (schema.example) return schema.example;
+
+    if (schema.properties) {
+      const example = {};
+      for (const [key, prop] of Object.entries(schema.properties)) {
+        example[key] = this.getExampleForProperty(prop);
+      }
+      return example;
+    }
+
+    return this.getExampleForType(schema);
+  }
+
+  getExampleForProperty(prop) {
+    // Resolve any $ref first
+    prop = this.resolveSchemaRef(prop);
+
+    if (!prop) return null;
+
+    if (prop.example !== undefined) return prop.example;
+
+    if (prop.type === "array" && prop.items) {
+      const resolvedItems = this.resolveSchemaRef(prop.items);
+      return [this.getExampleForProperty(resolvedItems)];
+    }
+
+    if (prop.type === "object" && prop.properties) {
+      return this.generateExampleObjectFromSchema(prop);
+    }
+
+    return this.getExampleForType(prop);
+  }
+
+  getExampleForType(schema) {
+    const type = schema.type;
+    const format = schema.format;
+
+    if (type === "string") {
+      if (format === "email") return "user@example.com";
+      if (format === "date") return new Date().toISOString().split("T")[0];
+      if (format === "date-time") return new Date().toISOString();
+      if (format === "uuid") return "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+      if (format === "uri" || format === "url") return "http://example.com";
+      if (format === "password") return "password123";
+      if (schema.enum && schema.enum.length > 0) return schema.enum[0];
+      if (schema.maxLength && schema.maxLength < 50) {
+        return "string".padEnd(Math.min(schema.maxLength, 10), "X");
+      }
+      return "string";
+    }
+
+    if (type === "integer") {
+      if (schema.minimum !== undefined) return schema.minimum;
+      if (schema.enum && schema.enum.length > 0) return schema.enum[0];
+      return 0;
+    }
+
+    if (type === "number") {
+      if (schema.minimum !== undefined) return schema.minimum;
+      if (schema.enum && schema.enum.length > 0) return schema.enum[0];
+      return 0.0;
+    }
+
+    if (type === "boolean") {
+      if (schema.default !== undefined) return schema.default;
+      return true;
+    }
+
+    if (type === "array") {
+      if (schema.items) {
+        const resolvedItems = this.resolveSchemaRef(schema.items);
+        return [this.getExampleForProperty(resolvedItems)];
+      }
+      return [];
+    }
+
+    if (type === "object") {
+      if (schema.properties) {
+        return this.generateExampleObjectFromSchema(schema);
+      }
+      return {};
+    }
+
+    return null;
+  }
+
+  generateSchemaDisplay(schema) {
+    // Resolve any $ref first
+    schema = this.resolveSchemaRef(schema);
+
+    if (!schema) {
+      return JSON.stringify({ error: "Schema not found" }, null, 2);
+    }
+
+    // Create a simplified schema view
+    const schemaDisplay = {
+      type: schema.type || "object",
+    };
+
+    if (schema.description) {
+      schemaDisplay.description = schema.description;
+    }
+
+    if (schema.properties) {
+      schemaDisplay.properties = {};
+      for (const [key, prop] of Object.entries(schema.properties)) {
+        const resolvedProp = this.resolveSchemaRef(prop);
+        schemaDisplay.properties[key] =
+          this.getPropertySchemaInfo(resolvedProp);
+      }
+    }
+
+    if (schema.required && schema.required.length > 0) {
+      schemaDisplay.required = schema.required;
+    }
+
+    if (schema.items) {
+      const resolvedItems = this.resolveSchemaRef(schema.items);
+      schemaDisplay.items = this.getPropertySchemaInfo(resolvedItems);
+    }
+
+    return JSON.stringify(schemaDisplay, null, 2);
+  }
+
+  getPropertySchemaInfo(prop) {
+    if (!prop) return { type: "unknown" };
+
+    const info = {
+      type: prop.type || "unknown",
+    };
+
+    if (prop.format) info.format = prop.format;
+    if (prop.description) info.description = prop.description;
+    if (prop.enum) info.enum = prop.enum;
+    if (prop.default !== undefined) info.default = prop.default;
+    if (prop.nullable) info.nullable = prop.nullable;
+    if (prop.readOnly) info.readOnly = prop.readOnly;
+    if (prop.writeOnly) info.writeOnly = prop.writeOnly;
+    if (prop.minLength !== undefined) info.minLength = prop.minLength;
+    if (prop.maxLength !== undefined) info.maxLength = prop.maxLength;
+    if (prop.minimum !== undefined) info.minimum = prop.minimum;
+    if (prop.maximum !== undefined) info.maximum = prop.maximum;
+
+    if (prop.items) {
+      const resolvedItems = this.resolveSchemaRef(prop.items);
+      info.items = this.getPropertySchemaInfo(resolvedItems);
+    }
+
+    if (prop.properties) {
+      info.properties = {};
+      for (const [key, nestedProp] of Object.entries(prop.properties)) {
+        const resolved = this.resolveSchemaRef(nestedProp);
+        info.properties[key] = this.getPropertySchemaInfo(resolved);
+      }
+    }
+
+    return info;
+  }
+
+  syntaxHighlightJson(jsonString) {
+    // Simple syntax highlighting for JSON
+    return jsonString
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/(".*?")/g, '<span class="json-string">$1</span>')
+      .replace(/\b(\d+)\b/g, '<span class="json-number">$1</span>')
+      .replace(/\b(true|false)\b/g, '<span class="json-boolean">$1</span>')
+      .replace(/\b(null)\b/g, '<span class="json-null">$1</span>')
+      .replace(/([{}\[\],:])/g, '<span class="json-punctuation">$1</span>');
+  }
+
+  escapeForJS(str) {
+    return str
+      .replace(/`/g, "\\`")
+      .replace(/\$/g, "\\$")
+      .replace(/\\/g, "\\\\");
+  }
+
+  copyToClipboard(text, successMessage = "Copied to clipboard") {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showToast(successMessage, "success");
+      })
+      .catch((err) => {
+        showToast("Failed to copy", "error");
+        console.error("Copy failed:", err);
+      });
   }
 
   generateExampleFromSchema(schema) {

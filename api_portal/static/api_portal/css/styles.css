@@ -670,3 +670,96 @@ table td {
 .code-block {
   color: #000000;
 }
+
+/* Response Schema Tab Styles */
+.response-schema-tab {
+  position: relative;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.response-schema-tab:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.dark .response-schema-tab:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.response-schema-content {
+  display: none;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.response-schema-content.active {
+  display: block;
+}
+
+/* Status Badge Variants for Response Codes */
+.status-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.status-redirect {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.status-client-error {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.status-server-error {
+  background-color: #ef4444;
+  color: white;
+}
+
+.status-default {
+  background-color: #6b7280;
+  color: white;
+}
+
+/* Syntax highlighting enhancements for response schemas */
+.dark .code-block .json-string {
+  color: #6ee7b7;
+}
+
+.dark .code-block .json-number {
+  color: #fcd34d;
+}
+
+.dark .code-block .json-boolean {
+  color: #f9a8d4;
+}
+
+.dark .code-block .json-null {
+  color: #d1d5db;
+}
+
+.dark .code-block .json-punctuation {
+  color: #9ca3af;
+}
+
+.code-block .json-string {
+  color: #059669;
+}
+
+.code-block .json-number {
+  color: #d97706;
+}
+
+.code-block .json-boolean {
+  color: #db2777;
+}
+
+.code-block .json-null {
+  color: #6b7280;
+}
+
+.code-block .json-punctuation {
+  color: #4b5563;
+}
+

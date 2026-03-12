@@ -12,6 +12,7 @@ class EndpointList {
     this.selectedEndpoint = null;
     this.onSelectCallback = null;
     this.collapsedGroups = new Set();
+    this.fullSchema = null; // Store full schema including components
 
     // Configuration options
     this.options = {
@@ -38,6 +39,7 @@ class EndpointList {
         },
       });
       const schema = await response.json();
+      this.fullSchema = schema; // Store full schema for reference resolution
       this.parseSchema(schema);
       this.render();
     } catch (error) {
@@ -80,6 +82,37 @@ class EndpointList {
     return "default";
   }
 
+  /**
+   * Check if an operation requires authentication
+   * Checks for security requirements in operation or global schema
+   */
+  checkIfRequiresAuth(operation, schema) {
+    // Check operation-level security
+    if (operation.security !== undefined) {
+      // If security is an empty array, it means no auth required
+      if (
+        Array.isArray(operation.security) &&
+        operation.security.length === 0
+      ) {
+        return false;
+      }
+      // If security has items, auth is required
+      if (Array.isArray(operation.security) && operation.security.length > 0) {
+        return true;
+      }
+    }
+
+    // Check global security (default for all operations)
+    if (schema.security !== undefined) {
+      if (Array.isArray(schema.security) && schema.security.length > 0) {
+        return true;
+      }
+    }
+
+    // Default: assume public if not specified
+    return false;
+  }
+
   parseSchema(schema) {
     this.endpoints = [];
     const paths = schema.paths || {};
@@ -101,6 +134,10 @@ class EndpointList {
           const operation = pathItem[method];
           // Extract tag from URL path instead of using operation.tags
           const extractedTag = this.extractTagFromPath(path);
+
+          // Check if endpoint requires authentication
+          const requiresAuth = this.checkIfRequiresAuth(operation, schema);
+
           this.endpoints.push({
             path: path,
             method: method.toUpperCase(),
@@ -111,6 +148,7 @@ class EndpointList {
             parameters: operation.parameters || [],
             requestBody: operation.requestBody || null,
             responses: operation.responses || {},
+            requiresAuth: requiresAuth,
           });
         }
       }
@@ -203,6 +241,15 @@ class EndpointList {
           this.selectedEndpoint.path === endpoint.path &&
           this.selectedEndpoint.method === endpoint.method;
 
+        // Determine lock icon HTML
+        const lockIcon = endpoint.requiresAuth
+          ? `<svg class="w-3.5 h-3.5 text-yellow-500 dark:text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" title="Authentication required">
+               <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+             </svg>`
+          : `<svg class="w-3.5 h-3.5 text-green-500 dark:text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" title="Public endpoint">
+               <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z"></path>
+             </svg>`;
+
         html += `
                     <div class="endpoint-item p-3 border-b border-gray-700 last:border-b-0 cursor-pointer hover:bg-gray-700 transition ${isSelected ? "bg-blue-900 bg-opacity-30 border-l-4 border-l-blue-500" : ""}"
                          data-path="${this.escapeHtml(endpoint.path)}"
@@ -214,6 +261,7 @@ class EndpointList {
                             <span class="text-sm font-mono text-gray-300 flex-1 truncate">
                                 ${this.escapeHtml(endpoint.path)}
                             </span>
+                            ${lockIcon}
                         </div>
                         ${endpoint.summary ? `<p class="text-xs text-gray-400 truncate">${this.escapeHtml(endpoint.summary)}</p>` : ""}
                     </div>
@@ -267,7 +315,8 @@ class EndpointList {
     }
 
     if (this.onSelectCallback && this.selectedEndpoint) {
-      this.onSelectCallback(this.selectedEndpoint);
+      // Pass both endpoint and full schema for $ref resolution
+      this.onSelectCallback(this.selectedEndpoint, this.fullSchema);
     }
   }
 

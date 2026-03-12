@@ -168,15 +168,16 @@ REST_FRAMEWORK = {
 
 # drf-spectacular Configuration
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Sample API",
-    "DESCRIPTION": "Sample API for testing Django API Portal",
+    "TITLE": "Modern DRF Swagger",
+    "DESCRIPTION": "Modern DRF Swagger for testing Django API Portal",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": r"/api/",
 }
 
 # API Portal Configuration
 API_PORTAL = {
-    "TITLE": "Sample API Portal test",
+    "TITLE": "Modern DRF Swagger",
     "ANALYTICS_ENABLED": True,
     "HISTORY_LIMIT": 100,
     "ALLOW_ANONYMOUS": False,

@@ -39,8 +39,8 @@ class DocsController {
 
   init() {
     // Setup communication between components
-    this.endpointList.onSelect((endpoint) => {
-      this.handleEndpointSelect(endpoint);
+    this.endpointList.onSelect((endpoint, fullSchema) => {
+      this.handleEndpointSelect(endpoint, fullSchema);
     });
 
     this.requestEditor.onSend(async (payload) => {
@@ -75,9 +75,9 @@ class DocsController {
     });
   }
 
-  handleEndpointSelect(endpoint) {
-    // Load endpoint into request editor
-    this.requestEditor.loadEndpoint(endpoint);
+  handleEndpointSelect(endpoint, fullSchema) {
+    // Load endpoint into request editor with full schema for $ref resolution
+    this.requestEditor.loadEndpoint(endpoint, fullSchema);
 
     // Clear previous response
     this.responseViewer.clear();
