@@ -1,0 +1,11 @@
+include README.md
+include QUICKSTART.md
+include CHANGELOG.md
+include LICENSE
+include pyproject.toml
+recursive-include api_portal/templates *
+recursive-include api_portal/static *
+recursive-include api_portal/migrations *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * .DS_Store

@@ -1,10 +1,39 @@
-# Django API Portal
+# Modern DRF Swagger 🚀
 
 A modern, team-based API developer portal for Django REST Framework projects with built-in analytics and granular access control.
 
-![Status](https://img.shields.io/badge/status-beta-yellow)
+[![PyPI version](https://badge.fury.io/py/modern-drf-swagger.svg)](https://pypi.org/project/modern-drf-swagger/)
+![Status](https://img.shields.io/badge/status-stable-green)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 ![Django](https://img.shields.io/badge/django-3.2%2B-green)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+> **Created by [DavronbekDev](https://davronbek.dev) • [GitHub](https://github.com/firdavsDev) • [Email](mailto:davronbekboltyev777@gmail.com)**
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### Login Page
+<img src="images/login.png" alt="Login Page" width="800" />
+
+*Secure login with dark/light theme support and password visibility toggle*
+
+### API Explorer
+<img src="images/api.png" alt="API Explorer" width="800" />
+
+*Modern interface for browsing, testing, and exploring your API endpoints*
+
+### Analytics Dashboard
+<img src="images/analy.png" alt="Analytics Dashboard" width="800" />
+
+*Track API usage, latency, and error rates with beautiful charts*
+
+</div>
+
+---
 
 ## Features
 
@@ -20,7 +49,7 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 - 🔖 **Bookmarkable Endpoints**: URL hash routing preserves selected endpoint on refresh
 - 📦 **Collapsible Groups**: Organize endpoints by tags with collapse/expand controls
 
-## Installation
+## 📦 Installation
 
 ### Requirements
 
@@ -29,19 +58,23 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 - Django REST Framework 3.12+
 - drf-spectacular 0.26+
 
-### Install Package
+### Install from PyPI
 
 ```bash
-# From source (until published to PyPI)
-git clone https://github.com/yourusername/django-api-portal.git
-cd django-api-portal
-pip install -e .
-
-# Or directly
-pip install git+https://github.com/yourusername/django-api-portal.git
+pip install modern-drf-swagger
 ```
 
-## Quick Start
+### Or Install from Source
+
+```bash
+git clone https://github.com/firdavsDev/modern-drf-swagger.git
+cd modern-drf-swagger
+pip install -e .
+```
+
+## 🚀 Quick Start
+
+**Want to get started in 5 minutes?** Check out the [**QUICKSTART.md**](QUICKSTART.md) guide!
 
 ### 1. Add to INSTALLED_APPS
 
@@ -250,8 +283,8 @@ Example: With `HISTORY_LIMIT: 50`, each user will have their oldest requests aut
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/django-api-portal.git
-cd django-api-portal
+git clone https://github.com/firdavsDev/modern-drf-swagger.git
+cd modern-drf-swagger
 python -m venv .venv
 source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 pip install -e .
@@ -308,7 +341,9 @@ Uses real HTTP requests (not Django test client) to measure accurate latency and
 - Check `STATIC_URL` and `STATIC_ROOT` settings
 - Verify `django.contrib.staticfiles` in `INSTALLED_APPS`
 
-## Roadmap
+---
+
+## 🚀 Roadmap
 
 - [ ] WebSocket/GraphQL support
 - [ ] API key authentication
@@ -318,7 +353,7 @@ Uses real HTTP requests (not Django test client) to measure accurate latency and
 - [ ] OAuth2/SAML integration
 - [ ] Comprehensive test suite
 
-## Contributing
+## 🤝 Contributing
 
 Contributions welcome! Please:
 
@@ -328,11 +363,20 @@ Contributions welcome! Please:
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+See [.github/copilot-instructions.md](.github/copilot-instructions.md) for development guidelines and architecture details.
 
-MIT License - see LICENSE file for details
+## 📄 License
 
-## Credits
+MIT License - see [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2026 [DavronbekDev](https://davronbek.dev)
+
+## 🙏 Credits
+
+**Author**: [DavronbekDev](https://davronbek.dev) (Davronbek Boltyev)  
+**Email**: [davronbekboltyev777@gmail.com](mailto:davronbekboltyev777@gmail.com)  
+**GitHub**: [@firdavsDev](https://github.com/firdavsDev)  
+**Repository**: [modern-drf-swagger](https://github.com/firdavsDev/modern-drf-swagger)
 
 Built with:
 - [Django REST Framework](https://www.django-rest-framework.org/)
@@ -342,136 +386,13 @@ Built with:
 
 ---
 
-**Made with ❤️ for Django developers**
-}
+<div align="center">
 
-# Configure API Portal
-API_PORTAL = {
-    'TITLE': 'My Company API Portal',
-    'ANALYTICS_ENABLED': True,
-    'HISTORY_LIMIT': 100,
-    'ALLOW_ANONYMOUS': False,
-}
-```
+**⭐ Star this repo if you find it useful! ⭐**
 
-### 2. Add URL Routes
+[![GitHub stars](https://img.shields.io/github/stars/firdavsDev/modern-drf-swagger?style=social)](https://github.com/firdavsDev/modern-drf-swagger/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/firdavsDev/modern-drf-swagger?style=social)](https://github.com/firdavsDev/modern-drf-swagger/network/members)
 
-```python
-# urls.py
-from django.urls import path, include
+Made with ❤️ by [DavronbekDev](https://davronbek.dev)
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/portal/', include('api_portal.urls')),  # Add this
-    # Your other API routes...
-]
-```
-
-### 3. Run Migrations
-
-```bash
-python manage.py migrate
-python manage.py createsuperuser  # Create admin account
-python manage.py runserver
-```
-
-### 4. Access the Portal
-
-Visit `http://localhost:8000/api/portal/docs` (when UI is completed)
-
-## Development Setup
-
-```bash
-# Clone repository
-git clone https://github.com/example/modern-drf-swagger.git
-cd modern-drf-swagger
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install in development mode
-pip install -e .
-
-# Run example project
-cd sample_project
-python manage.py migrate
-python manage.py runserver
-```
-
-## Configuration
-
-Configure the portal in your Django `settings.py`:
-
-```python
-API_PORTAL = {
-    # Portal display name
-    'TITLE': 'My API Portal',
-    
-    # Enable request logging and analytics
-    'ANALYTICS_ENABLED': True,
-    
-    # Max requests to keep in personal history
-    'HISTORY_LIMIT': 100,
-    
-    # Allow unauthenticated users (not recommended for production)
-    'ALLOW_ANONYMOUS': False,
-    
-    # Paths to exclude from the portal
-    'EXCLUDE_PATHS': ['/admin/', '/internal/'],
-}
-```
-
-## Hiding Endpoints
-
-Use the `@hide_from_portal` decorator to hide specific endpoints:
-
-```python
-from rest_framework import viewsets
-from api_portal.conf import hide_from_portal
-
-@hide_from_portal
-class InternalAPIViewSet(viewsets.ModelViewSet):
-    """This endpoint won't appear in the portal"""
-    queryset = InternalModel.objects.all()
-    serializer_class = InternalSerializer
-```
-
-## Current Status
-
-### ✅ Implemented
-- Django models (Team, TeamMember, EndpointPermission, RequestLog, UsageMetric)
-- Django admin interface
-- Service layer (schema loading, request proxy, analytics)
-- Configuration system
-
-### 🚧 In Progress
-- Frontend UI (HTML, Vanilla JS, TailwindCSS)
-- URL routing
-- Permissions enforcement
-- Test infrastructure
-
-### 📋 Planned
-- Complete API explorer interface
-- Analytics dashboards
-- Request history view
-- Documentation and tutorials
-
-## Requirements
-
-- Python ≥ 3.8
-- Django ≥ 3.2
-- Django REST Framework ≥ 3.12
-- drf-spectacular ≥ 0.26
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Contributing
-
-Contributions are welcome! Please see [.github/copilot-instructions.md](.github/copilot-instructions.md) for development guidelines and architecture details.
-
-## Credits
-
-Built with ❤️ for the Django and DRF community.
+</div>

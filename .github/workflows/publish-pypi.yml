@@ -1,0 +1,101 @@
+name: Publish to PyPI
+
+on:
+    push:
+        branches:
+            - release
+        tags:
+            - "v*"
+    workflow_dispatch:
+
+jobs:
+    build-and-publish:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            id-token: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install build twine wheel setuptools
+
+            - name: Extract version from pyproject.toml
+              id: get_version
+              run: |
+                  VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+                  echo "Package version: $VERSION"
+
+            - name: Build package
+              run: |
+                  python -m build
+                  echo "📦 Package built successfully!"
+                  ls -lh dist/
+
+            - name: Check package
+              run: |
+                  twine check dist/*
+                  echo "✅ Package check passed!"
+
+            - name: Publish to Test PyPI (optional)
+              if: github.event_name == 'workflow_dispatch'
+              env:
+                  TWINE_USERNAME: __token__
+                  TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+              run: |
+                  twine upload --repository testpypi dist/* --verbose || echo "⚠️ Test PyPI upload skipped or failed"
+
+            - name: Publish to PyPI
+              env:
+                  TWINE_USERNAME: __token__
+                  TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+              run: |
+                  twine upload dist/* --verbose
+                  echo "🚀 Package published to PyPI successfully!"
+
+            - name: Create GitHub Release
+              if: startsWith(github.ref, 'refs/tags/v')
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: dist/*
+                  body: |
+                      ## 🎉 Release ${{ steps.get_version.outputs.version }}
+
+                      ### Installation
+                      ```bash
+                      pip install --upgrade modern-drf-swagger
+                      ```
+
+                      ### What's New
+                      See [CHANGELOG.md](https://github.com/firdavsDev/modern-drf-swagger/blob/main/CHANGELOG.md) for details.
+
+                      ### Quick Start
+                      Check out the [QUICKSTART.md](https://github.com/firdavsDev/modern-drf-swagger/blob/main/QUICKSTART.md) guide.
+                  draft: false
+                  prerelease: false
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Send success notification
+              if: success()
+              run: |
+                  echo "✅ Successfully published modern-drf-swagger version ${{ steps.get_version.outputs.version }} to PyPI!"
+                  echo "📦 Package URL: https://pypi.org/project/modern-drf-swagger/"
+
+            - name: Send failure notification
+              if: failure()
+              run: |
+                  echo "❌ Failed to publish package to PyPI. Check the logs above."
+                  exit 1
