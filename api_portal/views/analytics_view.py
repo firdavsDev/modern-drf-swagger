@@ -101,7 +101,9 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
             return JsonResponse(data)
 
         # Otherwise render template with context
-        return self.render_to_response({"analytics_data": data})
+        context = self.get_context_data()
+        context["analytics_data"] = data
+        return self.render_to_response(context)
 
 
 class HistoryView(LoginRequiredMixin, TemplateView):
@@ -185,4 +187,6 @@ class HistoryView(LoginRequiredMixin, TemplateView):
             return JsonResponse(data)
 
         # Otherwise render template with context
-        return self.render_to_response({"history_data": data})
+        context = self.get_context_data()
+        context["history_data"] = data
+        return self.render_to_response(context)
