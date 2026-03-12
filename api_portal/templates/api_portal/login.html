@@ -1,0 +1,204 @@
+{% load static %}
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - API Portal</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'api_portal/css/styles.css' %}" />
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+  </head>
+  <body
+    class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
+  >
+    <!-- Theme Switcher - Top Right -->
+    <button
+      id="theme-toggle"
+      class="fixed top-6 right-6 p-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full shadow-lg transition-all z-50"
+      aria-label="Toggle theme"
+    >
+      <svg
+        id="theme-icon-sun"
+        class="w-5 h-5 text-gray-700 dark:text-gray-300 hidden"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+        ></path>
+      </svg>
+      <svg
+        id="theme-icon-moon"
+        class="w-5 h-5 text-gray-700 dark:text-gray-300"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+        ></path>
+      </svg>
+    </button>
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+      <div class="max-w-md w-full">
+        <!-- Logo/Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+            API Portal
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400">
+            Sign in to access API documentation
+          </p>
+        </div>
+
+        <!-- Login Card -->
+        <div
+          class="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+        >
+          <h2
+            class="text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100"
+          >
+            Login
+          </h2>
+
+          {% if form.non_field_errors %}
+          <div
+            class="bg-red-900 bg-opacity-20 border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-4"
+          >
+            {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+          </div>
+          {% endif %}
+
+          <form method="post" action="{% url 'api_portal:login' %}">
+            {% csrf_token %}
+
+            <!-- Username Field -->
+            <div class="mb-4">
+              <label
+                for="{{ form.username.id_for_label }}"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Username
+              </label>
+              {{ form.username }} {% if form.username.errors %}
+              <p class="mt-1 text-sm text-red-500 dark:text-red-400">
+                {{ form.username.errors.0 }}
+              </p>
+              {% endif %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-4">
+              <label
+                for="{{ form.password.id_for_label }}"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Password
+              </label>
+              {{ form.password }} {% if form.password.errors %}
+              <p class="mt-1 text-sm text-red-500 dark:text-red-400">
+                {{ form.password.errors.0 }}
+              </p>
+              {% endif %}
+            </div>
+
+            <!-- API Token Field (Optional) -->
+            <div class="mb-6">
+              <label
+                for="{{ form.api_token.id_for_label }}"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                API Token <span class="text-gray-500 text-xs">(Optional)</span>
+              </label>
+              {{ form.api_token }}
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-500">
+                {{ form.api_token.help_text }}
+              </p>
+              {% if form.api_token.errors %}
+              <p class="mt-1 text-sm text-red-500 dark:text-red-400">
+                {{ form.api_token.errors.0 }}
+              </p>
+              {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <!-- Additional Info -->
+          <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Don't have an account? Contact your administrator.
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-sm text-gray-600 dark:text-gray-500">
+          <p>Powered by Django API Portal</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Theme Management
+      (function () {
+        const html = document.documentElement;
+        const themeToggle = document.getElementById("theme-toggle");
+        const themeIconSun = document.getElementById("theme-icon-sun");
+        const themeIconMoon = document.getElementById("theme-icon-moon");
+
+        // Get saved theme or default to dark
+        const savedTheme = localStorage.getItem("theme") || "dark";
+
+        function setTheme(theme) {
+          if (theme === "dark") {
+            html.classList.add("dark");
+            themeIconMoon.classList.remove("hidden");
+            themeIconSun.classList.add("hidden");
+          } else {
+            html.classList.remove("dark");
+            themeIconMoon.classList.add("hidden");
+            themeIconSun.classList.remove("hidden");
+          }
+          localStorage.setItem("theme", theme);
+        }
+
+        // Apply saved theme immediately
+        setTheme(savedTheme);
+
+        // Toggle theme on button click
+        themeToggle.addEventListener("click", function () {
+          const currentTheme = html.classList.contains("dark")
+            ? "dark"
+            : "light";
+          const newTheme = currentTheme === "dark" ? "light" : "dark";
+          setTheme(newTheme);
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,138 @@
+{% extends "api_portal/base.html" %} {% load static %} {% block content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+      Request History
+    </h1>
+    <input
+      type="text"
+      id="history-search"
+      placeholder="Search by endpoint..."
+      class="dark-input px-4 py-2 rounded-lg w-64 border"
+    />
+  </div>
+
+  <!-- History Table -->
+  <div
+    class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden transition-colors duration-200"
+  >
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-200 dark:bg-gray-700">
+          <tr>
+            <th
+              class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase"
+            >
+              Timestamp
+            </th>
+            <th
+              class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase"
+            >
+              Method
+            </th>
+            <th
+              class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase"
+            >
+              Endpoint
+            </th>
+            <th
+              class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase"
+            >
+              Status
+            </th>
+            <th
+              class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase"
+            >
+              Latency
+            </th>
+            <th
+              class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase"
+            >
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody id="history-table-body">
+          <tr>
+            <td colspan="6" class="px-4 py-12">
+              <div class="flex items-center justify-center">
+                <div class="spinner"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div id="pagination" class="flex items-center justify-between">
+    <p
+      id="pagination-info"
+      class="text-sm text-gray-600 dark:text-gray-400"
+    ></p>
+    <div class="flex gap-2">
+      <button
+        id="prev-page"
+        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+        disabled
+      >
+        Previous
+      </button>
+      <button
+        id="next-page"
+        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+        disabled
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Request Detail Modal -->
+<div
+  id="detail-modal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+  >
+    <div
+      class="flex items-center justify-between p-4 border-b border-gray-300 dark:border-gray-700"
+    >
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+        Request Details
+      </h2>
+      <button
+        id="close-modal"
+        class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+    </div>
+    <div
+      id="modal-content"
+      class="p-6 overflow-y-auto custom-scrollbar"
+      style="max-height: calc(90vh - 100px)"
+    >
+      <!-- Content will be injected here -->
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_scripts %}
+<script src="{% static 'api_portal/js/history.js' %}"></script>
+{% endblock %}
