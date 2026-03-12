@@ -1,7 +1,5 @@
 from django.conf import settings
 from django.http import JsonResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -11,7 +9,6 @@ from ..services.analytics_service import AnalyticsService
 from ..services.request_executor import RequestExecutor
 
 
-@method_decorator(csrf_exempt, name="dispatch")
 @extend_schema(exclude=True)
 class APIProxyView(APIView):
     """
