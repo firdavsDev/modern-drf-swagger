@@ -15,6 +15,9 @@ class DocsController {
     this.requestEditor = new RequestEditor("request-editor");
     this.responseViewer = new ResponseViewer("response-viewer");
 
+    // Make responseViewer globally accessible for copy buttons
+    window.responseViewer = this.responseViewer;
+
     this.init();
   }
 

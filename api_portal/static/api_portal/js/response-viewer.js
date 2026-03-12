@@ -24,21 +24,21 @@ class ResponseViewer {
             <div class="space-y-4">
                 <!-- Status and Metrics -->
                 <div class="flex gap-4">
-                    <div class="bg-gray-700 rounded-lg p-4 flex-1">
-                        <p class="text-sm text-gray-400 mb-1">Status</p>
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 flex-1">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Status</p>
                         <p class="text-2xl font-bold">
                             <span class="status-badge ${statusClass}">${response.status}</span>
                         </p>
                     </div>
-                    <div class="bg-gray-700 rounded-lg p-4 flex-1">
-                        <p class="text-sm text-gray-400 mb-1">Latency</p>
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 flex-1">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Latency</p>
                         <p class="text-2xl font-bold ${latencyClass}">
                             ${response.latency} ms
                         </p>
                     </div>
-                    <div class="bg-gray-700 rounded-lg p-4 flex-1">
-                        <p class="text-sm text-gray-400 mb-1">Size</p>
-                        <p class="text-2xl font-bold text-blue-400">
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 flex-1">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Size</p>
+                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                             ${this.formatBytes(response.size)}
                         </p>
                     </div>
@@ -49,7 +49,15 @@ class ResponseViewer {
                 
                 <!-- Response Body -->
                 <div>
-                    <h3 class="font-semibold mb-2">Response Body</h3>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-100">Response Body</h3>
+                        <button 
+                            onclick="window.responseViewer.copyBody()" 
+                            class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded text-sm transition text-gray-700 dark:text-gray-300"
+                        >
+                            Copy
+                        </button>
+                    </div>
                     <div class="code-block">
                         ${this.renderResponseBody(response.data)}
                     </div>
@@ -72,14 +80,22 @@ class ResponseViewer {
 
     return `
             <div>
-                <h3 class="font-semibold mb-2">Headers</h3>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">Headers</h3>
+                    <button 
+                        onclick="window.responseViewer.copyHeaders()" 
+                        class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded text-sm transition text-gray-700 dark:text-gray-300"
+                    >
+                        Copy
+                    </button>
+                </div>
                 <div class="code-block text-sm space-y-1">
                     ${Object.entries(headers)
                       .map(
                         ([key, value]) => `
                         <div>
-                            <span class="text-blue-400">${this.escapeHtml(key)}</span>:
-                            <span class="text-gray-300">${this.escapeHtml(String(value))}</span>
+                            <span class="json-key">${this.escapeHtml(key)}</span><span class="json-punctuation">:</span>
+                            <span class="json-string">${this.escapeHtml(String(value))}</span>
                         </div>
                     `,
                       )
@@ -91,7 +107,7 @@ class ResponseViewer {
 
   renderResponseBody(data) {
     if (!data) {
-      return '<span class="text-gray-500">No response body</span>';
+      return '<span class="text-gray-600 dark:text-gray-400">No response body</span>';
     }
 
     if (typeof data === "string") {
@@ -111,7 +127,8 @@ class ResponseViewer {
         let cls = "json-string";
         if (/:$/.test(match)) {
           cls = "json-key";
-          match = match.slice(0, -1) + '<span class="text-gray-400">:</span>';
+          // Don't nest spans - return them as siblings
+          return `<span class="${cls}">${match.slice(0, -1)}</span><span class="json-punctuation">:</span>`;
         }
         return `<span class="${cls}">${match}</span>`;
       })
@@ -119,7 +136,7 @@ class ResponseViewer {
       .replace(/\b(null)\b/g, '<span class="json-null">$1</span>')
       .replace(/\b(-?\d+\.?\d*)\b/g, '<span class="json-number">$1</span>');
 
-    return `<pre class="whitespace-pre-wrap">${highlighted}</pre>`;
+    return `<pre class="whitespace-pre-wrap font-mono text-sm leading-relaxed">${highlighted}</pre>`;
   }
 
   getStatusClass(status) {
@@ -159,10 +176,46 @@ class ResponseViewer {
       });
   }
 
+  copyHeaders() {
+    if (!this.currentResponse || !this.currentResponse.headers) return;
+
+    const headersText = Object.entries(this.currentResponse.headers)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join("\n");
+
+    navigator.clipboard
+      .writeText(headersText)
+      .then(() => {
+        showToast("Headers copied to clipboard", "success");
+      })
+      .catch((err) => {
+        showToast("Failed to copy headers", "error");
+        console.error("Copy failed:", err);
+      });
+  }
+
+  copyBody() {
+    if (!this.currentResponse || !this.currentResponse.data) return;
+
+    const bodyText = typeof this.currentResponse.data === "string" 
+      ? this.currentResponse.data 
+      : JSON.stringify(this.currentResponse.data, null, 2);
+
+    navigator.clipboard
+      .writeText(bodyText)
+      .then(() => {
+        showToast("Response body copied to clipboard", "success");
+      })
+      .catch((err) => {
+        showToast("Failed to copy response body", "error");
+        console.error("Copy failed:", err);
+      });
+  }
+
   displayError(error) {
     this.container.innerHTML = `
-            <div class="bg-red-900 bg-opacity-20 border border-red-500 text-red-400 rounded-lg p-4">
-                <h3 class="font-semibold mb-2">Error</h3>
+            <div class="bg-red-100 dark:bg-red-900 dark:bg-opacity-20 border border-red-500 text-red-700 dark:text-red-400 rounded-lg p-4">
+                <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">Error</h3>
                 <p>${this.escapeHtml(error.message || String(error))}</p>
             </div>
         `;
@@ -176,8 +229,8 @@ class ResponseViewer {
   clear() {
     this.currentResponse = null;
     this.container.innerHTML = `
-            <div class="text-center text-gray-400 py-12">
-                <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 <p>Send a request to see the response</p>

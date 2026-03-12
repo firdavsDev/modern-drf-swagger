@@ -1,10 +1,27 @@
 /* API Portal Custom Styles */
 
+/* Global text colors for light/dark mode */
+body,
+.code-block,
+pre,
+code {
+  color: #000000;
+}
+
+.dark body,
+.dark .code-block,
+.dark pre,
+.dark code {
+  color: #ffffff;
+}
+
 /* Custom scrollbar - Dark mode */
 .dark .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
+
 
 .dark .custom-scrollbar::-webkit-scrollbar-track {
   background: #1f2937;
@@ -40,58 +57,70 @@
 
 /* JSON Syntax Highlighting - Dark mode */
 .dark .json-key {
-  color: #60a5fa;
-  font-weight: 600;
+  color: #93c5fd;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .dark .json-string {
-  color: #34d399;
+  color: #6ee7b7;
+  word-wrap: break-word;
 }
 
 .dark .json-number {
-  color: #fbbf24;
+  color: #fcd34d;
+  font-weight: 500;
 }
 
 .dark .json-boolean {
-  color: #f472b6;
+  color: #f9a8d4;
+  font-weight: 500;
 }
 
 .dark .json-null {
-  color: #9ca3af;
+  color: #d1d5db;
+  font-style: italic;
+  opacity: 0.7;
 }
 
 .dark .json-punctuation,
 .dark pre,
 .dark code {
-  color: #d1d5db;
+  color: #ffffff;
 }
 
 /* JSON Syntax Highlighting - Light mode */
 .json-key {
-  color: #1d4ed8;
-  font-weight: 600;
+  color: #000000;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .json-string {
-  color: #059669;
+  color: #000000;
+  word-wrap: break-word;
 }
 
 .json-number {
-  color: #d97706;
+  color: #000000;
+  font-weight: 500;
 }
 
 .json-boolean {
-  color: #be185d;
+  color: #000000;
+  font-weight: 500;
 }
 
 .json-null {
-  color: #6b7280;
+  color: #000000;
+  font-style: italic;
+  opacity: 0.7;
 }
 
 .json-punctuation,
 pre,
 code {
-  color: #374151;
+  color: #000000;
 }
 
 /* Status code badges */
@@ -156,7 +185,9 @@ code {
 .method-delete {
   background-color: #ef4444;
   color: white;
-}- Dark mode */
+}
+
+/* Code block - Dark mode */
 .dark .code-block {
   background-color: #1f2937;
   border-radius: 0.5rem;
@@ -164,8 +195,10 @@ code {
   overflow-x: auto;
   font-family: "Courier New", Courier, monospace;
   font-size: 0.875rem;
-  line-height: 1.5;
-  color: #f3f4f6;
+  line-height: 1.6;
+  color: #ffffff;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 /* Code block - Light mode */
@@ -177,8 +210,15 @@ code {
   overflow-x: auto;
   font-family: "Courier New", Courier, monospace;
   font-size: 0.875rem;
-  line-height: 1.5;
-  color: #111827
+  line-height: 1.6;
+  color: #000000;
+  max-height: 600px;
+  overflow-y: auto;
+}
+}
+
+/* Spinner animation */
+.spinner {
   animation: spin 1s linear infinite;
 }
 
@@ -191,7 +231,10 @@ code {
   }
 }
 
-/* Code block */
+/* Collapsible sections */
+.collapsible-header {
+  cursor: pointer;
+  user-select: none;
   transition: background-color 0.2s;
 }
 
@@ -200,34 +243,14 @@ code {
 }
 
 .collapsible-header:hover {
-  background-color: #f3f4f6
-  overflow-x: auto;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  background-color: #f3f4f6;
 }
 
-/* Collapsible sections */
-.collapsible-header {
-  cursor: pointer;
-  user-select: none;
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
 }
-
-.collapsible-header:hover {
- dark .nav-item:hover {
-  background-color: #374151;
-  transform: translateX(4px);
-}
-
-.nav-item:hover {
-  background-color: #e5e7eb;
-  transform: translateX(4px);
-}
-
-.nav-item.active {
-  background-color: #3b82f6;
-  border-left: 4px solid #60a5fa;
-  color: white
 
 .collapsible-content.open {
   max-height: 2000px;
@@ -239,14 +262,26 @@ code {
   transition: all 0.2s ease;
 }
 
-.nav-item:hover {
+.dark .nav-item:hover {
   background-color: #374151;
   transform: translateX(4px);
+}
+
+.nav-item:hover {
+  background-color: #e5e7eb;
+  transform: translateX(4px);
+}
+
+.dark .nav-item.active {
+  background-color: #3b82f6;
+  border-left: 4px solid #60a5fa;
+  color: white;
 }
 
 .nav-item.active {
   background-color: #3b82f6;
   border-left: 4px solid #60a5fa;
+  color: white;
 }
 
 /* Toast notifications */
@@ -415,9 +450,9 @@ table td {
 
 /* Code block better contrast */
 .dark .code-block {
-  color: #d1d5db;
+  color: #ffffff;
 }
 
 .code-block {
-  color: #374151;
+  color: #000000;
 }
