@@ -51,6 +51,35 @@ class EndpointList {
     }
   }
 
+  /**
+   * Extract a meaningful tag from the URL path
+   * Examples:
+   *   /api/tasks/ -> tasks
+   *   /api/v1/users/ -> users
+   *   /api/v2/projects/{id}/ -> projects
+   */
+  extractTagFromPath(path) {
+    // Remove leading slash
+    let pathParts = path.replace(/^\/+/, "").split("/");
+
+    // Remove common prefixes (api, v1, v2, etc.)
+    pathParts = pathParts.filter((part) => {
+      return (
+        part && // not empty
+        !part.match(/^api$/i) && // not 'api'
+        !part.match(/^v\d+$/i) && // not 'v1', 'v2', etc.
+        !part.match(/^\{.*\}$/) // not a path parameter like {id}
+      );
+    });
+
+    // Get the first meaningful part as the tag
+    if (pathParts.length > 0) {
+      return pathParts[0];
+    }
+
+    return "default";
+  }
+
   parseSchema(schema) {
     this.endpoints = [];
     const paths = schema.paths || {};
@@ -70,12 +99,14 @@ class EndpointList {
       for (const method of methods) {
         if (pathItem[method]) {
           const operation = pathItem[method];
+          // Extract tag from URL path instead of using operation.tags
+          const extractedTag = this.extractTagFromPath(path);
           this.endpoints.push({
             path: path,
             method: method.toUpperCase(),
             summary: operation.summary || "",
             description: operation.description || "",
-            tags: operation.tags || ["default"],
+            tags: [extractedTag], // Use extracted tag from path
             operationId: operation.operationId || "",
             parameters: operation.parameters || [],
             requestBody: operation.requestBody || null,
@@ -103,6 +134,14 @@ class EndpointList {
         endpoint.summary.toLowerCase().includes(term) ||
         endpoint.tags.some((tag) => tag.toLowerCase().includes(term)),
     );
+  }
+
+  /**
+   * Capitalize the first letter of a string
+   */
+  capitalizeTag(tag) {
+    if (!tag) return "Default";
+    return tag.charAt(0).toUpperCase() + tag.slice(1);
   }
 
   groupEndpointsByTag() {
@@ -135,6 +174,7 @@ class EndpointList {
 
     for (const [tag, endpoints] of Object.entries(grouped)) {
       const isCollapsed = this.collapsedGroups.has(tag);
+      const displayTag = this.capitalizeTag(tag);
       const collapseIcon = isCollapsed
         ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -150,7 +190,7 @@ class EndpointList {
                         ? "cursor-pointer hover:bg-gray-600 transition"
                         : ""
                     }" data-group-header="${this.escapeHtml(tag)}">
-                        <span>${this.escapeHtml(tag)} <span class="text-gray-400 text-xs">(${endpoints.length})</span></span>
+                        <span>${this.escapeHtml(displayTag)} <span class="text-gray-400 text-xs">(${endpoints.length})</span></span>
                         ${this.options.enableCollapse ? `<span class="collapse-icon transition-transform ${isCollapsed ? "" : "rotate-0"}">${collapseIcon}</span>` : ""}
                     </div>
                     <div class="border border-gray-700 border-t-0 rounded-b-lg endpoint-group-content" 
