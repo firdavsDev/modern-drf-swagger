@@ -31,12 +31,40 @@ class APIProxyView(APIView):
             "data": {},
             "params": {}
         }
+
+        OR multipart form data with files
         """
-        payload = request.data
-        method = payload.get("method", "GET")
-        path = payload.get("path", "/")
-        data = payload.get("data", None)
-        params = payload.get("params", None)
+        # Check if this is a multipart upload (has files)
+        if request.FILES:
+            # Handle file upload
+            method = request.POST.get("method", "POST")
+            path = request.POST.get("path", "/")
+            params = request.POST.get("params", {})
+            if isinstance(params, str):
+                import json
+
+                try:
+                    params = json.loads(params)
+                except:
+                    params = {}
+
+            # Collect form data and files
+            form_data = {}
+            for key in request.POST:
+                if key not in ["method", "path", "params"]:
+                    form_data[key] = request.POST[key]
+
+            files = {}
+            for key in request.FILES:
+                files[key] = request.FILES[key]
+        else:
+            # Handle JSON payload
+            payload = request.data
+            method = payload.get("method", "GET")
+            path = payload.get("path", "/")
+            form_data = payload.get("data", None)
+            params = payload.get("params", None)
+            files = None
 
         # Check permissions
         permission_checker = EndpointPermissionChecker(request.user)
@@ -56,7 +84,7 @@ class APIProxyView(APIView):
 
         # Execute the request
         executor = RequestExecutor(request)
-        result = executor.execute(method, path, data, params)
+        result = executor.execute(method, path, form_data, params, files=files)
 
         # Log analytics
         portal_settings = getattr(settings, "API_PORTAL", {})
@@ -65,7 +93,7 @@ class APIProxyView(APIView):
                 user=request.user,
                 endpoint=path,
                 method=method,
-                payload=data,
+                payload=form_data,
                 status=result["status"],
                 size=result.get("size", 0),
                 latency=result.get("latency", 0.0),

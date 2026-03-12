@@ -34,7 +34,7 @@ class RequestExecutor:
 
         return headers
 
-    def execute(self, method: str, path: str, data=None, params=None):
+    def execute(self, method: str, path: str, data=None, params=None, files=None):
         url = urljoin(self.base_url, path.lstrip("/"))
 
         # Attach session cookies if any, to support Session Authentication
@@ -47,15 +47,48 @@ class RequestExecutor:
             # Since DRF endpoints expect WSGI requests, HTTP requests via `requests` to self
             # is one way. A cleaner way is using DRF's test client or Django's internal test client
             # but `requests` closely resembles a true client.
-            response = requests.request(
-                method=method,
-                url=url,
-                headers=self.headers,
-                json=data,
-                params=params,
-                cookies=cookies,
-                timeout=10,
-            )
+
+            # Prepare files for upload if present
+            files_data = None
+            if files:
+                files_data = {}
+                for key, file_obj in files.items():
+                    # Reset file pointer to beginning
+                    file_obj.seek(0)
+                    files_data[key] = (
+                        file_obj.name,
+                        file_obj.read(),
+                        file_obj.content_type,
+                    )
+
+            # Choose between JSON and multipart form data
+            if files_data:
+                # For file uploads, use data (not json) and files parameters
+                response = requests.request(
+                    method=method,
+                    url=url,
+                    headers={
+                        k: v
+                        for k, v in self.headers.items()
+                        if k.lower() != "content-type"
+                    },  # Let requests set Content-Type
+                    data=data,
+                    files=files_data,
+                    params=params,
+                    cookies=cookies,
+                    timeout=10,
+                )
+            else:
+                # Regular JSON request
+                response = requests.request(
+                    method=method,
+                    url=url,
+                    headers=self.headers,
+                    json=data,
+                    params=params,
+                    cookies=cookies,
+                    timeout=10,
+                )
 
             latency = (time.time() - start_time) * 1000  # ms
 

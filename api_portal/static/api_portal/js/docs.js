@@ -69,15 +69,32 @@ class DocsController {
 
   async handleSendRequest(payload) {
     try {
-      // Send request to API proxy
-      const response = await fetch("/portal/api-proxy/", {
+      let fetchOptions = {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "X-CSRFToken": csrftoken,
         },
-        body: JSON.stringify(payload),
-      });
+      };
+
+      // Check if payload contains FormData (for file uploads)
+      if (payload.data instanceof FormData) {
+        // Send as multipart/form-data
+        const formData = payload.data;
+        formData.append("method", payload.method);
+        formData.append("path", payload.path);
+        if (payload.params) {
+          formData.append("params", JSON.stringify(payload.params));
+        }
+        fetchOptions.body = formData;
+        // Don't set Content-Type header - let browser set it with boundary
+      } else {
+        // Send as JSON
+        fetchOptions.headers["Content-Type"] = "application/json";
+        fetchOptions.body = JSON.stringify(payload);
+      }
+
+      // Send request to API proxy
+      const response = await fetch("/portal/api-proxy/", fetchOptions);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
