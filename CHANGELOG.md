@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-13
+
+### ✨ New Features
+
+- **Code Generation**: Generate client code snippets in 7 programming languages
+  - 🐍 **Python** - Using `requests` library
+  - ⚡ **JavaScript** - Using `fetch` API  
+  - 🔧 **cURL** - Command-line ready
+  - 🦄 **HTTPie** - Modern CLI HTTP client
+  - 🐘 **PHP** - Using cURL extension
+  - ☕ **Java** - Using HttpURLConnection
+  - 🚀 **Go** - Using net/http package
+  - New "Code" tab in request editor for easy access
+  - One-click language switching with instant regeneration
+  - Copy-paste ready snippets with all parameters, headers, and authentication included
+  - Global authentication credentials automatically included in generated code
+  - Real-time code generation based on current endpoint configuration
+  - Perfect for API integration documentation and developer onboarding
+
+### 🔧 Improvements
+
+- Added `/generate-code/` API endpoint for code snippet generation
+- New `CodeGenerator` service class in backend for extensible code generation
+- Enhanced request editor UI with additional tab for code snippets
+- Language-specific syntax highlighting preparation (ready for future enhancement)
+
+### 💡 Use Cases
+
+- **Developers**: Copy-paste working code examples directly into projects
+- **Documentation**: Auto-generate code examples for API documentation
+- **Testing**: Quick script generation for testing endpoints
+- **Integration**: Speed up API integration with pre-configured client code
+
 ## [1.0.4] - 2026-06-15
 
 ### ✨ New Features

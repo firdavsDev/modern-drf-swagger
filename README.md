@@ -41,6 +41,7 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 - 📊 **Analytics Dashboard**: Track API usage, latency, and error rates with charts
 - 📝 **Request History**: Personal history with search, filtering, and request replay (auto-cleanup of old logs)
 - ⚡ **Real Request Proxy**: Execute actual HTTP requests with accurate latency measurement
+- 💻 **Code Generation**: Generate client code in 7 languages (Python, JavaScript, cURL, HTTPie, PHP, Java, Go)
 - 🎨 **Syntax Highlighting**: JSON responses with color-coded syntax
 - 🔍 **Search & Filter**: Quickly find endpoints and past requests
 - 🔖 **Bookmarkable Endpoints**: URL hash routing preserves selected endpoint on refresh

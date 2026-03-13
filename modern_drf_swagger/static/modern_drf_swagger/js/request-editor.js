@@ -106,6 +106,14 @@ class RequestEditor {
                                 <span class="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs px-2 py-0.5 rounded-full">${Object.keys(endpoint.responses || {}).length}</span>
                             </span>
                         </button>
+                        <button class="request-tab border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 px-6 py-3 text-sm font-medium transition-colors" data-tab="code">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                                Code
+                            </span>
+                        </button>
                     </div>
                     
                     <!-- Tab Content -->
@@ -150,6 +158,10 @@ class RequestEditor {
                         
                         <div class="tab-content" data-tab-content="responses">
                             ${this.renderResponseSchemas(endpoint)}
+                        </div>
+                        
+                        <div class="tab-content" data-tab-content="code">
+                            ${window.codeGenerator ? window.codeGenerator.renderUI(endpoint, () => this.getRequestConfig()) : '<p class="text-gray-500">Code generator not available</p>'}
                         </div>
                     </div>
                 </div>
