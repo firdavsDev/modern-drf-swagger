@@ -4,14 +4,12 @@ Code generation view for generating client code snippets.
 
 import json
 
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from ..services.code_generator import CodeGenerator
 
 
-@login_required
 @require_http_methods(["POST"])
 def generate_code_view(request):
     """
@@ -27,6 +25,13 @@ def generate_code_view(request):
         "language": "python"
     }
     """
+    # Check authentication
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"error": "Authentication required. Please log in to use code generation."},
+            status=401,
+        )
+
     try:
         data = json.loads(request.body)
 

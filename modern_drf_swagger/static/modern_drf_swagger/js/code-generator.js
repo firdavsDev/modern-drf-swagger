@@ -40,7 +40,17 @@ class CodeGenerator {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to parse error message from response
+        let errorMsg = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            errorMsg = errorData.error;
+          }
+        } catch (e) {
+          // Ignore JSON parse errors for error response
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -217,9 +227,7 @@ class CodeGenerator {
 
     // Get query parameters
     const queryParams = {};
-    const queryParamEls = document.querySelectorAll(
-      '[data-param-type="query"]',
-    );
+    const queryParamEls = document.querySelectorAll('[data-param-in="query"]');
     queryParamEls.forEach((el) => {
       const name = el.dataset.paramName;
       if (el.value) {
