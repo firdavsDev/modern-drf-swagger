@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.views.generic import TemplateView
 from rest_framework.request import Request
 
+from ..conf import get_package_version
 from ..permissions.endpoint_permissions import EndpointPermissionChecker
 from ..services.schema_loader import PortalSchemaLoader
 
@@ -20,6 +21,7 @@ class DocsView(LoginRequiredMixin, TemplateView):
         portal_name = portal_settings.get("TITLE", "API Portal")
         context["title"] = portal_name
         context["portal_name"] = portal_name
+        context["portal_version"] = get_package_version()
         context["user"] = self.request.user
 
         # Pass endpoint collapse settings to template

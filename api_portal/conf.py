@@ -11,6 +11,39 @@ def get_portal_setting(name, default=None):
     return portal_settings.get(name, default)
 
 
+def get_package_version():
+    """
+    Get the installed package version of modern-drf-swagger.
+
+    Returns:
+        str: Version string (e.g., "1.0.2") or "dev" if not installed as package
+    """
+    try:
+        # Try to get version from installed package metadata
+        from importlib.metadata import version
+
+        return version("modern-drf-swagger")
+    except Exception:
+        # Fallback: try reading pyproject.toml in development mode
+        try:
+            import re
+            from pathlib import Path
+
+            # Look for pyproject.toml in parent directory
+            pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
+            if pyproject_path.exists():
+                with open(pyproject_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    # Simple regex to extract version
+                    match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', content)
+                    if match:
+                        return match.group(1)
+        except Exception:
+            pass
+
+        return "dev"
+
+
 def hide_from_portal(view_func):
     """
     Decorator to hide a view from the API portal.

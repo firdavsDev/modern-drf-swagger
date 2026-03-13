@@ -4,6 +4,8 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 
+from ..conf import get_package_version
+
 User = get_user_model()
 
 
@@ -89,4 +91,5 @@ class PortalLoginView(FormView):
         portal_name = portal_settings.get("TITLE", "API Portal")
         context["title"] = f"Login - {portal_name}"
         context["portal_name"] = portal_name
+        context["portal_version"] = get_package_version()
         return context

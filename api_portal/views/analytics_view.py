@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.generic import TemplateView
 
+from ..conf import get_package_version
 from ..models import RequestLog, UsageMetric
 
 User = get_user_model()
@@ -29,6 +30,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         portal_name = portal_settings.get("TITLE", "API Portal")
         context["title"] = f"Analytics - {portal_name}"
         context["portal_name"] = portal_name
+        context["portal_version"] = get_package_version()
         return context
 
     def get(self, request, *args, **kwargs):
@@ -126,6 +128,7 @@ class HistoryView(LoginRequiredMixin, TemplateView):
         portal_name = portal_settings.get("TITLE", "API Portal")
         context["title"] = f"History - {portal_name}"
         context["portal_name"] = portal_name
+        context["portal_version"] = get_package_version()
         return context
 
     def get(self, request, *args, **kwargs):
