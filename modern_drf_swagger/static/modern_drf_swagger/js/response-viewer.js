@@ -24,38 +24,38 @@ class ResponseViewer {
 
     let html = `
             <div class="space-y-4">
-                <!-- Status and Metrics - Enhanced -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
+                <!-- Status and Metrics - Enhanced (Responsive) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    <div class="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
                             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Status</p>
                         </div>
-                        <p class="text-3xl font-bold">
+                        <p class="text-2xl sm:text-3xl font-bold">
                             <span class="status-badge ${statusClass}">${response.status}</span>
                         </p>
                     </div>
-                    <div class="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
+                    <div class="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
                             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Latency</p>
                         </div>
-                        <p class="text-3xl font-bold ${latencyClass}">
-                            ${response.latency}<span class="text-base ml-1">ms</span>
+                        <p class="text-2xl sm:text-3xl font-bold ${latencyClass}">
+                            ${response.latency}<span class="text-sm sm:text-base ml-1">ms</span>
                         </p>
                     </div>
-                    <div class="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
+                    <div class="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
                             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
                             </svg>
                             <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Size</p>
                         </div>
-                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                        <p class="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
                             ${this.formatBytes(response.size)}
                         </p>
                     </div>

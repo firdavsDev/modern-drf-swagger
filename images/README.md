@@ -45,7 +45,7 @@ Screenshot of the Analytics Dashboard showing:
 
 1. **Start the development server**:
    ```bash
-   cd sample_project
+   cd samples
    python manage.py runserver
    ```
 

@@ -1,0 +1,25 @@
+# Requirements for running the Modern DRF Swagger sample project
+# This is a demonstration/testing environment
+
+# Core Django & DRF
+Django>=4.2,<5.1
+djangorestframework>=3.14,<4.0
+
+# Modern DRF Swagger (install in development mode from parent directory)
+# Run: pip install -e ..
+# Or for production: modern-drf-swagger>=1.0.4
+
+# OpenAPI Schema Generation (auto-configured by modern-drf-swagger)
+drf-spectacular>=0.26,<1.0
+
+# HTTP client for API proxy functionality
+requests>=2.31.0,<3.0
+
+# Optional: Better development server
+# Uncomment if you want to use these tools
+# django-extensions>=3.2.0
+# werkzeug>=3.0.0
+
+# Optional: Database drivers (if not using SQLite)
+# psycopg2-binary>=2.9.0  # PostgreSQL
+# mysqlclient>=2.2.0      # MySQL

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.http import JsonResponse
+
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -65,6 +66,23 @@ class APIProxyView(APIView):
 
         # Check permissions
         permission_checker = EndpointPermissionChecker(request.user)
+
+        # First check if user can send requests (not VIEWER role)
+        if not permission_checker.can_send_request():
+            return JsonResponse(
+                {
+                    "status": 403,
+                    "headers": {},
+                    "data": {
+                        "error": "Permission denied. Viewers cannot send API requests. You need DEVELOPER role or higher."
+                    },
+                    "latency": 0,
+                    "size": 0,
+                },
+                status=200,
+            )  # Proxy returns 200 but with 403 in the data
+
+        # Then check if user has access to this specific endpoint
         if not permission_checker.check_access(path, method):
             return JsonResponse(
                 {

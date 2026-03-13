@@ -9,8 +9,6 @@ Get up and running with Modern DRF Swagger in **5 minutes**!
 - Django REST Framework 3.12 or higher
 - An existing Django project with DRF
 
-**Important:** You do NOT need to manually install drf-spectacular - it's automatically installed as a dependency!
-
 ---
 
 ## 📦 Installation Methods
@@ -85,7 +83,7 @@ INSTALLED_APPS = [
 ```python
 # settings.py
 MODERN_DRF_SWAGGER = {
-    # Basic Info (automatically configures drf-spectacular)
+    # Basic Info for API Documentation
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation for My Company',
     'VERSION': '1.0.0',
@@ -124,23 +122,10 @@ urlpatterns = [
     # Your API endpoints
     path('api/', include('myapp.urls')),
     
-    # API Portal - you can use ANY URL prefix you want!
-    path('portal/', include('modern_drf_swagger.urls')),
+    # New API documentation
+    path('api/docs/', include('modern_drf_swagger.urls')),
 ]
 ```
-
-**💡 Flexible URL Mounting:** Unlike some API documentation tools, Modern DRF Swagger works at **any URL prefix**. Choose what works best for your project:
-
-```python
-# All of these work perfectly:
-path('portal/', include('modern_drf_swagger.urls')),          # Default
-path('api/docs/', include('modern_drf_swagger.urls')),        # Nested under API
-path('docs/', include('modern_drf_swagger.urls')),            # Simple docs path
-path('swagger/', include('modern_drf_swagger.urls')),         # Swagger-style path
-path('api-explorer/', include('modern_drf_swagger.urls')),    # Descriptive path
-```
-
-The portal automatically detects its URL prefix and adjusts all internal links accordingly.
 
 ### Step 4: Run Migrations
 
@@ -351,6 +336,144 @@ class MyViewSet(viewsets.ModelViewSet):
 
 ---
 
+## 🔐 Configure Authentication Schemes
+
+Modern DRF Swagger **automatically detects** authentication methods from your OpenAPI schema. Users will only see authentication options that your API actually supports!
+
+### Automatic Detection (Recommended)
+
+Use drf-spectacular's `@extend_schema` decorator to define authentication on your views:
+
+#### Bearer Token (JWT) Authentication
+
+```python
+from drf_spectacular.utils import extend_schema
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+@extend_schema(
+    security=[{"Bearer": []}]  # Automatically detected!
+)
+class ProtectedAPIView(APIView):
+    """
+    This endpoint requires Bearer token authentication.
+    The portal will show "Bearer Token (JWT)" in the Authorize modal.
+    """
+    def get(self, request):
+        return Response({"message": "Authenticated!"})
+```
+
+#### Basic Authentication
+
+```python
+@extend_schema(
+    security=[{"BasicAuth": []}]
+)
+class BasicAuthView(APIView):
+    """
+    Portal will show "Basic Auth" username/password fields.
+    """
+    pass
+```
+
+#### API Key Authentication
+
+```python
+@extend_schema(
+    security=[{"ApiKeyAuth": []}]
+)
+class ApiKeyView(APIView):
+    """
+    Portal will show "API Key" with custom header field.
+    """
+    pass
+```
+
+#### Multiple Authentication Methods
+
+```python
+@extend_schema(
+    security=[
+        {"Bearer": []},
+        {"BasicAuth": []},
+    ]
+)
+class FlexibleAuthView(APIView):
+    """
+    Portal will show both Bearer and Basic Auth options.
+    """
+    pass
+```
+
+### Auto-Detection from REST_FRAMEWORK Settings
+
+**NEW!** The portal now automatically detects authentication methods from your DRF configuration:
+
+```python
+# settings.py
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',  # ← Auto-detected!
+        'rest_framework.authentication.TokenAuthentication',  # ← Shows as Bearer
+        'rest_framework.authentication.SessionAuthentication',  # ← Handled automatically
+    ],
+}
+
+# No need to configure DEFAULT_AUTH_METHODS - it's automatic! ✨
+```
+
+The portal automatically maps:
+- `BasicAuthentication` → Basic Auth
+- `TokenAuthentication` / `JWTAuthentication` → Bearer Token  
+- `SessionAuthentication` → Handled via cookies (no UI needed)
+
+### Manual Override (Optional)
+
+Only set `DEFAULT_AUTH_METHODS` if auto-detection doesn't work or you want to override:
+
+```python
+# settings.py
+MODERN_DRF_SWAGGER = {
+    # Override auto-detection
+    'DEFAULT_AUTH_METHODS': ['bearer', 'basic', 'apikey'],
+    
+    # Or limit to specific methods:
+    # 'DEFAULT_AUTH_METHODS': ['bearer'],  # Only JWT
+}
+```
+
+### Define Security Schemes in Settings
+
+For advanced control, configure drf-spectacular's security schemes:
+
+```python
+# settings.py
+SPECTACULAR_SETTINGS = {
+    'SECURITY': [
+        {
+            'Bearer': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+                'description': 'JWT token obtained from /api/auth/login/',
+            }
+        },
+        {
+            'ApiKeyAuth': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'X-API-Key',
+                'description': 'Custom API key for service accounts',
+            }
+        }
+    ],
+}
+```
+
+**Pro Tip:** The portal automatically reads your authentication configuration and only shows relevant options in the "Authorize" modal!
+
+---
+
 ## 🐛 Troubleshooting
 
 ### Issue: "No endpoints found"
@@ -392,15 +515,6 @@ DEBUG = True  # Required for development
 
 ---
 
-## 📚 Next Steps
-
-- **[View Configuration Reference](README.md#configuration-reference)** - All available settings
-- **[Read Changelog](CHANGELOG.md)** - Latest updates and features
-- **[Report Issues](https://github.com/firdavsDev/modern-drf-swagger/issues)** - Found a bug?
-- **[Star on GitHub](https://github.com/firdavsDev/modern-drf-swagger)** - Support the project! ⭐
-
----
-
 ## 💡 Pro Tips
 
 1. **Use Super Admin role** during development to access all endpoints without configuring permissions.
@@ -438,71 +552,15 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 ```
 
-## 🛠️ Common Configuration Options
-
-### Hide Specific Endpoints
-
-Use the decorator in your views:
-
-```python
-from modern_drf_swagger.conf import hide_from_portal
-from rest_framework import viewsets
-
-@hide_from_portal
-class InternalAPIViewSet(viewsets.ModelViewSet):
-    """This endpoint won't appear in the portal"""
-    queryset = InternalModel.objects.all()
-    serializer_class = InternalSerializer
-```
-
-### Adjust History Limit
-
-```python
-MODERN_DRF_SWAGGER = {
-    'HISTORY_LIMIT': 50,  # Keep last 50 requests per user
-}
-```
-
-### Disable Analytics
-
-```python
-MODERN_DRF_SWAGGER = {
-    'ANALYTICS_ENABLED': False,  # No request logging
-}
-```
-
-## 🐛 Troubleshooting
-
-### No endpoints showing?
-
-**Check:**
-1. `drf_spectacular` is in `INSTALLED_APPS`
-2. `DEFAULT_SCHEMA_CLASS` is set to `drf_spectacular.openapi.AutoSchema`
-3. Your API views are using DRF ViewSets or APIViews
-
-### Permission denied errors?
-
-**Check:**
-1. User is a member of at least one team
-2. Team has endpoint permissions configured (or user is Super Admin)
-3. You're logged in
-
-### Analytics not working?
-
-**Check:**
-1. `ANALYTICS_ENABLED` is `True`
-2. Requests are made through the portal (not directly to API)
-
 ## 📚 Next Steps
 
-- Read the [Full Documentation](https://github.com/firdavsDev/modern-drf-swagger#readme)
-- Check out [Configuration Options](https://github.com/firdavsDev/modern-drf-swagger#configuration-reference)
+- **[View Configuration Reference](README.md#configuration-reference)** - All available settings
+- **[Read Changelog](CHANGELOG.md)** - Latest updates and features
+- **[Report Issues](https://github.com/firdavsDev/modern-drf-swagger/issues)** - Found a bug?
+- **[Star on GitHub](https://github.com/firdavsDev/modern-drf-swagger)** - Support the project! ⭐
+
 
 ## 💡 Need Help?
 
 - [GitHub Issues](https://github.com/firdavsDev/modern-drf-swagger/issues)
 - [GitHub Discussions](https://github.com/firdavsDev/modern-drf-swagger/discussions)
-
----
-
-**Created by [DavronbekDev](https://davronbek.dev) • [GitHub](https://github.com/firdavsDev)**

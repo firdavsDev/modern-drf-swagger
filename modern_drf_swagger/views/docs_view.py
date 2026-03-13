@@ -1,7 +1,10 @@
+import json
+
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.views.generic import TemplateView
+
 from rest_framework.request import Request
 
 try:
@@ -15,7 +18,7 @@ from ..services.schema_loader import PortalSchemaLoader
 
 
 class DocsView(LoginRequiredMixin, TemplateView):
-    """API documentation explorer view"""
+    """Modern DRF Swagger documentation explorer view"""
 
     template_name = "modern_drf_swagger/docs.html"
     login_url = reverse_lazy("modern_drf_swagger:login")
@@ -23,7 +26,7 @@ class DocsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
-        portal_name = portal_settings.get("TITLE", "API Portal")
+        portal_name = portal_settings.get("TITLE", "Modern DRF Swagger")
         context["title"] = portal_name
         context["portal_name"] = portal_name
         context["portal_version"] = get_package_version()
@@ -37,9 +40,22 @@ class DocsView(LoginRequiredMixin, TemplateView):
             "ENDPOINTS_DEFAULT_COLLAPSED", False
         )
 
-        # Get API portal base URL for JavaScript
+        # Get Modern DRF Swagger base URL for JavaScript
         # This allows the portal to work at any URL prefix
         context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
+
+        # Add permission checker for template
+        permission_checker = EndpointPermissionChecker(self.request.user)
+        context["can_send_request"] = permission_checker.can_send_request()
+        context["can_view_analytics"] = permission_checker.can_view_analytics()
+        context["can_view_history"] = permission_checker.can_view_history()
+        context["user_role"] = permission_checker.get_user_role()
+
+        # Get authentication schemes from OpenAPI schema
+        schema_loader = PortalSchemaLoader()
+        drf_request = Request(self.request)
+        auth_schemes = schema_loader.get_authentication_schemes(drf_request)
+        context["auth_schemes"] = json.dumps(auth_schemes)
 
         return context
 

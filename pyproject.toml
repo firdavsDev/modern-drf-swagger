@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modern-drf-swagger"
-version = "1.0.2"
+version = "1.0.4"
 authors = [
   { name="DavronbekDev", email="davronbekboltyev777@gmail.com" },
 ]
@@ -58,3 +58,20 @@ exclude = ["modern_drf_swagger.static*", "modern_drf_swagger.templates*"]
 
 [tool.setuptools.package-data]
 modern_drf_swagger = ["templates/**/*", "static/**/*"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip_glob = [
+    "*/migrations/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/env/*",
+    "*.egg-info/*",
+    "*/build/*",
+    "*/dist/*",
+]
+known_django = ["django"]
+known_first_party = ["modern_drf_swagger"]
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]

@@ -1,0 +1,22 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+repos:
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black", "--line-length", "120"]
+        exclude: |
+          (?x)^(
+              .*/__pycache__/.*|
+              .*\.pyc$|
+              .*\.pyo$|
+              .*/\.venv/.*|
+              .*/venv/.*|
+              .*/env/.*|
+              .*\.egg-info/.*|
+              .*/migrations/.*|
+              .*/build/.*|
+              .*/dist/.*
+          )$

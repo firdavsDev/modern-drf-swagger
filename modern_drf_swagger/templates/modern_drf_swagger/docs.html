@@ -1,6 +1,8 @@
-{% extends "modern_drf_swagger/base.html" %} {% load static %} 
+{% extends "modern_drf_swagger/base.html" %} 
 
+{% load static %} 
 {% block extra_head %}
+
 <style>
   .endpoint-panel {
     height: calc(100vh - 8rem);
@@ -9,8 +11,11 @@
 <script>
   // Pass Django settings to JavaScript
   window.PORTAL_CONFIG = {
-    endpointsCollapsible: {{ endpoints_collapsible|lower }},
-    endpointsDefaultCollapsed: {{ endpoints_default_collapsed|lower }}
+    endpointsCollapsible: {% if endpoints_collapsible %}true{% else %}false{% endif %},
+    endpointsDefaultCollapsed: {% if endpoints_default_collapsed %}true{% else %}false{% endif %},
+    canSendRequest: {% if can_send_request %}true{% else %}false{% endif %},
+    userRole: "{{ user_role|default:"" }}",
+    authSchemes: {{ auth_schemes|safe }}
   };
 </script>
 {% endblock %} 

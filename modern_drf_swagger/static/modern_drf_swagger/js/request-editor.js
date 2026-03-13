@@ -61,12 +61,12 @@ class RequestEditor {
             <div class="space-y-4">
                 <!-- Endpoint Info -->
                 <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="method-badge method-${endpoint.method.toLowerCase()}">
+                    <div class="flex items-center gap-3 mb-2 flex-wrap">
+                        <span class="method-badge method-${endpoint.method.toLowerCase()} flex-shrink-0">
                             ${endpoint.method}
                         </span>
-                        <span class="font-mono text-lg text-gray-900 dark:text-gray-100 flex-1">${this.escapeHtml(endpoint.path)}</span>
-                        ${authBadge}
+                        <span class="font-mono text-lg text-gray-900 dark:text-gray-100 flex-1 min-w-0 break-all">${this.escapeHtml(endpoint.path)}</span>
+                        <div class="flex-shrink-0">${authBadge}</div>
                     </div>
                     ${endpoint.summary ? `<p class="text-gray-700 dark:text-gray-300 text-sm">${this.escapeHtml(endpoint.summary)}</p>` : ""}
                     ${endpoint.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${this.escapeHtml(endpoint.description)}</p>` : ""}
@@ -128,12 +128,12 @@ class RequestEditor {
                                 </label>
                                 <textarea id="request-headers" 
                                           class="dark-input w-full px-3 py-2 rounded-lg font-mono text-sm h-32"
-                                          placeholder='{\n  "Authorization": "Bearer YOUR_TOKEN",\n  "Custom-Header": "value"\n}'></textarea>
+                                          placeholder='{\n  "Custom-Header": "value"\n}'></textarea>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                     </svg>
-                                    JSON format required
+                                    Click "Authorize" in sidebar to set up global authentication (one-time setup)
                                 </p>
                             </div>
                         </div>
@@ -182,12 +182,14 @@ class RequestEditor {
 
                 <!-- Send Button -->
                 <button id="send-request-btn" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                        class="w-full ${window.PORTAL_CONFIG?.canSendRequest === false ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"} text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                        ${window.PORTAL_CONFIG?.canSendRequest === false ? "disabled" : ""}>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                     </svg>
-                    Send Request
+                    ${window.PORTAL_CONFIG?.canSendRequest === false ? "View Only - No Send Permission" : "Send Request"}
                 </button>
+                ${window.PORTAL_CONFIG?.canSendRequest === false ? '<p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2 text-center">⚠️ You need DEVELOPER role or higher to send requests</p>' : ""}
             </div>
         `;
 
@@ -855,8 +857,9 @@ class RequestEditor {
                       <pre class="text-xs font-mono text-gray-900 dark:text-gray-100">${this.syntaxHighlightJson(exampleJson)}</pre>
                     </div>
                     <button 
-                      onclick="window.requestEditor.copyToClipboard(\`${this.escapeForJS(exampleJson)}\`, 'Example copied')"
-                      class="absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                      class="copy-json-btn absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                      data-copy-content="${btoa(encodeURIComponent(exampleJson))}"
+                      data-success-message="Example copied"
                     >
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
@@ -873,8 +876,9 @@ class RequestEditor {
                       <pre class="text-xs font-mono text-gray-900 dark:text-gray-100">${this.syntaxHighlightJson(schemaJson)}</pre>
                     </div>
                     <button 
-                      onclick="window.requestEditor.copyToClipboard(\`${this.escapeForJS(schemaJson)}\`, 'Schema copied')"
-                      class="absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                      class="copy-json-btn absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                      data-copy-content="${btoa(encodeURIComponent(schemaJson))}"
+                      data-success-message="Schema copied"
                     >
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
@@ -901,7 +905,10 @@ class RequestEditor {
     html += "</div>";
 
     // Add event listener setup after render
-    setTimeout(() => this.setupResponseSchemaTabs(), 0);
+    setTimeout(() => {
+      this.setupResponseSchemaTabs();
+      this.setupCopyButtons();
+    }, 0);
 
     return html;
   }
@@ -1179,11 +1186,18 @@ class RequestEditor {
       .replace(/([{}\[\],:])/g, '<span class="json-punctuation">$1</span>');
   }
 
-  escapeForJS(str) {
-    return str
-      .replace(/`/g, "\\`")
-      .replace(/\$/g, "\\$")
-      .replace(/\\/g, "\\\\");
+  setupCopyButtons() {
+    const copyButtons = document.querySelectorAll(".copy-json-btn");
+    copyButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        // Decode Base64 content
+        const encodedContent = button.dataset.copyContent;
+        const content = decodeURIComponent(atob(encodedContent));
+        const successMessage =
+          button.dataset.successMessage || "Copied to clipboard";
+        this.copyToClipboard(content, successMessage);
+      });
+    });
   }
 
   copyToClipboard(text, successMessage = "Copied to clipboard") {
@@ -1227,6 +1241,14 @@ class RequestEditor {
 
   async sendRequest() {
     if (!this.currentEndpoint) return;
+
+    // Check if user has permission to send requests
+    if (window.PORTAL_CONFIG?.canSendRequest === false) {
+      alert(
+        "You do not have permission to send requests. Please contact your administrator to upgrade your role to DEVELOPER or higher.",
+      );
+      return;
+    }
 
     const button = document.getElementById("send-request-btn");
     button.disabled = true;
@@ -1299,6 +1321,13 @@ class RequestEditor {
           showToast("Invalid JSON in headers", "error");
           throw new Error("Invalid JSON");
         }
+      }
+
+      // Merge with global authentication headers
+      if (window.globalAuth) {
+        const globalAuthHeaders = window.globalAuth.getAuthHeaders();
+        // Global auth headers take precedence if not overridden in custom headers
+        customHeaders = { ...globalAuthHeaders, ...customHeaders };
       }
 
       // Build path with path parameters

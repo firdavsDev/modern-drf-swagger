@@ -27,6 +27,13 @@ class RequestExecutor:
         if auth_header:
             headers["Authorization"] = auth_header
 
+        # Extract and forward CSRF token (for session authentication)
+        csrf_token = self.request.META.get("HTTP_X_CSRFTOKEN")
+        if csrf_token:
+            headers["X-CSRFToken"] = csrf_token
+        elif "csrftoken" in self.request.COOKIES:
+            headers["X-CSRFToken"] = self.request.COOKIES["csrftoken"]
+
         # Custom headers sent via the Proxy
         custom_headers = self.request.data.get("_headers", {})
         if isinstance(custom_headers, dict):
