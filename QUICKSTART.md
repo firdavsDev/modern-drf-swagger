@@ -86,7 +86,7 @@ MODERN_DRF_SWAGGER = {
     # Basic Info for API Documentation
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation for My Company',
-    'VERSION': '1.0.5',
+    'VERSION': '1.0.6',
     
     # Feature Toggles
     'ANALYTICS_ENABLED': True,       # Track API usage
