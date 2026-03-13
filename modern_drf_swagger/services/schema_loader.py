@@ -17,10 +17,8 @@ class PortalSchemaLoader:
         """
         Check if the path is explicitly excluded in settings.
         """
-        portal_settings = getattr(settings, "API_PORTAL", {})
-        excluded_paths = portal_settings.get(
-            "API_PORTAL_EXCLUDE", ["/admin/", "/internal/"]
-        )
+        portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
+        excluded_paths = portal_settings.get("EXCLUDE_PATHS", ["/admin/", "/internal/"])
         for excluded in excluded_paths:
             if path.startswith(excluded):
                 return True
@@ -45,7 +43,7 @@ class PortalSchemaLoader:
 
             # Filter paths based on settings and `@hide_from_portal` decorator
             # Note: spectacular usually handles its own @extend_schema(exclude=True),
-            # but we explicitly check our API_PORTAL_EXCLUDE and custom decorators if needed.
+            # but we explicitly check our EXCLUDE_PATHS and custom decorators if needed.
             paths = schema.get("paths", {})
             filtered_paths = {}
             for path, path_items in paths.items():

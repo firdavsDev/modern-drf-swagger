@@ -50,7 +50,7 @@ pip install -e .
 
 ### Step 1: Add to INSTALLED_APPS
 
-**Only add `api_portal`** - no need to add `drf_spectacular`!
+**Only add `modern_drf_swagger`** - no need to add `drf_spectacular`!
 
 ```python
 # settings.py
@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     'rest_framework',
     
     # Modern DRF Swagger (this is all you need!)
-    'api_portal',
+    'modern_drf_swagger',
     
     # Your apps
     'myapp',
@@ -76,7 +76,7 @@ INSTALLED_APPS = [
 **That's it!** API Portal automatically:
 - ✅ Adds `drf_spectacular` to `INSTALLED_APPS`
 - ✅ Configures `REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS']`
-- ✅ Sets up `SPECTACULAR_SETTINGS` based on `API_PORTAL` config
+- ✅ Sets up `SPECTACULAR_SETTINGS` based on `MODERN_DRF_SWAGGER` config
 
 ### Step 2: Configure API Portal (Optional but Recommended)
 
@@ -84,7 +84,7 @@ INSTALLED_APPS = [
 
 ```python
 # settings.py
-API_PORTAL = {
+MODERN_DRF_SWAGGER = {
     # Basic Info (automatically configures drf-spectacular)
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation for My Company',
@@ -125,7 +125,7 @@ urlpatterns = [
     path('api/', include('myapp.urls')),
     
     # API Portal - you can use ANY URL prefix you want!
-    path('portal/', include('api_portal.urls')),
+    path('portal/', include('modern_drf_swagger.urls')),
 ]
 ```
 
@@ -133,11 +133,11 @@ urlpatterns = [
 
 ```python
 # All of these work perfectly:
-path('portal/', include('api_portal.urls')),          # Default
-path('api/docs/', include('api_portal.urls')),        # Nested under API
-path('docs/', include('api_portal.urls')),            # Simple docs path
-path('swagger/', include('api_portal.urls')),         # Swagger-style path
-path('api-explorer/', include('api_portal.urls')),    # Descriptive path
+path('portal/', include('modern_drf_swagger.urls')),          # Default
+path('api/docs/', include('modern_drf_swagger.urls')),        # Nested under API
+path('docs/', include('modern_drf_swagger.urls')),            # Simple docs path
+path('swagger/', include('modern_drf_swagger.urls')),         # Swagger-style path
+path('api-explorer/', include('modern_drf_swagger.urls')),    # Descriptive path
 ```
 
 The portal automatically detects its URL prefix and adjusts all internal links accordingly.
@@ -153,7 +153,7 @@ python manage.py migrate
 You should see output like:
 ```
 Running migrations:
-  Applying api_portal.0001_initial... OK
+  Applying modern_drf_swagger.0001_initial... OK
 ```
 
 ### Step 5: Create Superuser (if needed)
@@ -312,7 +312,7 @@ You should now see three main sections:
 ### Option 1: Using the Decorator
 
 ```python
-from api_portal.conf import hide_from_portal
+from modern_drf_swagger.conf import hide_from_portal
 from rest_framework import viewsets
 
 @hide_from_portal
@@ -326,7 +326,7 @@ class InternalAPIViewSet(viewsets.ModelViewSet):
 
 ```python
 # settings.py
-API_PORTAL = {
+MODERN_DRF_SWAGGER = {
     'EXCLUDE_PATHS': [
         '/admin/',
         '/internal/',
@@ -371,7 +371,7 @@ class MyViewSet(viewsets.ModelViewSet):
 ### Issue: "drf-spectacular not configured"
 
 **Solution:**
-This shouldn't happen with api_portal, but if it does:
+This shouldn't happen with modern_drf_swagger, but if it does:
 ```python
 # Manually set REST_FRAMEWORK
 REST_FRAMEWORK = {
@@ -421,7 +421,7 @@ DEBUG = True  # Required for development
 
 ```python
 # Disable anonymous access
-API_PORTAL = {
+MODERN_DRF_SWAGGER = {
     'ALLOW_ANONYMOUS': False,
 }
 
@@ -445,7 +445,7 @@ CSRF_COOKIE_SECURE = True
 Use the decorator in your views:
 
 ```python
-from api_portal.conf import hide_from_portal
+from modern_drf_swagger.conf import hide_from_portal
 from rest_framework import viewsets
 
 @hide_from_portal
@@ -458,7 +458,7 @@ class InternalAPIViewSet(viewsets.ModelViewSet):
 ### Adjust History Limit
 
 ```python
-API_PORTAL = {
+MODERN_DRF_SWAGGER = {
     'HISTORY_LIMIT': 50,  # Keep last 50 requests per user
 }
 ```
@@ -466,7 +466,7 @@ API_PORTAL = {
 ### Disable Analytics
 
 ```python
-API_PORTAL = {
+MODERN_DRF_SWAGGER = {
     'ANALYTICS_ENABLED': False,  # No request logging
 }
 ```

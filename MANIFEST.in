@@ -3,9 +3,9 @@ include QUICKSTART.md
 include CHANGELOG.md
 include LICENSE
 include pyproject.toml
-recursive-include api_portal/templates *
-recursive-include api_portal/static *
-recursive-include api_portal/migrations *.py
+recursive-include modern_drf_swagger/templates *
+recursive-include modern_drf_swagger/static *
+recursive-include modern_drf_swagger/migrations *.py
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 recursive-exclude * .DS_Store

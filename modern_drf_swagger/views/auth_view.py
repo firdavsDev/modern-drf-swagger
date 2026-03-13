@@ -49,9 +49,9 @@ class PortalLoginView(FormView):
     Authenticates users and stores API token in session for proxy requests.
     """
 
-    template_name = "api_portal/login.html"
+    template_name = "modern_drf_swagger/login.html"
     form_class = LoginForm
-    success_url = reverse_lazy("api_portal:docs")
+    success_url = reverse_lazy("modern_drf_swagger:docs")
 
     def dispatch(self, request, *args, **kwargs):
         # Redirect if already logged in
@@ -87,7 +87,7 @@ class PortalLoginView(FormView):
         context = super().get_context_data(**kwargs)
         from django.conf import settings
 
-        portal_settings = getattr(settings, "API_PORTAL", {})
+        portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
         portal_name = portal_settings.get("TITLE", "API Portal")
         context["title"] = f"Login - {portal_name}"
         context["portal_name"] = portal_name

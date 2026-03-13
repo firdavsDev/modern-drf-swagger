@@ -4,7 +4,7 @@ from django.conf import settings
 
 class ApiPortalConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "api_portal"
+    name = "modern_drf_swagger"
     verbose_name = "API Portal"
 
     def ready(self):
@@ -28,20 +28,20 @@ class ApiPortalConfig(AppConfig):
                 "drf_spectacular.openapi.AutoSchema"
             )
 
-        # Auto-configure SPECTACULAR_SETTINGS from API_PORTAL settings
+        # Auto-configure SPECTACULAR_SETTINGS from MODERN_DRF_SWAGGER settings
         self._configure_spectacular_settings()
 
     def _configure_spectacular_settings(self):
         """
-        Configure drf-spectacular settings based on API_PORTAL settings.
-        Users can control spectacular through API_PORTAL configuration.
+        Configure drf-spectacular settings based on MODERN_DRF_SWAGGER settings.
+        Users can control spectacular through MODERN_DRF_SWAGGER configuration.
         """
         from .conf import get_portal_setting
 
-        # Get user's API_PORTAL settings
-        api_portal_settings = getattr(settings, "API_PORTAL", {})
+        # Get user's MODERN_DRF_SWAGGER settings
+        modern_drf_swagger_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
 
-        # Build spectacular settings from API_PORTAL config
+        # Build spectacular settings from MODERN_DRF_SWAGGER config
         spectacular_defaults = {
             "TITLE": get_portal_setting("TITLE", "API Portal"),
             "DESCRIPTION": get_portal_setting(

@@ -84,7 +84,7 @@ class APIProxyView(APIView):
         result = executor.execute(method, path, form_data, params, files=files)
 
         # Log analytics
-        portal_settings = getattr(settings, "API_PORTAL", {})
+        portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
         if portal_settings.get("ANALYTICS_ENABLED", True):
             AnalyticsService.log_request(
                 user=request.user,

@@ -1,4 +1,6 @@
-{% extends "api_portal/base.html" %} {% load static %} {% block extra_head %}
+{% extends "modern_drf_swagger/base.html" %} {% load static %} 
+
+{% block extra_head %}
 <style>
   .endpoint-panel {
     height: calc(100vh - 8rem);
@@ -11,7 +13,9 @@
     endpointsDefaultCollapsed: {{ endpoints_default_collapsed|lower }}
   };
 </script>
-{% endblock %} {% block content %}
+{% endblock %} 
+
+{% block content %}
 <div class="flex gap-4 endpoint-panel">
   <!-- Left Panel: Endpoint List -->
   <div
@@ -145,9 +149,11 @@
     </div>
   </div>
 </div>
-{% endblock %} {% block extra_scripts %}
-<script src="{% static 'api_portal/js/endpoint-list.js' %}"></script>
-<script src="{% static 'api_portal/js/request-editor.js' %}"></script>
-<script src="{% static 'api_portal/js/response-viewer.js' %}"></script>
-<script src="{% static 'api_portal/js/docs.js' %}"></script>
+{% endblock %} 
+
+{% block extra_scripts %}
+<script src="{% static 'modern_drf_swagger/js/endpoint-list.js' %}"></script>
+<script src="{% static 'modern_drf_swagger/js/request-editor.js' %}"></script>
+<script src="{% static 'modern_drf_swagger/js/response-viewer.js' %}"></script>
+<script src="{% static 'modern_drf_swagger/js/docs.js' %}"></script>
 {% endblock %}

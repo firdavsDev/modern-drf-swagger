@@ -29,7 +29,7 @@ class TeamMember(models.Model):
     team = models.ForeignKey(Team, related_name="members", on_delete=models.CASCADE)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name="api_portal_teams",
+        related_name="modern_drf_swagger_teams",
         on_delete=models.CASCADE,
     )
     role = models.CharField(
@@ -73,7 +73,7 @@ class RequestLog(models.Model):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="api_portal_requests",
+        related_name="modern_drf_swagger_requests",
     )
     endpoint = models.CharField(max_length=512)
     method = models.CharField(max_length=10)

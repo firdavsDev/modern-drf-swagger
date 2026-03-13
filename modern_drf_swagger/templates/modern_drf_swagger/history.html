@@ -1,4 +1,7 @@
-{% extends "api_portal/base.html" %} {% load static %} {% block content %}
+{% extends "modern_drf_swagger/base.html" %}
+{% load static %}
+
+{% block content %}
 <div class="space-y-6">
   <!-- Header -->
   <div class="flex items-center justify-between">
@@ -156,6 +159,8 @@
     </div>
   </div>
 </div>
-{% endblock %} {% block extra_scripts %}
-<script src="{% static 'api_portal/js/history.js' %}"></script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'modern_drf_swagger/js/history.js' %}"></script>
 {% endblock %}

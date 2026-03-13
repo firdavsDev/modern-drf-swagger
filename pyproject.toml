@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modern-drf-swagger"
-version = "1.0.3"
+version = "1.0.2"
 authors = [
   { name="DavronbekDev", email="davronbekboltyev777@gmail.com" },
 ]
@@ -53,8 +53,8 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["api_portal*"]
-exclude = ["api_portal.static*", "api_portal.templates*"]
+include = ["modern_drf_swagger*"]
+exclude = ["modern_drf_swagger.static*", "modern_drf_swagger.templates*"]
 
 [tool.setuptools.package-data]
-api_portal = ["templates/**/*", "static/**/*"]
+modern_drf_swagger = ["templates/**/*", "static/**/*"]

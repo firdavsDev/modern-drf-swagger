@@ -5,9 +5,9 @@ from django.conf import settings
 
 def get_portal_setting(name, default=None):
     """
-    Get a setting from the API_PORTAL settings dictionary.
+    Get a setting from the MODERN_DRF_SWAGGER settings dictionary.
     """
-    portal_settings = getattr(settings, "API_PORTAL", {})
+    portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
     return portal_settings.get(name, default)
 
 
@@ -59,10 +59,10 @@ def hide_from_portal(view_func):
 
 
 # Default Configuration
-# All settings can be overridden via settings.API_PORTAL dictionary
+# All settings can be overridden via settings.MODERN_DRF_SWAGGER dictionary
 DEFAULT_CONFIG = {
     # Portal Settings
-    "TITLE": "API Portal",
+    "TITLE": "Modern DRF Swagger",
     "DESCRIPTION": "API Documentation Portal",
     "VERSION": "1.0.0",
     # Feature Toggles
@@ -82,7 +82,7 @@ DEFAULT_CONFIG = {
 """
 Example configuration in your Django settings.py:
 
-API_PORTAL = {
+MODERN_DRF_SWAGGER = {
     # Basic Info (also controls drf-spectacular)
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation for My Company',

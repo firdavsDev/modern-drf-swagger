@@ -17,12 +17,12 @@ from ..services.schema_loader import PortalSchemaLoader
 class DocsView(LoginRequiredMixin, TemplateView):
     """API documentation explorer view"""
 
-    template_name = "api_portal/docs.html"
-    login_url = reverse_lazy("api_portal:login")
+    template_name = "modern_drf_swagger/docs.html"
+    login_url = reverse_lazy("modern_drf_swagger:login")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        portal_settings = getattr(settings, "API_PORTAL", {})
+        portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
         portal_name = portal_settings.get("TITLE", "API Portal")
         context["title"] = portal_name
         context["portal_name"] = portal_name
@@ -39,7 +39,7 @@ class DocsView(LoginRequiredMixin, TemplateView):
 
         # Get API portal base URL for JavaScript
         # This allows the portal to work at any URL prefix
-        context["portal_base_url"] = reverse("api_portal:docs").rstrip("/")
+        context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
 
         return context
 
@@ -47,7 +47,7 @@ class DocsView(LoginRequiredMixin, TemplateView):
 class SchemaView(LoginRequiredMixin, TemplateView):
     """OpenAPI schema view with permission filtering"""
 
-    login_url = reverse_lazy("api_portal:login")
+    login_url = reverse_lazy("modern_drf_swagger:login")
 
     def get(self, request, *args, **kwargs):
         # Convert Django request to DRF Request for schema generation

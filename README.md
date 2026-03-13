@@ -67,7 +67,7 @@ pip install -e .
 
 ### 2. Add to INSTALLED_APPS
 
-**That's it!** You only need to add `api_portal` - no need to manually add `drf-spectacular`:
+**That's it!** You only need to add `modern_drf_swagger` - no need to manually add `drf-spectacular`:
 
 ```python
 # settings.py
@@ -83,7 +83,7 @@ INSTALLED_APPS = [
     'rest_framework',
     
     # API Portal (auto-configures everything)
-    'api_portal',
+    'modern_drf_swagger',
     
     # Your apps
     'myapp',
@@ -96,7 +96,7 @@ INSTALLED_APPS = [
 
 ```python
 # settings.py
-API_PORTAL = {
+MODERN_DRF_SWAGGER = {
     # Basic Info (automatically configures drf-spectacular)
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation',
@@ -135,12 +135,12 @@ urlpatterns = [
     path('api/', include('myapp.urls')),  # Your API
     
     # Choose ANY URL prefix that works for your project:
-    path('api/docs/', include('api_portal.urls')),  # Nested under API (shown in docs)
+    path('api/docs/', include('modern_drf_swagger.urls')),  # Nested under API (shown in docs)
     # OR
-    # path('portal/', include('api_portal.urls')),        # Default/simple path
-    # path('docs/', include('api_portal.urls')),          # Short and sweet
-    # path('swagger/', include('api_portal.urls')),       # Swagger-style
-    # path('api-explorer/', include('api_portal.urls')),  # Descriptive
+    # path('portal/', include('modern_drf_swagger.urls')),        # Default/simple path
+    # path('docs/', include('modern_drf_swagger.urls')),          # Short and sweet
+    # path('swagger/', include('modern_drf_swagger.urls')),       # Swagger-style
+    # path('api-explorer/', include('modern_drf_swagger.urls')),  # Descriptive
 ]
 ```
 
@@ -194,6 +194,8 @@ Visit `http://localhost:8000/api/docs/` and login with your credentials.
 - [ ] Request diffing
 - [ ] API versioning support
 - [ ] Chat with AI for solving API issues (via OpenAI share button)
+- [ ] Mobile-friendly responsive design
+- [ ] Team/User permissions for analytics access
 ## 🤝 Contributing
 
 Contributions welcome! Please:

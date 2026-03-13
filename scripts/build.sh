@@ -79,7 +79,7 @@ then
     
     # Test import
     print_info "Testing import..."
-    python -c "import api_portal; print('Import successful!')"
+    python -c "import modern_drf_swagger; print('Import successful!')"
     print_success "Package import works!"
 fi
 

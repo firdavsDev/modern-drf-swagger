@@ -6,7 +6,7 @@ from .views.api_proxy_view import APIProxyView
 from .views.auth_view import PortalLoginView
 from .views.docs_view import DocsView, SchemaView
 
-app_name = "api_portal"
+app_name = "modern_drf_swagger"
 
 urlpatterns = [
     path("", DocsView.as_view(), name="docs"),
@@ -15,5 +15,9 @@ urlpatterns = [
     path("analytics/", AnalyticsView.as_view(), name="analytics"),
     path("history/", HistoryView.as_view(), name="history"),
     path("login/", PortalLoginView.as_view(), name="login"),
-    path("logout/", LogoutView.as_view(next_page="api_portal:login"), name="logout"),
+    path(
+        "logout/",
+        LogoutView.as_view(next_page="modern_drf_swagger:login"),
+        name="logout",
+    ),
 ]

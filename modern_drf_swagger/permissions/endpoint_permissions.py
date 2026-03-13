@@ -17,7 +17,7 @@ class EndpointPermissionChecker:
 
     def _get_cache_key(self, path, method):
         """Generate cache key for permission check"""
-        return f"api_portal:perm:{self.user.id}:{path}:{method}"
+        return f"modern_drf_swagger:perm:{self.user.id}:{path}:{method}"
 
     def check_access(self, path, method):
         """
@@ -32,7 +32,7 @@ class EndpointPermissionChecker:
         """
         # If user is not authenticated, check ALLOW_ANONYMOUS setting
         if not self.user or not self.user.is_authenticated:
-            portal_settings = getattr(settings, "API_PORTAL", {})
+            portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
             return portal_settings.get("ALLOW_ANONYMOUS", False)
 
         # Superusers have access to everything
@@ -85,14 +85,12 @@ class EndpointPermissionChecker:
 
         # If not authenticated and anonymous not allowed, return empty list
         if not self.user or not self.user.is_authenticated:
-            portal_settings = getattr(settings, "API_PORTAL", {})
+            portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
             if not portal_settings.get("ALLOW_ANONYMOUS", False):
                 return []
 
         # Check cache
-        cache_key = (
-            f"api_portal:allowed_endpoints:{self.user.id if self.user else 'anon'}"
-        )
+        cache_key = f"modern_drf_swagger:allowed_endpoints:{self.user.id if self.user else 'anon'}"
         cached_result = cache.get(cache_key)
         if cached_result is not None:
             return cached_result

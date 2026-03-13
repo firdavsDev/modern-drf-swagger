@@ -26,18 +26,18 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
     Returns JSON data for frontend visualization or renders template.
     """
 
-    template_name = "api_portal/analytics.html"
-    login_url = reverse_lazy("api_portal:login")
+    template_name = "modern_drf_swagger/analytics.html"
+    login_url = reverse_lazy("modern_drf_swagger:login")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        portal_settings = getattr(settings, "API_PORTAL", {})
+        portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
         portal_name = portal_settings.get("TITLE", "API Portal")
         context["title"] = f"Analytics - {portal_name}"
         context["portal_name"] = portal_name
         context["portal_version"] = get_package_version()
         # Get API portal base URL for JavaScript
-        context["portal_base_url"] = reverse("api_portal:docs").rstrip("/")
+        context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
         return context
 
     def get(self, request, *args, **kwargs):
@@ -126,18 +126,18 @@ class HistoryView(LoginRequiredMixin, TemplateView):
     Supports pagination, filtering, and returns JSON or HTML.
     """
 
-    template_name = "api_portal/history.html"
-    login_url = reverse_lazy("api_portal:login")
+    template_name = "modern_drf_swagger/history.html"
+    login_url = reverse_lazy("modern_drf_swagger:login")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        portal_settings = getattr(settings, "API_PORTAL", {})
+        portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
         portal_name = portal_settings.get("TITLE", "API Portal")
         context["title"] = f"History - {portal_name}"
         context["portal_name"] = portal_name
         context["portal_version"] = get_package_version()
         # Get API portal base URL for JavaScript
-        context["portal_base_url"] = reverse("api_portal:docs").rstrip("/")
+        context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
         return context
 
     def get(self, request, *args, **kwargs):

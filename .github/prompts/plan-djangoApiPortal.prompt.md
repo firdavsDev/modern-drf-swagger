@@ -42,19 +42,19 @@ Build a complete, installable Django package providing a modern API explorer wit
    - views/api_proxy_view.py: `.services` → `..services` (2 occurrences)
 
 3. **Configure example project** — Add to sample_project/config/settings.py:
-   - INSTALLED_APPS: 'rest_framework', 'drf_spectacular', 'api_portal'
+   - INSTALLED_APPS: 'rest_framework', 'drf_spectacular', 'modern_drf_swagger'
    - REST_FRAMEWORK config with authentication classes
    - SPECTACULAR_SETTINGS config
-   - API_PORTAL settings dictionary
+   - MODERN_DRF_SWAGGER settings dictionary
 
 4. **Add sample API endpoints** — Create sample_project/api/ with sample ViewSets (tasks, users) for portal testing
 
-5. **Wire example URLs** — Add api_portal routes to example project urls.py
+5. **Wire example URLs** — Add modern_drf_swagger routes to example project urls.py
 
 **Verification:**
 - Run `python manage.py check` in example project (no errors)
 - Run migrations successfully
-- Import all api_portal modules without ImportError
+- Import all modern_drf_swagger modules without ImportError
 
 **Dependencies:** None (foundational)
 
@@ -66,7 +66,7 @@ Build a complete, installable Django package providing a modern API explorer wit
 
 **Steps:**
 
-6. **Implement URL routing** (api_portal/urls.py) — Define routes:
+6. **Implement URL routing** (modern_drf_swagger/urls.py) — Define routes:
    - `/` → DocsView (main API explorer)
    - `/schema/` → SchemaView (JSON OpenAPI schema)
    - `/api-proxy/` → APIProxyView (execute requests)
@@ -128,13 +128,13 @@ Build a complete, installable Django package providing a modern API explorer wit
 
 **Steps:**
 
-12. **Setup TailwindCSS** — Create static/api_portal/css/:
+12. **Setup TailwindCSS** — Create static/modern_drf_swagger/css/:
     - Include Tailwind CDN in base template (for simplicity, avoid build step)
     - Define custom CSS for syntax highlighting, dark theme
     - Create utils classes for status badges, latency indicators
     - Reference: Tailwind dark mode utilities
 
-13. **Create base templates** (templates/api_portal/) — Build:
+13. **Create base templates** (templates/modern_drf_swagger/) — Build:
     - `base.html`: Master template with sidebar navigation, dark theme, TailwindCSS includes
     - Navigation items: Docs, Analytics, History, Logout
     - Sidebar toggle for mobile
@@ -169,7 +169,7 @@ Build a complete, installable Django package providing a modern API explorer wit
     - Use DocsView context (schema data from drf-spectacular)
     - Reference: OpenAPI schema structure from schema_loader.py
 
-16. **Build endpoint list component (JS)** — Create static/api_portal/js/endpoint-list.js:
+16. **Build endpoint list component (JS)** — Create static/modern_drf_swagger/js/endpoint-list.js:
     - Render endpoints from schema JSON
     - Group by tags with collapse/expand
     - Search/filter by path or method
@@ -177,7 +177,7 @@ Build a complete, installable Django package providing a modern API explorer wit
     - Click handler to load endpoint details
     - Reference: Parse schema structure from SchemaView JSON
 
-17. **Build request editor (JS)** — Create static/api_portal/js/request-editor.js:
+17. **Build request editor (JS)** — Create static/modern_drf_swagger/js/request-editor.js:
     - Dynamic form generation from OpenAPI parameters
     - Text area for JSON body (with validation)
     - Method selector (GET/POST/PUT/DELETE)
@@ -186,7 +186,7 @@ Build a complete, installable Django package providing a modern API explorer wit
     - "Send Request" button → calls APIProxyView
     - Reference: request_executor.py expected input format
 
-18. **Build response viewer (JS)** — Create static/api_portal/js/response-viewer.js:
+18. **Build response viewer (JS)** — Create static/modern_drf_swagger/js/response-viewer.js:
     - Syntax-highlighted JSON display (use lightweight library or custom)
     - Status code badge (color-coded: green 2xx, red 4xx/5xx)
     - Latency display (from APIProxyView response)
@@ -194,7 +194,7 @@ Build a complete, installable Django package providing a modern API explorer wit
     - Error message display
     - Reference: RequestLog model fields for structure
 
-19. **Wire API explorer interactions** — Create static/api_portal/js/docs.js:
+19. **Wire API explorer interactions** — Create static/modern_drf_swagger/js/docs.js:
     - Orchestrate components: list → editor → viewer
     - AJAX calls to /api-proxy/ using fetch()
     - Loading states during request execution
@@ -226,7 +226,7 @@ Build a complete, installable Django package providing a modern API explorer wit
     - Simple bar chart for request distribution
     - Reference: AnalyticsView JSON structure
 
-21. **Build analytics dashboard (JS)** — Create static/api_portal/js/analytics.js:
+21. **Build analytics dashboard (JS)** — Create static/modern_drf_swagger/js/analytics.js:
     - Fetch data from /analytics/ endpoint
     - Render metric cards with formatting
     - Generate bar chart using Chart.js CDN or vanilla SVG
@@ -241,7 +241,7 @@ Build a complete, installable Django package providing a modern API explorer wit
     - "Replay Request" button per row
     - Reference: RequestLog model structure
 
-23. **Build history interactions (JS)** — Create static/api_portal/js/history.js:
+23. **Build history interactions (JS)** — Create static/modern_drf_swagger/js/history.js:
     - Fetch from /history/ endpoint with pagination
     - Expand/collapse row details
     - Search filter triggers new fetch
@@ -345,7 +345,7 @@ Build a complete, installable Django package providing a modern API explorer wit
 31. **Write README.md** — Include:
     - Project description and features
     - Installation instructions (pip install, settings.py, urls.py)
-    - Configuration reference (API_PORTAL settings)
+    - Configuration reference (MODERN_DRF_SWAGGER settings)
     - Quick start example
     - Screenshots/GIFs of UI
     - Contributing guidelines
@@ -433,18 +433,18 @@ Build a complete, installable Django package providing a modern API explorer wit
 ## Relevant Files & Patterns
 
 **Core Models** (need bug fixes):
-- api_portal/models.py — All 5 models with relationships, use as schema reference
+- modern_drf_swagger/models.py — All 5 models with relationships, use as schema reference
 
 **Services** (reuse patterns):
-- api_portal/services/schema_loader.py — OpenAPI parsing, filtering logic
-- api_portal/services/request_executor.py — HTTP proxy pattern, header forwarding
-- api_portal/services/analytics_service.py — Logging and aggregation methods
+- modern_drf_swagger/services/schema_loader.py — OpenAPI parsing, filtering logic
+- modern_drf_swagger/services/request_executor.py — HTTP proxy pattern, header forwarding
+- modern_drf_swagger/services/analytics_service.py — Logging and aggregation methods
 
 **Configuration**:
-- api_portal/conf.py — Settings helper function, @hide_from_portal decorator usage
+- modern_drf_swagger/conf.py — Settings helper function, @hide_from_portal decorator usage
 
 **Admin** (extend from):
-- api_portal/admin.py — Inline patterns, custom filters, search_fields
+- modern_drf_swagger/admin.py — Inline patterns, custom filters, search_fields
 
 **Example Project**:
 - sample_project/ — Use for all local testing before publishing
@@ -526,7 +526,7 @@ Build a complete, installable Django package providing a modern API explorer wit
 
 **Recommendation:** 
 - Truncate request_body/response_body to 10KB in database
-- Add `API_PORTAL['MAX_LOG_SIZE']` setting (default 10240 bytes)
+- Add `MODERN_DRF_SWAGGER['MAX_LOG_SIZE']` setting (default 10240 bytes)
 - Store full version in optional S3/file backend for enterprise users
 
 ### 4. Deployment Guide
