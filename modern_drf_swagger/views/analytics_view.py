@@ -15,6 +15,7 @@ except ImportError:
 
 from ..conf import get_package_version
 from ..models import RequestLog, UsageMetric
+from ..permissions.endpoint_permissions import EndpointPermissionChecker
 
 User = get_user_model()
 
@@ -38,60 +39,119 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context["portal_version"] = get_package_version()
         # Get API portal base URL for JavaScript
         context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
+
+        # Add permission checker for template
+        permission_checker = EndpointPermissionChecker(self.request.user)
+        context["can_send_request"] = permission_checker.can_send_request()
+        context["can_view_analytics"] = permission_checker.can_view_analytics()
+        context["can_view_history"] = permission_checker.can_view_history()
+        context["user_role"] = permission_checker.get_user_role()
+
         return context
 
     def get(self, request, *args, **kwargs):
+        # Check if user has permission to view analytics
+        permission_checker = EndpointPermissionChecker(request.user)
+        if not permission_checker.can_view_analytics():
+            return JsonResponse(
+                {"error": "Permission denied. Viewers cannot access analytics."},
+                status=403,
+            )
+
         # Get date range from query params (default to last 7 days)
         days = int(request.GET.get("days", 7))
         start_date = timezone.now().date() - timedelta(days=days)
 
+        # Check if user can view all analytics or just their own
+        can_view_all = permission_checker.can_view_all_analytics()
+
+        # Base filter - if not admin/super_admin, filter by user
+        base_request_filter = Q(timestamp__gte=start_date)
+        base_metric_filter = Q(date__gte=start_date)
+
+        if not can_view_all:
+            # DEVELOPER can only see their own requests
+            base_request_filter &= Q(user=request.user)
+            # For metrics, we'll need to calculate from RequestLog instead
+            # since UsageMetric is aggregated across all users
+
         # Top endpoints by request count
-        top_endpoints = (
-            UsageMetric.objects.filter(date__gte=start_date)
-            .values("endpoint")
-            .annotate(
-                total_requests=Sum("request_count"),
-                avg_latency=Avg("average_latency"),
-                total_errors=Sum("error_count"),
+        if can_view_all:
+            top_endpoints = (
+                UsageMetric.objects.filter(base_metric_filter)
+                .values("endpoint")
+                .annotate(
+                    total_requests=Sum("request_count"),
+                    avg_latency=Avg("average_latency"),
+                    total_errors=Sum("error_count"),
+                )
+                .order_by("-total_requests")[:10]
             )
-            .order_by("-total_requests")[:10]
-        )
+        else:
+            # For developers, calculate from their own requests
+            top_endpoints = (
+                RequestLog.objects.filter(base_request_filter)
+                .values("endpoint")
+                .annotate(
+                    total_requests=Count("id"),
+                    avg_latency=Avg("latency"),
+                    total_errors=Count("id", filter=Q(response_status__gte=400)),
+                )
+                .order_by("-total_requests")[:10]
+            )
 
         # Overall metrics
-        total_requests = RequestLog.objects.filter(timestamp__gte=start_date).count()
+        total_requests = RequestLog.objects.filter(base_request_filter).count()
 
         error_count = RequestLog.objects.filter(
-            timestamp__gte=start_date, response_status__gte=400
+            base_request_filter, response_status__gte=400
         ).count()
 
         avg_latency = (
-            RequestLog.objects.filter(timestamp__gte=start_date).aggregate(
-                Avg("latency")
-            )["latency__avg"]
+            RequestLog.objects.filter(base_request_filter).aggregate(Avg("latency"))[
+                "latency__avg"
+            ]
             or 0
         )
 
         # Error rate percentage
         error_rate = (error_count / total_requests * 100) if total_requests > 0 else 0
 
-        # Requests by user
-        username_field = f"user__{User.USERNAME_FIELD}"
-        requests_by_user = (
-            RequestLog.objects.filter(timestamp__gte=start_date, user__isnull=False)
-            .values(username_field)
-            .annotate(count=Count("id"))
-            .order_by("-count")[:10]
-        )
+        # Requests by user - only show for admins
+        if can_view_all:
+            username_field = f"user__{User.USERNAME_FIELD}"
+            requests_by_user = (
+                RequestLog.objects.filter(base_request_filter, user__isnull=False)
+                .values(username_field)
+                .annotate(count=Count("id"))
+                .order_by("-count")[:10]
+            )
+        else:
+            # Developers see only their own stats, no user breakdown
+            requests_by_user = []
 
         # Daily request counts for chart
-        daily_stats = (
-            UsageMetric.objects.filter(date__gte=start_date)
-            .values("date")
-            .annotate(
-                total_requests=Sum("request_count"), total_errors=Sum("error_count")
+        if can_view_all:
+            daily_stats = (
+                UsageMetric.objects.filter(base_metric_filter)
+                .values("date")
+                .annotate(
+                    total_requests=Sum("request_count"), total_errors=Sum("error_count")
+                )
+                .order_by("date")
             )
-            .order_by("date")
-        )
+        else:
+            # For developers, calculate from their own requests
+            daily_stats = (
+                RequestLog.objects.filter(base_request_filter)
+                .extra(select={"date": "DATE(timestamp)"})
+                .values("date")
+                .annotate(
+                    total_requests=Count("id"),
+                    total_errors=Count("id", filter=Q(response_status__gte=400)),
+                )
+                .order_by("date")
+            )
 
         data = {
             "summary": {
@@ -138,9 +198,25 @@ class HistoryView(LoginRequiredMixin, TemplateView):
         context["portal_version"] = get_package_version()
         # Get API portal base URL for JavaScript
         context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
+
+        # Add permission checker for template
+        permission_checker = EndpointPermissionChecker(self.request.user)
+        context["can_send_request"] = permission_checker.can_send_request()
+        context["can_view_analytics"] = permission_checker.can_view_analytics()
+        context["can_view_history"] = permission_checker.can_view_history()
+        context["user_role"] = permission_checker.get_user_role()
+
         return context
 
     def get(self, request, *args, **kwargs):
+        # Check if user has permission to view history
+        permission_checker = EndpointPermissionChecker(request.user)
+        if not permission_checker.can_view_history():
+            return JsonResponse(
+                {"error": "Permission denied. Viewers cannot access request history."},
+                status=403,
+            )
+
         # Get query parameters
         page = int(request.GET.get("page", 1))
         per_page = int(request.GET.get("per_page", 50))

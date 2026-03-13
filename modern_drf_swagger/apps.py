@@ -12,6 +12,9 @@ class ApiPortalConfig(AppConfig):
         Auto-configure drf-spectacular when API Portal is loaded.
         This eliminates the need for manual configuration in settings.py.
         """
+        # Import signals to register them
+        from . import signals  # noqa: F401
+
         # Ensure drf_spectacular is in INSTALLED_APPS
         if "drf_spectacular" not in settings.INSTALLED_APPS:
             settings.INSTALLED_APPS = list(settings.INSTALLED_APPS) + [

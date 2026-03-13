@@ -61,12 +61,12 @@ class RequestEditor {
             <div class="space-y-4">
                 <!-- Endpoint Info -->
                 <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="method-badge method-${endpoint.method.toLowerCase()}">
+                    <div class="flex items-center gap-3 mb-2 flex-wrap">
+                        <span class="method-badge method-${endpoint.method.toLowerCase()} flex-shrink-0">
                             ${endpoint.method}
                         </span>
-                        <span class="font-mono text-lg text-gray-900 dark:text-gray-100 flex-1">${this.escapeHtml(endpoint.path)}</span>
-                        ${authBadge}
+                        <span class="font-mono text-lg text-gray-900 dark:text-gray-100 flex-1 min-w-0 break-all">${this.escapeHtml(endpoint.path)}</span>
+                        <div class="flex-shrink-0">${authBadge}</div>
                     </div>
                     ${endpoint.summary ? `<p class="text-gray-700 dark:text-gray-300 text-sm">${this.escapeHtml(endpoint.summary)}</p>` : ""}
                     ${endpoint.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${this.escapeHtml(endpoint.description)}</p>` : ""}
@@ -182,12 +182,14 @@ class RequestEditor {
 
                 <!-- Send Button -->
                 <button id="send-request-btn" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                        class="w-full ${window.PORTAL_CONFIG?.canSendRequest === false ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"} text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                        ${window.PORTAL_CONFIG?.canSendRequest === false ? "disabled" : ""}>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                     </svg>
-                    Send Request
+                    ${window.PORTAL_CONFIG?.canSendRequest === false ? "View Only - No Send Permission" : "Send Request"}
                 </button>
+                ${window.PORTAL_CONFIG?.canSendRequest === false ? '<p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2 text-center">⚠️ You need DEVELOPER role or higher to send requests</p>' : ""}
             </div>
         `;
 
@@ -1227,6 +1229,14 @@ class RequestEditor {
 
   async sendRequest() {
     if (!this.currentEndpoint) return;
+
+    // Check if user has permission to send requests
+    if (window.PORTAL_CONFIG?.canSendRequest === false) {
+      alert(
+        "You do not have permission to send requests. Please contact your administrator to upgrade your role to DEVELOPER or higher.",
+      );
+      return;
+    }
 
     const button = document.getElementById("send-request-btn");
     button.disabled = true;

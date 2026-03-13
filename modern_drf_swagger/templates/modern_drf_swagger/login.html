@@ -24,8 +24,6 @@
   <body
     class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
   >
-    <!-- Theme Switcher - Top Right -->
-
     <div class="min-h-screen flex items-center justify-center p-4">
       <div class="max-w-md w-full">
         <!-- Logo/Header -->
@@ -188,51 +186,28 @@
     </div>
 
     <script>
-      // Theme Management
+      // Set dark mode by default
       (function () {
         const html = document.documentElement;
-        const themeToggle = document.getElementById("theme-toggle");
-        const themeIconSun = document.getElementById("theme-icon-sun");
-        const themeIconMoon = document.getElementById("theme-icon-moon");
-
-        // Get saved theme or default to dark
-        const savedTheme = localStorage.getItem("theme") || "dark";
-
-        function setTheme(theme) {
-          if (theme === "dark") {
-            html.classList.add("dark");
-            themeIconMoon.classList.remove("hidden");
-            themeIconSun.classList.add("hidden");
-          } else {
-            html.classList.remove("dark");
-            themeIconMoon.classList.add("hidden");
-            themeIconSun.classList.remove("hidden");
-          }
-          localStorage.setItem("theme", theme);
-        }
-
-        // Apply saved theme immediately
-        setTheme(savedTheme);
-
-        // Toggle theme on button click
-        themeToggle.addEventListener("click", function () {
-          const currentTheme = html.classList.contains("dark")
-            ? "dark"
-            : "light";
-          const newTheme = currentTheme === "dark" ? "light" : "dark";
-          setTheme(newTheme);
-        });
+        // Always use dark mode
+        html.classList.add("dark");
+        localStorage.setItem("theme", "dark");
       })();
 
       // Password Toggle
       (function () {
         const toggleButton = document.getElementById("toggle-password");
-        const passwordInput = document.querySelector('input[type="password"]');
+        // Try multiple selectors to find password input
+        const passwordInput =
+          document.getElementById("{{ form.password.id_for_label }}") ||
+          document.querySelector('input[name="password"]') ||
+          document.querySelector('input[type="password"]');
         const eyeIcon = document.getElementById("eye-icon");
         const eyeSlashIcon = document.getElementById("eye-slash-icon");
 
-        if (toggleButton && passwordInput) {
-          toggleButton.addEventListener("click", function () {
+        if (toggleButton && passwordInput && eyeIcon && eyeSlashIcon) {
+          toggleButton.addEventListener("click", function (e) {
+            e.preventDefault();
             const isPassword = passwordInput.type === "password";
 
             // Toggle input type

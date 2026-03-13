@@ -41,6 +41,13 @@ class DocsView(LoginRequiredMixin, TemplateView):
         # This allows the portal to work at any URL prefix
         context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
 
+        # Add permission checker for template
+        permission_checker = EndpointPermissionChecker(self.request.user)
+        context["can_send_request"] = permission_checker.can_send_request()
+        context["can_view_analytics"] = permission_checker.can_view_analytics()
+        context["can_view_history"] = permission_checker.can_view_history()
+        context["user_role"] = permission_checker.get_user_role()
+
         return context
 
 
