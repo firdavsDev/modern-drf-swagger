@@ -85,6 +85,8 @@ class GlobalAuth {
     // Show selected section
     switch (type) {
       case "bearer":
+      case "token":
+        this.updateTokenAuthSection(type);
         bearerSection.classList.remove("hidden");
         break;
       case "basic":
@@ -98,6 +100,45 @@ class GlobalAuth {
           apikeyHeaderInput.value = this.getDefaultApiKeyHeader();
         }
         break;
+    }
+  }
+
+  getTokenAuthConfig(type) {
+    if (type === "token") {
+      return {
+        label: "DRF Token",
+        placeholder: "Paste your DRF token here",
+        helpText: "Will be sent as: Authorization: Token {token}",
+        successName: "Token",
+      };
+    }
+
+    if (type !== "bearer") {
+      return null;
+    }
+
+    return {
+      label: "Token",
+      placeholder: "Paste your JWT token here",
+      helpText: "Will be sent as: Authorization: Bearer {token}",
+      successName: "Bearer",
+    };
+  }
+
+  updateTokenAuthSection(type) {
+    const config = this.getTokenAuthConfig(type);
+    const tokenLabel = document.getElementById("bearer-token-label");
+    const tokenInput = document.getElementById("bearer-token");
+    const tokenHelp = document.getElementById("bearer-token-help");
+
+    if (tokenLabel) {
+      tokenLabel.textContent = config.label;
+    }
+    if (tokenInput) {
+      tokenInput.placeholder = config.placeholder;
+    }
+    if (tokenHelp) {
+      tokenHelp.textContent = config.helpText;
     }
   }
 
@@ -135,6 +176,7 @@ class GlobalAuth {
 
     switch (authData.type) {
       case "bearer":
+      case "token":
         document.getElementById("bearer-token").value = authData.token || "";
         break;
       case "basic":
@@ -167,6 +209,7 @@ class GlobalAuth {
 
     switch (authType) {
       case "bearer":
+      case "token":
         const token = document.getElementById("bearer-token").value.trim();
         if (!token) {
           showToast("Please enter a token", "error");
@@ -210,8 +253,9 @@ class GlobalAuth {
     this.closeAuthModal();
 
     // Show success message
+    const tokenConfig = this.getTokenAuthConfig(authType);
     showToast(
-      `${authType.charAt(0).toUpperCase() + authType.slice(1)} authentication configured`,
+      `${tokenConfig ? tokenConfig.successName : authType.charAt(0).toUpperCase() + authType.slice(1)} authentication configured`,
       "success",
     );
   }
@@ -320,6 +364,10 @@ class GlobalAuth {
     switch (authData.type) {
       case "bearer":
         headers["Authorization"] = `Bearer ${authData.token}`;
+        break;
+
+      case "token":
+        headers["Authorization"] = `Token ${authData.token}`;
         break;
 
       case "basic":
