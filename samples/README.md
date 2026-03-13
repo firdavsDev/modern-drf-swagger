@@ -28,7 +28,15 @@ This sample project provides a fully functional Django REST Framework applicatio
    cd samples
    ```
 
-2. **Install dependencies** (if not already done from parent directory):
+2. **Install dependencies:**
+   
+   **Option A:** Install from requirements.txt (recommended for quick start):
+   ```bash
+   pip install -r requirements.txt
+   pip install -e ..  # Install modern-drf-swagger in development mode
+   ```
+   
+   **Option B:** Install parent package only (if already done):
    ```bash
    pip install -e ..
    ```
