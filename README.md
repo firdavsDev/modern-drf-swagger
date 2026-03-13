@@ -15,17 +15,17 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 <div align="center">
 
 ### Login Page
-<img src="images/login.png" alt="Login Page" width="800" />
+<img src="https://raw.githubusercontent.com/firdavsDev/modern-drf-swagger/main/images/login.png" alt="Login Page" width="800" />
 
 *Secure login with dark/light theme support and password visibility toggle*
 
 ### API Explorer
-<img src="images/api.png" alt="API Explorer" width="800" />
+<img src="https://raw.githubusercontent.com/firdavsDev/modern-drf-swagger/main/images/api.png" alt="API Explorer" width="800" />
 
 *Modern interface for browsing, testing, and exploring your API endpoints*
 
 ### Analytics Dashboard
-<img src="images/analy.png" alt="Analytics Dashboard" width="800" />
+<img src="https://raw.githubusercontent.com/firdavsDev/modern-drf-swagger/main/images/analy.png" alt="Analytics Dashboard" width="800" />
 
 *Track API usage, latency, and error rates with beautiful charts*
 
@@ -49,7 +49,7 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 
 ## 🚀 Quick Start
 
-**Want detailed step-by-step instructions?** Check out the [**📖 QUICKSTART.md**](QUICKSTART.md) guide!
+**Want detailed step-by-step instructions?** Check out the [**📖 QUICKSTART.md**](https://github.com/firdavsDev/modern-drf-swagger/blob/main/QUICKSTART.md) guide!
 
 ### 1. Install the Package
 
@@ -161,9 +161,9 @@ Visit `http://localhost:8000/api/docs/` and login with your credentials.
 
 ## 📚 Full Documentation
 
-- **[📖 Complete Quickstart Guide](QUICKSTART.md)** - Detailed step-by-step installation and setup
-- **[📋 Changelog](CHANGELOG.md)** - Version history and updates
-- **[📜 License](LICENSE)** - MIT License
+- **[📖 Complete Quickstart Guide](https://github.com/firdavsDev/modern-drf-swagger/blob/main/QUICKSTART.md)** - Detailed step-by-step installation and setup
+- **[📋 Changelog](https://github.com/firdavsDev/modern-drf-swagger/blob/main/CHANGELOG.md)** - Version history and updates
+- **[📜 License](https://github.com/firdavsDev/modern-drf-swagger/blob/main/LICENSE)** - MIT License
 
 ---
 
@@ -188,11 +188,11 @@ Contributions welcome! Please:
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-See [.github/copilot-instructions.md](.github/copilot-instructions.md) for development guidelines and architecture details.
+See [.github/copilot-instructions.md](https://github.com/firdavsDev/modern-drf-swagger/blob/main/.github/copilot-instructions.md) for development guidelines and architecture details.
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](https://github.com/firdavsDev/modern-drf-swagger/blob/main/LICENSE) file for details.
 
 Copyright (c) 2026 [DavronbekDev](https://davronbek.dev)
 

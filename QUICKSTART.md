@@ -402,11 +402,6 @@ DEBUG = True  # Required for development
 
 ---
 
-**Need help?** Open an issue on [GitHub](https://github.com/firdavsDev/modern-drf-swagger/issues) or email [davronbekboltyev777@gmail.com](mailto:davronbekboltyev777@gmail.com)
-
-**Created by [DavronbekDev](https://davronbek.dev)** • Licensed under MIT
-- Replay previous requests
-
 ## 🔒 Security Tips
 
 ### Production Settings
@@ -489,7 +484,6 @@ API_PORTAL = {
 
 - Read the [Full Documentation](https://github.com/firdavsDev/modern-drf-swagger#readme)
 - Check out [Configuration Options](https://github.com/firdavsDev/modern-drf-swagger#configuration-reference)
-- Explore the [sample_project](https://github.com/firdavsDev/modern-drf-swagger/tree/main/sample_project) for examples
 
 ## 💡 Need Help?
 
