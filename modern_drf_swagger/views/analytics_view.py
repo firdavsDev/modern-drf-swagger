@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 from django.conf import settings
@@ -8,6 +9,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.generic import TemplateView
 
+from rest_framework.request import Request
+
 try:
     from django.urls import reverse, reverse_lazy
 except ImportError:
@@ -16,6 +19,7 @@ except ImportError:
 from ..conf import get_package_version
 from ..models import RequestLog, UsageMetric
 from ..permissions.endpoint_permissions import EndpointPermissionChecker
+from ..services.schema_loader import PortalSchemaLoader
 
 User = get_user_model()
 
@@ -46,6 +50,12 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context["can_view_analytics"] = permission_checker.can_view_analytics()
         context["can_view_history"] = permission_checker.can_view_history()
         context["user_role"] = permission_checker.get_user_role()
+
+        # Keep auth modal options aligned with configured schema auth schemes.
+        schema_loader = PortalSchemaLoader()
+        drf_request = Request(self.request)
+        auth_schemes = schema_loader.get_authentication_schemes(drf_request)
+        context["auth_schemes"] = json.dumps(auth_schemes)
 
         return context
 
@@ -205,6 +215,12 @@ class HistoryView(LoginRequiredMixin, TemplateView):
         context["can_view_analytics"] = permission_checker.can_view_analytics()
         context["can_view_history"] = permission_checker.can_view_history()
         context["user_role"] = permission_checker.get_user_role()
+
+        # Keep auth modal options aligned with configured schema auth schemes.
+        schema_loader = PortalSchemaLoader()
+        drf_request = Request(self.request)
+        auth_schemes = schema_loader.get_authentication_schemes(drf_request)
+        context["auth_schemes"] = json.dumps(auth_schemes)
 
         return context
 

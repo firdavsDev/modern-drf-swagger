@@ -36,6 +36,10 @@
 
       // Modern DRF Swagger base URL (allows portal to work at any URL prefix)
       window.PORTAL_BASE_URL = "{{ portal_base_url|default:'/portal' }}";
+
+      // Make auth schemes available on every page (docs/analytics/history).
+      window.PORTAL_CONFIG = window.PORTAL_CONFIG || {};
+      window.PORTAL_CONFIG.authSchemes = {{ auth_schemes|default:"[]"|safe }};
     </script>
 
     {% block extra_head %} {% endblock %}
