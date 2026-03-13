@@ -30,7 +30,7 @@ class AnalyticsService:
             if user_log_count > history_limit:
                 # Delete oldest logs, keeping only (HISTORY_LIMIT - 1) most recent
                 logs_to_keep = RequestLog.objects.filter(user=user).order_by(
-                    "-created_at"
+                    "-timestamp"
                 )[: history_limit - 1]
                 keep_ids = list(logs_to_keep.values_list("id", flat=True))
                 RequestLog.objects.filter(user=user).exclude(id__in=keep_ids).delete()
