@@ -40,7 +40,6 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 - 🔒 **Endpoint Permissions**: Granular control over which teams can access specific endpoints
 - 📊 **Analytics Dashboard**: Track API usage, latency, and error rates with charts
 - 📝 **Request History**: Personal history with search, filtering, and request replay (auto-cleanup of old logs)
-- 🎯 **Schema-Driven**: Automatically discovers endpoints via drf-spectacular
 - ⚡ **Real Request Proxy**: Execute actual HTTP requests with accurate latency measurement
 - 🎨 **Syntax Highlighting**: JSON responses with color-coded syntax
 - 🔍 **Search & Filter**: Quickly find endpoints and past requests
@@ -67,7 +66,7 @@ pip install -e .
 
 ### 2. Add to INSTALLED_APPS
 
-**That's it!** You only need to add `modern_drf_swagger` - no need to manually add `drf-spectacular`:
+**That's it!** You only need to add `modern_drf_swagger`:
 
 ```python
 # settings.py
@@ -110,8 +109,8 @@ MODERN_DRF_SWAGGER = {
     # Schema Settings
     'SCHEMA_PATH_PREFIX': r'/api/',  # Only show endpoints starting with /api/
     
-    # Authentication Settings (optional - defaults to reading from OpenAPI schema)
-    'DEFAULT_AUTH_METHODS': ['bearer', 'basic', 'apikey'],  # Fallback if schema has no securitySchemes
+    # Authentication (auto-detected from REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'])
+    # 'DEFAULT_AUTH_METHODS': ['bearer', 'basic'],  # Optional override - only set if auto-detection fails
     
     # UI Settings
     'ENDPOINTS_COLLAPSIBLE': True,
@@ -123,6 +122,8 @@ MODERN_DRF_SWAGGER = {
 ```
 
 **Note:** You don't need to configure `REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS']` or `SPECTACULAR_SETTINGS` - API Portal does this automatically!
+
+**Authentication is also auto-detected!** The portal automatically detects authentication methods from your `REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']` setting. No need to configure `DEFAULT_AUTH_METHODS` unless you want to override the auto-detection.
 
 ### 4. Add URL Routes
 

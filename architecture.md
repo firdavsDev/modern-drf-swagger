@@ -7,7 +7,6 @@ Views → Services → Models
 ```
 
 **Services:**
-- `schema_loader.py`: OpenAPI schema parsing via drf-spectacular
 - `request_executor.py`: HTTP proxy using `requests` library
 - `analytics_service.py`: Request logging and metrics aggregation
 - `endpoint_permissions.py`: Permission checking with caching

@@ -114,6 +114,17 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Django REST Framework Configuration
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+}
+
 
 MODERN_DRF_SWAGGER = {
     # Basic Info - controls the info section of the docs
@@ -132,9 +143,6 @@ MODERN_DRF_SWAGGER = {
     "ENDPOINTS_DEFAULT_COLLAPSED": False,  # Start with groups collapsed
     # Filtering
     "EXCLUDE_PATHS": ["/admin/", "/internal/", "/health/"],  # Hide these paths
-    "DEFAULT_AUTH_METHODS": [
-        "bearer",
-        "basic",
-        "apikey",
-    ],  # Fallback if schema has no securitySchemes
+    # Note: DEFAULT_AUTH_METHODS is now auto-detected from REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']
+    # Only set it manually if you need to override the auto-detection
 }

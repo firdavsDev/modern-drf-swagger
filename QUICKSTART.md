@@ -9,8 +9,6 @@ Get up and running with Modern DRF Swagger in **5 minutes**!
 - Django REST Framework 3.12 or higher
 - An existing Django project with DRF
 
-**Important:** You do NOT need to manually install drf-spectacular - it's automatically installed as a dependency!
-
 ---
 
 ## 📦 Installation Methods
@@ -85,7 +83,7 @@ INSTALLED_APPS = [
 ```python
 # settings.py
 MODERN_DRF_SWAGGER = {
-    # Basic Info (automatically configures drf-spectacular)
+    # Basic Info for API Documentation
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation for My Company',
     'VERSION': '1.0.0',
@@ -407,14 +405,36 @@ class FlexibleAuthView(APIView):
     pass
 ```
 
-### Manual Configuration (Fallback)
+### Auto-Detection from REST_FRAMEWORK Settings
 
-If your schema doesn't define `securitySchemes`, configure them manually:
+**NEW!** The portal now automatically detects authentication methods from your DRF configuration:
+
+```python
+# settings.py
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',  # ← Auto-detected!
+        'rest_framework.authentication.TokenAuthentication',  # ← Shows as Bearer
+        'rest_framework.authentication.SessionAuthentication',  # ← Handled automatically
+    ],
+}
+
+# No need to configure DEFAULT_AUTH_METHODS - it's automatic! ✨
+```
+
+The portal automatically maps:
+- `BasicAuthentication` → Basic Auth
+- `TokenAuthentication` / `JWTAuthentication` → Bearer Token  
+- `SessionAuthentication` → Handled via cookies (no UI needed)
+
+### Manual Override (Optional)
+
+Only set `DEFAULT_AUTH_METHODS` if auto-detection doesn't work or you want to override:
 
 ```python
 # settings.py
 MODERN_DRF_SWAGGER = {
-    # Only show these authentication types in the portal
+    # Override auto-detection
     'DEFAULT_AUTH_METHODS': ['bearer', 'basic', 'apikey'],
     
     # Or limit to specific methods:
