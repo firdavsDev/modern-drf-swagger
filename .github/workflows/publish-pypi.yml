@@ -49,14 +49,6 @@ jobs:
                   twine check dist/*
                   echo "✅ Package check passed!"
 
-            - name: Publish to Test PyPI (optional)
-              if: github.event_name == 'workflow_dispatch'
-              env:
-                  TWINE_USERNAME: __token__
-                  TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
-              run: |
-                  twine upload --repository testpypi dist/* --verbose || echo "⚠️ Test PyPI upload skipped or failed"
-
             - name: Publish to PyPI
               env:
                   TWINE_USERNAME: __token__
