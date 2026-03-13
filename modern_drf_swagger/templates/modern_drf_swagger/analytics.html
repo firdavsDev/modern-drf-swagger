@@ -1,0 +1,196 @@
+{% extends "modern_drf_swagger/base.html" %} 
+{% load static %} 
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        {{ portal_name }}
+      </h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        Analytics Dashboard
+      </p>
+    </div>
+    <select
+      id="date-range-selector"
+      class="dark-input px-4 py-2 rounded-lg border transition-colors duration-200 cursor-pointer"
+      style="color: black"
+    >
+      <option value="7">Last 7 days</option>
+      <option value="30">Last 30 days</option>
+      <option value="90">Last 90 days</option>
+    </select>
+  </div>
+
+  <!-- Summary Cards -->
+  <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div
+      class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-gray-600 dark:text-gray-400 text-sm">Total Requests</p>
+        <svg
+          class="w-8 h-8 text-blue-500 dark:text-blue-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+          ></path>
+        </svg>
+      </div>
+      <p
+        class="text-3xl font-bold text-gray-900 dark:text-gray-100"
+        id="total-requests"
+      >
+        --
+      </p>
+    </div>
+
+    <div
+      class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-gray-600 dark:text-gray-400 text-sm">Error Count</p>
+        <svg
+          class="w-8 h-8 text-red-500 dark:text-red-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </div>
+      <p
+        class="text-3xl font-bold text-gray-900 dark:text-gray-100"
+        id="error-count"
+      >
+        --
+      </p>
+    </div>
+
+    <div
+      class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-gray-600 dark:text-gray-400 text-sm">Error Rate</p>
+        <svg
+          class="w-8 h-8 text-yellow-500 dark:text-yellow-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 10V3L4 14h7v7l9-11h-7z"
+          ></path>
+        </svg>
+      </div>
+      <p
+        class="text-3xl font-bold text-gray-900 dark:text-gray-100"
+        id="error-rate"
+      >
+        --
+      </p>
+    </div>
+
+    <div
+      class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-gray-600 dark:text-gray-400 text-sm">Avg Latency</p>
+        <svg
+          class="w-8 h-8 text-green-500 dark:text-green-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </div>
+      <p
+        class="text-3xl font-bold text-gray-900 dark:text-gray-100"
+        id="avg-latency"
+      >
+        --
+      </p>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Top Endpoints -->
+    <div
+      class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+    >
+      <div class="p-4 border-b border-gray-300 dark:border-gray-700">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Top Endpoints
+        </h2>
+      </div>
+      <div class="p-4">
+        <div id="top-endpoints" class="overflow-x-auto">
+          <div class="flex items-center justify-center h-48">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Requests by User -->
+    <div
+      class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+    >
+      <div class="p-4 border-b border-gray-300 dark:border-gray-700">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Requests by User
+        </h2>
+      </div>
+      <div class="p-4">
+        <div id="requests-by-user" class="overflow-x-auto">
+          <div class="flex items-center justify-center h-48">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Stats Chart -->
+  <div
+    class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+  >
+    <div class="p-4 border-b border-gray-300 dark:border-gray-700">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+        Request Timeline
+      </h2>
+    </div>
+    <div class="p-4" style="min-height: 350px">
+      <canvas id="timeline-chart" style="width: 100%; height: 300px"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %} 
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'modern_drf_swagger/js/analytics.js' %}"></script>
+{% endblock %}

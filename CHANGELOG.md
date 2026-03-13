@@ -5,6 +5,132 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-03-13
+
+### ⚠️ BREAKING CHANGES
+
+**1. Package Import Name Changed: `api_portal` → `modern_drf_swagger`**
+
+To align with the PyPI package name (`modern-drf-swagger`), the import name has been changed from `api_portal` to `modern_drf_swagger`. This makes the package more intuitive and follows Python naming conventions.
+
+**2. Settings Dictionary Name Changed: `API_PORTAL` → `MODERN_DRF_SWAGGER`**
+
+The configuration dictionary has been renamed to match the package name for consistency.
+
+#### Migration Guide
+
+**1. Update INSTALLED_APPS in settings.py:**
+```python
+INSTALLED_APPS = [
+    # ...
+    # OLD: 'api_portal',
+    'modern_drf_swagger',  # NEW
+]
+```
+
+**2. Update URL includes in urls.py:**
+```python
+# OLD: path('portal/', include('api_portal.urls')),
+path('portal/', include('modern_drf_swagger.urls')),  # NEW
+```
+
+**3. Update imports (if using decorators):**
+```python
+# OLD: from api_portal.conf import hide_from_portal
+from modern_drf_swagger.conf import hide_from_portal  # NEW
+```
+
+**4. Update settings dictionary name:**
+```python
+# OLD: API_PORTAL = {...}
+MODERN_DRF_SWAGGER = {  # NEW
+    'TITLE': 'My API Portal',
+    'DESCRIPTION': 'API Documentation',
+    'VERSION': '1.0.0',
+    # ... other settings ...
+}
+```
+
+**5. Run migrations:**
+```bash
+python manage.py migrate
+```
+
+> **Note:** Django will automatically handle the database table renaming. Existing data is preserved.
+
+#### What Changed
+
+- **Package directory**: `api_portal/` → `modern_drf_swagger/`
+- **Import paths**: All imports now use `modern_drf_swagger` instead of `api_portal`
+- **Settings dictionary**: `API_PORTAL` → `MODERN_DRF_SWAGGER`
+- **Template paths**: `api_portal/base.html` → `modern_drf_swagger/base.html`
+- **Static files**: `api_portal/css/` → `modern_drf_swagger/css/`
+- **URL namespace**: `api_portal:docs` → `modern_drf_swagger:docs`
+- **Cache key prefixes**: `api_portal:perm:...` → `modern_drf_swagger:perm:...`
+- **Related names**: `api_portal_teams` → `modern_drf_swagger_teams`, `api_portal_requests` → `modern_drf_swagger_requests`
+
+#### Why These Changes?
+
+- **Consistency**: Package name, import name, and settings name all align (`modern-drf-swagger` ↔ `modern_drf_swagger` ↔ `MODERN_DRF_SWAGGER`)
+- **Clarity**: Users no longer confused about different names for installation, imports, and configuration
+- **Standards**: Follows Python conventions for naming (hyphens in package names, underscores in module names)
+
+## [1.0.2] - 2026-03-13
+
+### ✨ New Features
+
+- **Flexible URL Mounting**: API Portal can now be mounted at **any URL prefix**, not just `/portal/`
+  - Mount at `api/docs/`, `docs/`, `swagger/`, or any path you prefer
+  - Automatic detection of mount point - no configuration needed
+  - Works like popular tools (Swagger UI, ReDoc) with complete URL flexibility
+  - See [FLEXIBLE_URL_IMPLEMENTATION.md](FLEXIBLE_URL_IMPLEMENTATION.md) for technical details
+
+### 🔧 Improvements
+
+- **Dynamic URL Resolution**: All views now use Django's `reverse()` for URL generation
+- **JavaScript Integration**: Base template exposes `window.PORTAL_BASE_URL` for AJAX requests
+- **Documentation**: Updated README, QUICKSTART, and copilot instructions with flexible URL examples
+- **Testing**: Added `test_flexible_urls.py` to verify URL flexibility across different mount points
+
+### 📝 Changed Files
+
+**Backend:**
+- `modern_drf_swagger/views/analytics_view.py` - Dynamic login URLs and portal base URL
+- `modern_drf_swagger/views/docs_view.py` - Dynamic login URLs and portal base URL
+
+**Frontend:**
+- `modern_drf_swagger/templates/modern_drf_swagger/base.html` - Exposes portal base URL to JavaScript
+- `modern_drf_swagger/static/modern_drf_swagger/js/analytics.js` - Uses dynamic URL
+- `modern_drf_swagger/static/modern_drf_swagger/js/endpoint-list.js` - Uses dynamic URL
+- `modern_drf_swagger/static/modern_drf_swagger/js/docs.js` - Uses dynamic URL
+- `modern_drf_swagger/static/modern_drf_swagger/js/history.js` - Uses dynamic URL
+
+**Documentation:**
+- `README.md` - Added flexible URL examples
+- `QUICKSTART.md` - Added flexible URL examples
+- `.github/copilot-instructions.md` - Updated URL comments
+
+## [1.0.2] - 2026-03-13
+
+### 🐛 Bug Fixes
+
+- **Custom User Model Compatibility**: Fixed compatibility issues with Django projects using custom User models
+  - Analytics view now uses `User.USERNAME_FIELD` dynamically instead of hardcoded `username`
+  - Admin search fields now adapt to custom User model fields
+  - Login form label and placeholder now display the correct username field name
+  - Error messages now show the correct field name (e.g., "Invalid email or password" instead of "Invalid username or password")
+- **Build Warnings**: Fixed setuptools deprecation warnings
+  - Updated license format to use SPDX expression (`license = "MIT"`)
+  - Removed deprecated license classifier
+  - Fixed package discovery warnings for static/template directories
+- **GitHub Actions**: Updated actions to support Node.js 24
+  - Updated `actions/checkout@v4` to `v4.2.2`
+  - Updated `actions/setup-python@v5` to `v5.4.0`
+  - Updated `softprops/action-gh-release@v1` to `v2`
+- **PyPI Package Page**: Fixed broken links and images on PyPI
+  - Screenshots now use absolute GitHub URLs
+  - Documentation links now redirect to GitHub properly
+
 ## [1.0.0] - 2026-03-12
 
 ### 🎉 Initial Release
@@ -53,7 +179,7 @@ The first stable release of Modern DRF Swagger - A modern API developer portal f
 - **Easy Installation**: Simple pip install and configuration
 - **Django Admin Integration**: Full CRUD for teams, members, and permissions
 - **Decorator Support**: `@hide_from_portal` to exclude specific endpoints
-- **Flexible Configuration**: Extensive settings via `API_PORTAL` dictionary
+- **Flexible Configuration**: Extensive settings via `MODERN_DRF_SWAGGER` dictionary
 - **Schema-Driven**: No manual endpoint registration required
 - **Service Layer**: Clean separation of concerns with service classes
 

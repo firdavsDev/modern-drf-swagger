@@ -49,10 +49,10 @@ Screenshot of the Analytics Dashboard showing:
    python manage.py runserver
    ```
 
-2. **Access the pages**:
-   - Login: `http://localhost:8000/portal/`
-   - API Explorer: `http://localhost:8000/portal/` (after login)
-   - Analytics: `http://localhost:8000/portal/analytics/`
+2. **Access the pages** (adjust URL based on your mount point):
+   - Login: `http://localhost:8000/api/docs/` (or `/portal/`, `/docs/`, etc.)
+   - API Explorer: `http://localhost:8000/api/docs/` (after login)
+   - Analytics: `http://localhost:8000/api/docs/analytics/`
 
 3. **Take screenshots**:
    - Use your OS screenshot tool (Cmd+Shift+3 on Mac, PrtScn on Windows)

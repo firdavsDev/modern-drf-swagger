@@ -1,0 +1,254 @@
+{% load static %}
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - API Portal</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'modern_drf_swagger/css/styles.css' %}"
+    />
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+  </head>
+  <body
+    class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
+  >
+    <!-- Theme Switcher - Top Right -->
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+      <div class="max-w-md w-full">
+        <!-- Logo/Header -->
+        <div class="text-center mb-8">
+          <div class="flex items-center justify-center gap-3 mb-2">
+            <h1 class="text-4xl font-bold text-blue-600 dark:text-blue-400">
+              {{ portal_name|default:"API Portal" }}
+            </h1>
+            {% if portal_version %}
+            <span
+              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border border-blue-200 dark:border-blue-700"
+            >
+              v{{ portal_version }}
+            </span>
+            {% endif %}
+          </div>
+          <p class="text-gray-600 dark:text-gray-400">
+            Sign in to access API documentation
+          </p>
+        </div>
+
+        <!-- Login Card -->
+        <div
+          class="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-300 dark:border-gray-700 transition-colors duration-200"
+        >
+          <h2
+            class="text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100"
+          >
+            Login
+          </h2>
+
+          {% if form.non_field_errors %}
+          <div
+            class="bg-red-900 bg-opacity-20 border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-4"
+          >
+            {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+          </div>
+          {% endif %}
+
+          <form method="post" action="{% url 'modern_drf_swagger:login' %}">
+            {% csrf_token %}
+
+            <!-- Username Field -->
+            <div class="mb-4">
+              <label
+                for="{{ form.username.id_for_label }}"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Username
+              </label>
+              {{ form.username }} {% if form.username.errors %}
+              <p class="mt-1 text-sm text-red-500 dark:text-red-400">
+                {{ form.username.errors.0 }}
+              </p>
+              {% endif %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-4">
+              <label
+                for="{{ form.password.id_for_label }}"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Password
+              </label>
+              <div class="relative">
+                {{ form.password }}
+                <button
+                  type="button"
+                  id="toggle-password"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  aria-label="Toggle password visibility"
+                >
+                  <!-- Eye Icon (show password) -->
+                  <svg
+                    id="eye-icon"
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    ></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    ></path>
+                  </svg>
+                  <!-- Eye Slash Icon (hide password) -->
+                  <svg
+                    id="eye-slash-icon"
+                    class="w-5 h-5 hidden"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+              {% if form.password.errors %}
+              <p class="mt-1 text-sm text-red-500 dark:text-red-400">
+                {{ form.password.errors.0 }}
+              </p>
+              {% endif %}
+            </div>
+
+            <!-- API Token Field (Optional) -->
+            <div class="mb-6">
+              <label
+                for="{{ form.api_token.id_for_label }}"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                API Token <span class="text-gray-500 text-xs">(Optional)</span>
+              </label>
+              {{ form.api_token }}
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-500">
+                {{ form.api_token.help_text }}
+              </p>
+              {% if form.api_token.errors %}
+              <p class="mt-1 text-sm text-red-500 dark:text-red-400">
+                {{ form.api_token.errors.0 }}
+              </p>
+              {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <!-- Additional Info -->
+          <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Don't have an account? Contact your administrator.
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-sm text-gray-600 dark:text-gray-500">
+          <p>Powered by Django API Portal</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Theme Management
+      (function () {
+        const html = document.documentElement;
+        const themeToggle = document.getElementById("theme-toggle");
+        const themeIconSun = document.getElementById("theme-icon-sun");
+        const themeIconMoon = document.getElementById("theme-icon-moon");
+
+        // Get saved theme or default to dark
+        const savedTheme = localStorage.getItem("theme") || "dark";
+
+        function setTheme(theme) {
+          if (theme === "dark") {
+            html.classList.add("dark");
+            themeIconMoon.classList.remove("hidden");
+            themeIconSun.classList.add("hidden");
+          } else {
+            html.classList.remove("dark");
+            themeIconMoon.classList.add("hidden");
+            themeIconSun.classList.remove("hidden");
+          }
+          localStorage.setItem("theme", theme);
+        }
+
+        // Apply saved theme immediately
+        setTheme(savedTheme);
+
+        // Toggle theme on button click
+        themeToggle.addEventListener("click", function () {
+          const currentTheme = html.classList.contains("dark")
+            ? "dark"
+            : "light";
+          const newTheme = currentTheme === "dark" ? "light" : "dark";
+          setTheme(newTheme);
+        });
+      })();
+
+      // Password Toggle
+      (function () {
+        const toggleButton = document.getElementById("toggle-password");
+        const passwordInput = document.querySelector('input[type="password"]');
+        const eyeIcon = document.getElementById("eye-icon");
+        const eyeSlashIcon = document.getElementById("eye-slash-icon");
+
+        if (toggleButton && passwordInput) {
+          toggleButton.addEventListener("click", function () {
+            const isPassword = passwordInput.type === "password";
+
+            // Toggle input type
+            passwordInput.type = isPassword ? "text" : "password";
+
+            // Toggle icons
+            if (isPassword) {
+              eyeIcon.classList.add("hidden");
+              eyeSlashIcon.classList.remove("hidden");
+            } else {
+              eyeIcon.classList.remove("hidden");
+              eyeSlashIcon.classList.add("hidden");
+            }
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
