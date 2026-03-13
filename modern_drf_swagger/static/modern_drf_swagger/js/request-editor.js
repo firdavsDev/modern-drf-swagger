@@ -1703,8 +1703,8 @@ class RequestEditor {
     const button = document.getElementById("send-request-btn");
     button.disabled = true;
     button.innerHTML = `
-            <div class="spinner w-5 h-5 border-2"></div>
-            Sending...
+          <span class="spinner w-5 h-5 border-2" aria-hidden="true"></span>
+          <span>Sending...</span>
         `;
 
     try {
