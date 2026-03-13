@@ -200,6 +200,13 @@ Visit `http://localhost:8000/api/docs/` and login with your credentials.
 - [ ] Chat with AI for solving API issues (via OpenAI share button)
 - [ ] Mobile-friendly responsive design
 - [ ] Team/User permissions for analytics access
+- [ ] Generate client code from OpenAPI schema
+- [ ] Keyboard shortcuts (cmd+k for search)
+- [ ] Resizable panels
+- [ ] Different layout modes (split, stacked)
+- [ ] Send request (Cmd+Enter)
+- [ ] Smart defaults based on schema
+
 ## 🤝 Contributing
 
 Contributions welcome! Please:
