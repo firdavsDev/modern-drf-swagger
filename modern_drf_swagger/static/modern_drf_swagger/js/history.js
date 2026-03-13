@@ -16,7 +16,7 @@ class HistoryController {
     this.closeModalBtn = document.getElementById("close-modal");
 
     this.currentPage = 1;
-    this.pageSize = 10;
+    this.pageSize = 25;
     this.searchTerm = "";
     this.searchTimeout = null;
     this.currentRequest = null;

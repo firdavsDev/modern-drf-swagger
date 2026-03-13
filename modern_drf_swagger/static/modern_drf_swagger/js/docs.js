@@ -39,10 +39,34 @@ class DocsController {
     this.lastRequestTime = 0;
     this.minRequestInterval = 500; // Minimum 500ms between requests
 
+    // Layout state
+    this.layoutStorageKey = "modern-drf-swagger:layout-mode";
+    this.endpointWidthStorageKey = "modern-drf-swagger:endpoint-width";
+    this.requestWidthStorageKey = "modern-drf-swagger:request-width";
+    this.requestHeightStorageKey = "modern-drf-swagger:request-height";
+
+    this.workspace = document.getElementById("docs-workspace");
+    this.mainStack = document.getElementById("docs-main-stack");
+    this.endpointPanel = document.getElementById("endpoints-panel");
+    this.requestPanel = document.getElementById("request-panel");
+    this.responsePanel = document.getElementById("response-panel");
+
+    this.layoutModeSelect = document.getElementById("layout-mode-select");
+    this.layoutResetBtn = document.getElementById("layout-reset-btn");
+    this.layoutModeHint = document.getElementById("layout-mode-hint");
+
+    this.resizeEndpointsHandle = document.getElementById("resize-endpoints");
+    this.resizeMainHandle = document.getElementById("resize-main");
+
+    this.activeResize = null;
+    this.resizeCleanup = null;
+
     this.init();
   }
 
   init() {
+    this.initLayoutSystem();
+
     // Setup communication between components
     this.endpointList.onSelect((endpoint, fullSchema) => {
       this.handleEndpointSelect(endpoint, fullSchema);
@@ -73,6 +97,10 @@ class DocsController {
       this.endpointList.selectEndpointFromHash();
     });
 
+    window.addEventListener("resize", () => {
+      this.handleViewportChange();
+    });
+
     // Setup keyboard shortcuts
     this.setupKeyboardShortcuts();
 
@@ -81,6 +109,215 @@ class DocsController {
       // Try to restore endpoint from URL hash after schema loads
       this.endpointList.selectEndpointFromHash();
     });
+  }
+
+  initLayoutSystem() {
+    if (!this.workspace || !this.layoutModeSelect || !this.layoutResetBtn) {
+      return;
+    }
+
+    const initialMode =
+      localStorage.getItem(this.layoutStorageKey) ||
+      this.layoutModeSelect.value;
+
+    const endpointWidth = localStorage.getItem(this.endpointWidthStorageKey);
+    const requestWidth = localStorage.getItem(this.requestWidthStorageKey);
+    const requestHeight = localStorage.getItem(this.requestHeightStorageKey);
+
+    if (endpointWidth) {
+      this.workspace.style.setProperty("--endpoint-width", endpointWidth);
+    }
+
+    if (requestWidth) {
+      this.workspace.style.setProperty("--request-width", requestWidth);
+    }
+
+    if (requestHeight) {
+      this.workspace.style.setProperty("--request-height", requestHeight);
+    }
+
+    this.applyLayoutMode(initialMode, { persist: false });
+
+    this.layoutModeSelect.addEventListener("change", (event) => {
+      this.applyLayoutMode(event.target.value, { persist: true });
+    });
+
+    this.layoutResetBtn.addEventListener("click", () => {
+      this.resetPanelSizes();
+      showToast("Panel sizes reset", "info");
+    });
+
+    this.setupResizers();
+  }
+
+  applyLayoutMode(mode, { persist = true } = {}) {
+    if (!this.workspace || !this.layoutModeSelect) {
+      return;
+    }
+
+    const normalizedMode = mode === "stacked" ? "stacked" : "split";
+    const mobileView = this.isMobileView();
+    const effectiveMode = mobileView ? "stacked" : normalizedMode;
+
+    this.workspace.classList.remove("layout-split", "layout-stacked");
+    this.workspace.classList.add(`layout-${effectiveMode}`);
+
+    this.layoutModeSelect.value = normalizedMode;
+    this.layoutModeSelect.disabled = mobileView;
+
+    if (this.layoutModeHint) {
+      this.layoutModeHint.textContent = mobileView
+        ? "Mobile layout uses stacked mode automatically."
+        : "Drag separators to resize panels.";
+    }
+
+    if (this.resizeMainHandle) {
+      const orientation =
+        effectiveMode === "stacked" ? "horizontal" : "vertical";
+      this.resizeMainHandle.setAttribute("aria-orientation", orientation);
+    }
+
+    if (persist && !mobileView) {
+      localStorage.setItem(this.layoutStorageKey, normalizedMode);
+    }
+
+    this.currentLayoutMode = effectiveMode;
+  }
+
+  setupResizers() {
+    if (this.resizeEndpointsHandle) {
+      this.resizeEndpointsHandle.addEventListener("pointerdown", (event) => {
+        this.beginResize("endpoints", event);
+      });
+    }
+
+    if (this.resizeMainHandle) {
+      this.resizeMainHandle.addEventListener("pointerdown", (event) => {
+        const mode = this.currentLayoutMode === "stacked" ? "stacked" : "split";
+        this.beginResize(mode, event);
+      });
+    }
+  }
+
+  beginResize(type, event) {
+    if (!this.workspace || this.isMobileView()) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const activeHandle =
+      type === "endpoints" ? this.resizeEndpointsHandle : this.resizeMainHandle;
+
+    if (activeHandle) {
+      activeHandle.classList.add("resizing");
+    }
+
+    this.activeResize = { type, handle: activeHandle };
+
+    const onPointerMove = (moveEvent) => {
+      this.handleResizeMove(moveEvent);
+    };
+
+    const onPointerUp = () => {
+      if (this.activeResize && this.activeResize.handle) {
+        this.activeResize.handle.classList.remove("resizing");
+      }
+
+      this.activeResize = null;
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      this.resizeCleanup = null;
+    };
+
+    this.resizeCleanup = onPointerUp;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor =
+      type === "stacked" ? "row-resize" : "col-resize";
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  }
+
+  handleResizeMove(event) {
+    if (!this.activeResize || !this.workspace || !this.mainStack) {
+      return;
+    }
+
+    const workspaceRect = this.workspace.getBoundingClientRect();
+    const mainRect = this.mainStack.getBoundingClientRect();
+
+    if (this.activeResize.type === "endpoints") {
+      const min = 260;
+      const max = Math.max(360, workspaceRect.width - 520);
+      const nextWidth = this.clamp(
+        event.clientX - workspaceRect.left,
+        min,
+        max,
+      );
+      const nextValue = `${Math.round(nextWidth)}px`;
+
+      this.workspace.style.setProperty("--endpoint-width", nextValue);
+      localStorage.setItem(this.endpointWidthStorageKey, nextValue);
+      return;
+    }
+
+    if (this.activeResize.type === "split") {
+      const relativeX = event.clientX - mainRect.left;
+      const min = 320;
+      const max = Math.max(min + 20, mainRect.width - 260);
+      const nextWidth = this.clamp(relativeX, min, max);
+      const nextValue = `${Math.round(nextWidth)}px`;
+
+      this.workspace.style.setProperty("--request-width", nextValue);
+      localStorage.setItem(this.requestWidthStorageKey, nextValue);
+      return;
+    }
+
+    if (this.activeResize.type === "stacked") {
+      const relativeY = event.clientY - mainRect.top;
+      const min = 220;
+      const max = Math.max(min + 20, mainRect.height - 200);
+      const nextHeight = this.clamp(relativeY, min, max);
+      const nextValue = `${Math.round(nextHeight)}px`;
+
+      this.workspace.style.setProperty("--request-height", nextValue);
+      localStorage.setItem(this.requestHeightStorageKey, nextValue);
+    }
+  }
+
+  handleViewportChange() {
+    const savedMode = localStorage.getItem(this.layoutStorageKey) || "split";
+    this.applyLayoutMode(savedMode, { persist: false });
+  }
+
+  resetPanelSizes() {
+    if (!this.workspace) {
+      return;
+    }
+
+    const defaultEndpoint = "340px";
+    const defaultRequestWidth = "1fr";
+    const defaultRequestHeight = "52%";
+
+    this.workspace.style.setProperty("--endpoint-width", defaultEndpoint);
+    this.workspace.style.setProperty("--request-width", defaultRequestWidth);
+    this.workspace.style.setProperty("--request-height", defaultRequestHeight);
+
+    localStorage.setItem(this.endpointWidthStorageKey, defaultEndpoint);
+    localStorage.setItem(this.requestWidthStorageKey, defaultRequestWidth);
+    localStorage.setItem(this.requestHeightStorageKey, defaultRequestHeight);
+  }
+
+  isMobileView() {
+    return window.matchMedia("(max-width: 1023px)").matches;
+  }
+
+  clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
   }
 
   setupKeyboardShortcuts() {

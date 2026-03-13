@@ -13,33 +13,27 @@ def get_portal_setting(name, default=None):
 
 def get_package_version():
     """
-    Get the installed package version of modern-drf-swagger.
+    Get the version to display in the portal UI.
+
+    Priority:
+    1) settings.MODERN_DRF_SWAGGER["VERSION"]
+    2) Installed package metadata version
+    3) "dev"
 
     Returns:
-        str: Version string (e.g., "4") or "dev" if not installed as package
+        str: Version string
     """
+    configured_version = get_portal_setting("VERSION")
+    if configured_version not in (None, ""):
+        return str(configured_version)
+
     try:
         # Try to get version from installed package metadata
         from importlib.metadata import version
 
         return version("modern-drf-swagger")
-    except Exception:
-        # Fallback: try reading pyproject.toml in development mode
-        try:
-            import re
-            from pathlib import Path
 
-            # Look for pyproject.toml in parent directory
-            pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
-            if pyproject_path.exists():
-                with open(pyproject_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-                    # Simple regex to extract version
-                    match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', content)
-                    if match:
-                        return match.group(1)
-        except Exception:
-            pass
+    except Exception:
 
         return "dev"
 
@@ -64,7 +58,7 @@ DEFAULT_CONFIG = {
     # Portal Settings
     "TITLE": "Modern DRF Swagger",
     "DESCRIPTION": "API Documentation Portal",
-    "VERSION": "1.0.0",
+    "VERSION": "1.0.7",
     # Feature Toggles
     "ANALYTICS_ENABLED": True,
     "HISTORY_ENABLED": True,

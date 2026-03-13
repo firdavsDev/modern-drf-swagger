@@ -4,8 +4,15 @@
 {% block extra_head %}
 
 <style>
-  .endpoint-panel {
+  .docs-workspace {
     height: calc(100vh - 8rem);
+  }
+
+  @media (max-width: 1023px) {
+    .docs-workspace {
+      height: auto;
+      min-height: calc(100vh - 10rem);
+    }
   }
 </style>
 <script>
@@ -21,9 +28,43 @@
 {% endblock %} 
 
 {% block content %}
-<div class="flex gap-4 endpoint-panel">
+<div class="docs-layout-toolbar mb-3">
+  <div class="docs-layout-toolbar__group">
+    <label
+      for="layout-mode-select"
+      class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400"
+    >
+      Layout
+    </label>
+    <select
+      id="layout-mode-select"
+      class="dark-input rounded-md border px-2 py-1 text-sm"
+      aria-label="Choose docs layout mode"
+    >
+      <option value="split">Split</option>
+      <option value="stacked">Stacked</option>
+    </select>
+    <button
+      id="layout-reset-btn"
+      class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+      type="button"
+      title="Reset panel sizes"
+    >
+      Reset Panels
+    </button>
+  </div>
+  <p
+    id="layout-mode-hint"
+    class="text-xs text-gray-500 dark:text-gray-400"
+  >
+    Drag separators to resize panels.
+  </p>
+</div>
+
+<div id="docs-workspace" class="docs-workspace layout-split">
   <!-- Left Panel: Endpoint List -->
   <div
+    id="endpoints-panel"
     class="w-1/4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden flex flex-col transition-colors duration-200"
   >
     <div class="p-4 border-b border-gray-300 dark:border-gray-700">
@@ -88,68 +129,89 @@
     </div>
   </div>
 
-  <!-- Middle Panel: Request Editor -->
   <div
-    class="flex-1 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden flex flex-col transition-colors duration-200"
-  >
-    <div class="p-4 border-b border-gray-300 dark:border-gray-700">
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-        Request
-      </h2>
-    </div>
+    id="resize-endpoints"
+    class="panel-resizer panel-resizer-vertical"
+    title="Resize endpoint panel"
+    role="separator"
+    aria-orientation="vertical"
+    aria-label="Resize endpoint panel"
+  ></div>
+
+  <div id="docs-main-stack" class="docs-main-stack">
+    <!-- Middle Panel: Request Editor -->
     <div
-      id="request-editor"
-      class="flex-1 overflow-y-auto custom-scrollbar p-4"
+      id="request-panel"
+      class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden flex flex-col transition-colors duration-200"
     >
-      <div class="text-center text-gray-500 dark:text-gray-400 py-12">
-        <svg
-          class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          ></path>
-        </svg>
-        <p>Select an endpoint to start testing</p>
+      <div class="p-4 border-b border-gray-300 dark:border-gray-700">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Request
+        </h2>
+      </div>
+      <div
+        id="request-editor"
+        class="flex-1 overflow-y-auto custom-scrollbar p-4"
+      >
+        <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+          <svg
+            class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
+          <p>Select an endpoint to start testing</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Right Panel: Response Viewer -->
-  <div
-    class="flex-1 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden flex flex-col transition-colors duration-200"
-  >
     <div
-      class="p-4 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between"
-    >
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-        Response
-      </h2>
-    </div>
+      id="resize-main"
+      class="panel-resizer panel-resizer-contextual"
+      title="Resize request and response panels"
+      role="separator"
+      aria-label="Resize request and response panels"
+    ></div>
+
+    <!-- Right Panel: Response Viewer -->
     <div
-      id="response-viewer"
-      class="flex-1 overflow-y-auto custom-scrollbar p-4"
+      id="response-panel"
+      class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden flex flex-col transition-colors duration-200"
     >
-      <div class="text-center text-gray-500 dark:text-gray-400 py-12">
-        <svg
-          class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          ></path>
-        </svg>
-        <p>Send a request to see the response</p>
+      <div
+        class="p-4 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between"
+      >
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Response
+        </h2>
+      </div>
+      <div
+        id="response-viewer"
+        class="flex-1 overflow-y-auto custom-scrollbar p-4"
+      >
+        <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+          <svg
+            class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
+          <p>Send a request to see the response</p>
+        </div>
       </div>
     </div>
   </div>

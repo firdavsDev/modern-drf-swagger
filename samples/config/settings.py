@@ -118,7 +118,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.BasicAuthentication",
-        # "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
@@ -128,9 +128,9 @@ REST_FRAMEWORK = {
 
 MODERN_DRF_SWAGGER = {
     # Basic Info - controls the info section of the docs
-    "TITLE": "API Swagger",
+    "TITLE": "API Swagger Documentation",
     "DESCRIPTION": "Complete API documentation for My Company",
-    "VERSION": "4",
+    "VERSION": "1.0.7",
     # Feature Toggles
     "ANALYTICS_ENABLED": True,  # Track API usage
     "HISTORY_ENABLED": True,  # Save request history
