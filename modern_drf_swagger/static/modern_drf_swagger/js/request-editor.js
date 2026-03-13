@@ -1773,11 +1773,15 @@ class RequestEditor {
         }
       }
 
-      // Merge with global authentication headers
+      let authRequestConfig = { headers: {}, params: {}, cookies: {} };
+
+      // Merge with global authentication configuration
       if (window.globalAuth) {
-        const globalAuthHeaders = window.globalAuth.getAuthHeaders();
+        authRequestConfig = window.globalAuth.getAuthRequestConfig();
+        const globalAuthHeaders = authRequestConfig.headers;
         // Global auth headers take precedence if not overridden in custom headers
         customHeaders = { ...globalAuthHeaders, ...customHeaders };
+        Object.assign(params, authRequestConfig.params);
       }
 
       // Build path with path parameters
@@ -1795,6 +1799,7 @@ class RequestEditor {
         data: data,
         params: params,
         _headers: customHeaders,
+        _cookies: authRequestConfig.cookies,
       };
 
       if (this.onSendCallback) {

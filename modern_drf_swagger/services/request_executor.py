@@ -1,3 +1,4 @@
+import json
 import time
 from urllib.parse import urljoin
 
@@ -41,11 +42,25 @@ class RequestExecutor:
 
         return headers
 
+    def _extract_custom_cookies(self):
+        custom_cookies = self.request.data.get("_cookies", {})
+
+        if isinstance(custom_cookies, str):
+            try:
+                custom_cookies = json.loads(custom_cookies)
+            except json.JSONDecodeError:
+                custom_cookies = {}
+
+        if not isinstance(custom_cookies, dict):
+            return {}
+
+        return custom_cookies
+
     def execute(self, method: str, path: str, data=None, params=None, files=None):
         url = urljoin(self.base_url, path.lstrip("/"))
 
         # Attach session cookies if any, to support Session Authentication
-        cookies = self.request.COOKIES
+        cookies = {**self.request.COOKIES, **self._extract_custom_cookies()}
 
         start_time = time.time()
 

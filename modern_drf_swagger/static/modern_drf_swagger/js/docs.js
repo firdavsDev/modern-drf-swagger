@@ -180,6 +180,12 @@ class DocsController {
         if (payload.params) {
           formData.append("params", JSON.stringify(payload.params));
         }
+        if (payload._headers) {
+          formData.append("_headers", JSON.stringify(payload._headers));
+        }
+        if (payload._cookies) {
+          formData.append("_cookies", JSON.stringify(payload._cookies));
+        }
         fetchOptions.body = formData;
         // Don't set Content-Type header - let browser set it with boundary
       } else {

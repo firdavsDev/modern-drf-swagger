@@ -11,6 +11,10 @@ from modern_drf_swagger.models import EndpointPermission, Team, TeamMember
 class Command(BaseCommand):
     help = "List all endpoint permissions for Modern DRF Swagger"
 
+    def _get_user_identifier(self, user):
+        username_field = getattr(user, "USERNAME_FIELD", "username")
+        return getattr(user, username_field, str(user))
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--team",
@@ -51,7 +55,7 @@ class Command(BaseCommand):
                 self.stdout.write("   👥 Members:")
                 for member in members:
                     self.stdout.write(
-                        f"      - {member.user.username} ({member.get_role_display()})"
+                        f"      - {self._get_user_identifier(member.user)} ({member.get_role_display()})"
                     )
 
             # List permissions
