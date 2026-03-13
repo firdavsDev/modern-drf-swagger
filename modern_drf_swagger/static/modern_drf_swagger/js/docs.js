@@ -34,6 +34,11 @@ class DocsController {
     // Make responseViewer globally accessible for copy buttons
     window.responseViewer = this.responseViewer;
 
+    // Request state management for rate limiting
+    this.isRequestInProgress = false;
+    this.lastRequestTime = 0;
+    this.minRequestInterval = 500; // Minimum 500ms between requests
+
     this.init();
   }
 
@@ -68,10 +73,77 @@ class DocsController {
       this.endpointList.selectEndpointFromHash();
     });
 
+    // Setup keyboard shortcuts
+    this.setupKeyboardShortcuts();
+
     // Load schema and restore selection from hash
     this.endpointList.loadSchema().then(() => {
       // Try to restore endpoint from URL hash after schema loads
       this.endpointList.selectEndpointFromHash();
+    });
+  }
+
+  setupKeyboardShortcuts() {
+    // Keyboard shortcuts handler
+    document.addEventListener("keydown", (e) => {
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+      // Cmd/Ctrl + K: Focus search input
+      if (modifier && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        const searchInput = document.getElementById("endpoint-search");
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+          showToast("Search endpoints", "info");
+        }
+        return;
+      }
+
+      // Cmd/Ctrl + Enter: Send request with rate limiting
+      if (modifier && e.key === "Enter") {
+        e.preventDefault();
+
+        // Check permissions
+        if (window.PORTAL_CONFIG?.canSendRequest === false) {
+          showToast(
+            "You need DEVELOPER role or higher to send requests",
+            "error",
+          );
+          return;
+        }
+
+        // Check if request is already in progress
+        if (this.isRequestInProgress) {
+          showToast(
+            "Please wait for the current request to complete",
+            "warning",
+          );
+          return;
+        }
+
+        // Check rate limiting (minimum interval between requests)
+        const now = Date.now();
+        const timeSinceLastRequest = now - this.lastRequestTime;
+        if (timeSinceLastRequest < this.minRequestInterval) {
+          const waitTime = Math.ceil(
+            (this.minRequestInterval - timeSinceLastRequest) / 1000,
+          );
+          showToast(
+            `Please wait ${waitTime}s before sending another request`,
+            "warning",
+          );
+          return;
+        }
+
+        // All checks passed, trigger send
+        const sendButton = document.getElementById("send-request-btn");
+        if (sendButton && !sendButton.disabled) {
+          sendButton.click();
+        }
+        return;
+      }
     });
   }
 
@@ -84,6 +156,10 @@ class DocsController {
   }
 
   async handleSendRequest(payload) {
+    // Set request in progress
+    this.isRequestInProgress = true;
+    this.lastRequestTime = Date.now();
+
     try {
       // Get CSRF token from cookie
       const csrftoken = getCookie("csrftoken");
@@ -137,6 +213,9 @@ class DocsController {
       console.error("Request failed:", error);
       this.responseViewer.displayError(error, payload);
       showToast("Request failed: " + error.message, "error");
+    } finally {
+      // Reset request state
+      this.isRequestInProgress = false;
     }
   }
 }
