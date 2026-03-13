@@ -124,23 +124,10 @@ urlpatterns = [
     # Your API endpoints
     path('api/', include('myapp.urls')),
     
-    # API Portal - you can use ANY URL prefix you want!
-    path('portal/', include('modern_drf_swagger.urls')),
+    # New API documentation
+    path('api/docs/', include('modern_drf_swagger.urls')),
 ]
 ```
-
-**💡 Flexible URL Mounting:** Unlike some API documentation tools, Modern DRF Swagger works at **any URL prefix**. Choose what works best for your project:
-
-```python
-# All of these work perfectly:
-path('portal/', include('modern_drf_swagger.urls')),          # Default
-path('api/docs/', include('modern_drf_swagger.urls')),        # Nested under API
-path('docs/', include('modern_drf_swagger.urls')),            # Simple docs path
-path('swagger/', include('modern_drf_swagger.urls')),         # Swagger-style path
-path('api-explorer/', include('modern_drf_swagger.urls')),    # Descriptive path
-```
-
-The portal automatically detects its URL prefix and adjusts all internal links accordingly.
 
 ### Step 4: Run Migrations
 
@@ -392,15 +379,6 @@ DEBUG = True  # Required for development
 
 ---
 
-## 📚 Next Steps
-
-- **[View Configuration Reference](README.md#configuration-reference)** - All available settings
-- **[Read Changelog](CHANGELOG.md)** - Latest updates and features
-- **[Report Issues](https://github.com/firdavsDev/modern-drf-swagger/issues)** - Found a bug?
-- **[Star on GitHub](https://github.com/firdavsDev/modern-drf-swagger)** - Support the project! ⭐
-
----
-
 ## 💡 Pro Tips
 
 1. **Use Super Admin role** during development to access all endpoints without configuring permissions.
@@ -438,71 +416,16 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 ```
 
-## 🛠️ Common Configuration Options
-
-### Hide Specific Endpoints
-
-Use the decorator in your views:
-
-```python
-from modern_drf_swagger.conf import hide_from_portal
-from rest_framework import viewsets
-
-@hide_from_portal
-class InternalAPIViewSet(viewsets.ModelViewSet):
-    """This endpoint won't appear in the portal"""
-    queryset = InternalModel.objects.all()
-    serializer_class = InternalSerializer
-```
-
-### Adjust History Limit
-
-```python
-MODERN_DRF_SWAGGER = {
-    'HISTORY_LIMIT': 50,  # Keep last 50 requests per user
-}
-```
-
-### Disable Analytics
-
-```python
-MODERN_DRF_SWAGGER = {
-    'ANALYTICS_ENABLED': False,  # No request logging
-}
-```
-
-## 🐛 Troubleshooting
-
-### No endpoints showing?
-
-**Check:**
-1. `drf_spectacular` is in `INSTALLED_APPS`
-2. `DEFAULT_SCHEMA_CLASS` is set to `drf_spectacular.openapi.AutoSchema`
-3. Your API views are using DRF ViewSets or APIViews
-
-### Permission denied errors?
-
-**Check:**
-1. User is a member of at least one team
-2. Team has endpoint permissions configured (or user is Super Admin)
-3. You're logged in
-
-### Analytics not working?
-
-**Check:**
-1. `ANALYTICS_ENABLED` is `True`
-2. Requests are made through the portal (not directly to API)
-
 ## 📚 Next Steps
 
-- Read the [Full Documentation](https://github.com/firdavsDev/modern-drf-swagger#readme)
-- Check out [Configuration Options](https://github.com/firdavsDev/modern-drf-swagger#configuration-reference)
+- **[View Configuration Reference](README.md#configuration-reference)** - All available settings
+- **[Read Changelog](CHANGELOG.md)** - Latest updates and features
+- **[Report Issues](https://github.com/firdavsDev/modern-drf-swagger/issues)** - Found a bug?
+- **[Star on GitHub](https://github.com/firdavsDev/modern-drf-swagger)** - Support the project! ⭐
+
 
 ## 💡 Need Help?
 
 - [GitHub Issues](https://github.com/firdavsDev/modern-drf-swagger/issues)
 - [GitHub Discussions](https://github.com/firdavsDev/modern-drf-swagger/discussions)
 
----
-
-**Created by [DavronbekDev](https://davronbek.dev) • [GitHub](https://github.com/firdavsDev)**

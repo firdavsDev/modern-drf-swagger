@@ -41,13 +41,13 @@ Build a complete, installable Django package providing a modern API explorer wit
    - views/docs_view.py: `.services` → `..services`
    - views/api_proxy_view.py: `.services` → `..services` (2 occurrences)
 
-3. **Configure example project** — Add to sample_project/config/settings.py:
+3. **Configure example project** — Add to samples/config/settings.py:
    - INSTALLED_APPS: 'rest_framework', 'drf_spectacular', 'modern_drf_swagger'
    - REST_FRAMEWORK config with authentication classes
    - SPECTACULAR_SETTINGS config
    - MODERN_DRF_SWAGGER settings dictionary
 
-4. **Add sample API endpoints** — Create sample_project/api/ with sample ViewSets (tasks, users) for portal testing
+4. **Add sample API endpoints** — Create samples/api/ with sample ViewSets (tasks, users) for portal testing
 
 5. **Wire example URLs** — Add modern_drf_swagger routes to example project urls.py
 
@@ -447,7 +447,7 @@ Build a complete, installable Django package providing a modern API explorer wit
 - modern_drf_swagger/admin.py — Inline patterns, custom filters, search_fields
 
 **Example Project**:
-- sample_project/ — Use for all local testing before publishing
+- samples/ — Use for all local testing before publishing
 
 **Package Structure**:
 - pyproject.toml — Dependencies and metadata
@@ -531,7 +531,7 @@ Build a complete, installable Django package providing a modern API explorer wit
 
 ### 4. Deployment Guide
 
-**Recommendation:** Yes, add docker-compose.yml in sample_project/ showing:
+**Recommendation:** Yes, add docker-compose.yml in samples/ showing:
 - Portal application
 - Redis for caching
 - PostgreSQL database

@@ -212,8 +212,6 @@ See [.github/copilot-instructions.md](https://github.com/firdavsDev/modern-drf-s
 
 MIT License - see [LICENSE](https://github.com/firdavsDev/modern-drf-swagger/blob/main/LICENSE) file for details.
 
-Copyright (c) 2026 [DavronbekDev](https://davronbek.dev)
-
 ---
 
 <div align="center">
