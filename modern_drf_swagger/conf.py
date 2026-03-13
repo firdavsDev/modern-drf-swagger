@@ -58,7 +58,7 @@ DEFAULT_CONFIG = {
     # Portal Settings
     "TITLE": "Modern DRF Swagger",
     "DESCRIPTION": "API Documentation Portal",
-    "VERSION": "1.0.6",
+    "VERSION": "1.0.7",
     # Feature Toggles
     "ANALYTICS_ENABLED": True,
     "HISTORY_ENABLED": True,

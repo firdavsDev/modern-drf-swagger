@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-03-14
+
+### ✨ New Features
+- **Resizable Docs Panels**: Documentation workspace now supports drag-to-resize separators
+  - Resize endpoint list width independently
+  - Resize request/response split in both layout modes
+  - Layout preferences are saved in browser localStorage
+
+- **Layout Modes (Split / Stacked)**: New layout switcher for request and response work area
+  - **Split mode**: Request and response panels shown side-by-side
+  - **Stacked mode**: Request panel above response panel
+  - One-click reset button to restore default panel sizes
+
+### 📱 Mobile UX Improvements
+- **Auto-stacked mobile layout** below desktop breakpoint for better readability
+- **Touch-friendly panel flow** with improved panel heights and spacing
+- **Adaptive controls**: Layout selector is auto-managed on mobile to prevent cramped UI
+
+### 🔧 Improvements
+- Added a dedicated docs layout toolbar with mode selector and reset action
+- Added contextual resize handles that adapt between horizontal and vertical resizing
+- Improved docs workspace behavior to avoid overflow issues in smaller viewports
+
 ## [1.0.6] - 2026-03-13
 
 ### 🐛 Bug Fixes

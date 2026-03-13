@@ -130,7 +130,7 @@ MODERN_DRF_SWAGGER = {
     # Basic Info - controls the info section of the docs
     "TITLE": "API Swagger Documentation",
     "DESCRIPTION": "Complete API documentation for My Company",
-    "VERSION": "1.0.6",
+    "VERSION": "1.0.7",
     # Feature Toggles
     "ANALYTICS_ENABLED": True,  # Track API usage
     "HISTORY_ENABLED": True,  # Save request history

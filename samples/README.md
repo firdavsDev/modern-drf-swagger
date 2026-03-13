@@ -166,7 +166,7 @@ Portal settings are configured in `config/settings.py`:
 MODERN_DRF_SWAGGER = {
     "TITLE": "API Swagger",
     "DESCRIPTION": "Complete API documentation for My Company",
-    "VERSION": "1.0.6",
+      "VERSION": "1.0.7",
     "ANALYTICS_ENABLED": True,
     "HISTORY_ENABLED": True,
     "MAX_HISTORY_PER_USER": 100,
