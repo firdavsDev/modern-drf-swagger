@@ -207,7 +207,7 @@ Visit `http://localhost:8000/api/docs/` and login with your credentials.
 - [ ] Resizable panels
 - [ ] Different layout modes (split, stacked)
 - [x] Send request - Cmd/Ctrl+Enter (✅ v1.0.5)
-- [ ] Smart defaults based on schema
+- [x] Smart defaults based on schema (✅ v1.0.6)
 
 ## 🤝 Contributing
 
