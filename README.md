@@ -123,6 +123,8 @@ API_PORTAL = {
 
 ### 4. Add URL Routes
 
+**Good news!** Unlike some API documentation tools, Modern DRF Swagger works at **any URL prefix** you choose:
+
 ```python
 # urls.py
 from django.contrib import admin
@@ -131,9 +133,18 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('myapp.urls')),  # Your API
-    path('api/docs/', include('api_portal.urls')),  # API Documentation Portal
+    
+    # Choose ANY URL prefix that works for your project:
+    path('api/docs/', include('api_portal.urls')),  # Nested under API (shown in docs)
+    # OR
+    # path('portal/', include('api_portal.urls')),        # Default/simple path
+    # path('docs/', include('api_portal.urls')),          # Short and sweet
+    # path('swagger/', include('api_portal.urls')),       # Swagger-style
+    # path('api-explorer/', include('api_portal.urls')),  # Descriptive
 ]
 ```
+
+The portal automatically detects its mount point and adjusts all internal links!
 
 ### 5. Run Migrations
 
@@ -177,7 +188,12 @@ Visit `http://localhost:8000/api/docs/` and login with your credentials.
 - [ ] Custom themes
 - [ ] OAuth2/SAML integration
 - [ ] Comprehensive test suite
-
+- [ ] Multi language support (i18n)
+- [ ] OpenAPI spec editor
+- [ ] Theme switcher (light/dark/auto)
+- [ ] Request diffing
+- [ ] API versioning support
+- [ ] Chat with AI for solving API issues (via OpenAI share button)
 ## 🤝 Contributing
 
 Contributions welcome! Please:

@@ -78,11 +78,14 @@ class HistoryController {
     }
 
     try {
-      const response = await fetch(`/portal/history/?${params}`, {
-        headers: {
-          Accept: "application/json",
+      const response = await fetch(
+        `${window.PORTAL_BASE_URL}/history/?${params}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);

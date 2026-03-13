@@ -4,6 +4,11 @@ from django.http import JsonResponse
 from django.views.generic import TemplateView
 from rest_framework.request import Request
 
+try:
+    from django.urls import reverse, reverse_lazy
+except ImportError:
+    from django.core.urlresolvers import reverse, reverse_lazy
+
 from ..conf import get_package_version
 from ..permissions.endpoint_permissions import EndpointPermissionChecker
 from ..services.schema_loader import PortalSchemaLoader
@@ -13,7 +18,7 @@ class DocsView(LoginRequiredMixin, TemplateView):
     """API documentation explorer view"""
 
     template_name = "api_portal/docs.html"
-    login_url = "/portal/login/"
+    login_url = reverse_lazy("api_portal:login")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -32,13 +37,17 @@ class DocsView(LoginRequiredMixin, TemplateView):
             "ENDPOINTS_DEFAULT_COLLAPSED", False
         )
 
+        # Get API portal base URL for JavaScript
+        # This allows the portal to work at any URL prefix
+        context["portal_base_url"] = reverse("api_portal:docs").rstrip("/")
+
         return context
 
 
 class SchemaView(LoginRequiredMixin, TemplateView):
     """OpenAPI schema view with permission filtering"""
 
-    login_url = "/portal/login/"
+    login_url = reverse_lazy("api_portal:login")
 
     def get(self, request, *args, **kwargs):
         # Convert Django request to DRF Request for schema generation

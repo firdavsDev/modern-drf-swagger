@@ -113,7 +113,10 @@ class DocsController {
       }
 
       // Send request to API proxy
-      const response = await fetch("/portal/api-proxy/", fetchOptions);
+      const response = await fetch(
+        `${window.PORTAL_BASE_URL}/api-proxy/`,
+        fetchOptions,
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

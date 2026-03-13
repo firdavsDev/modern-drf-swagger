@@ -33,7 +33,7 @@ class EndpointList {
 
   async loadSchema() {
     try {
-      const response = await fetch("/portal/schema/", {
+      const response = await fetch(`${window.PORTAL_BASE_URL}/schema/`, {
         headers: {
           Accept: "application/json",
         },

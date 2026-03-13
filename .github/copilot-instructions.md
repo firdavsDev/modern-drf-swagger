@@ -30,7 +30,7 @@ pip install -e .
 cd samples
 python manage.py migrate
 python manage.py runserver
-# Visit http://localhost:8000/portal/
+# Visit http://localhost:8000/api/docs/ (portal mounted at api/docs/ in samples)
 ```
 
 ## 🎯 Auto-Configuration Features
@@ -268,10 +268,10 @@ API_PORTAL = {
     'SCHEMA_PATH_PREFIX': r'/api/',
 }
 
-# urls.py
+# urls.py - Works at ANY URL prefix! Choose what fits your project:
 urlpatterns = [
     path('api/', include('myapp.urls')),
-    path('portal/', include('api_portal.urls')),
+    path('portal/', include('api_portal.urls')),  # Or api/docs/, docs/, swagger/, etc.
 ]
 ```
 

@@ -8,6 +8,11 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.generic import TemplateView
 
+try:
+    from django.urls import reverse, reverse_lazy
+except ImportError:
+    from django.core.urlresolvers import reverse, reverse_lazy
+
 from ..conf import get_package_version
 from ..models import RequestLog, UsageMetric
 
@@ -22,7 +27,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
     """
 
     template_name = "api_portal/analytics.html"
-    login_url = "/portal/login/"
+    login_url = reverse_lazy("api_portal:login")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -31,6 +36,8 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context["title"] = f"Analytics - {portal_name}"
         context["portal_name"] = portal_name
         context["portal_version"] = get_package_version()
+        # Get API portal base URL for JavaScript
+        context["portal_base_url"] = reverse("api_portal:docs").rstrip("/")
         return context
 
     def get(self, request, *args, **kwargs):
@@ -120,7 +127,7 @@ class HistoryView(LoginRequiredMixin, TemplateView):
     """
 
     template_name = "api_portal/history.html"
-    login_url = "/portal/login/"
+    login_url = reverse_lazy("api_portal:login")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -129,6 +136,8 @@ class HistoryView(LoginRequiredMixin, TemplateView):
         context["title"] = f"History - {portal_name}"
         context["portal_name"] = portal_name
         context["portal_version"] = get_package_version()
+        # Get API portal base URL for JavaScript
+        context["portal_base_url"] = reverse("api_portal:docs").rstrip("/")
         return context
 
     def get(self, request, *args, **kwargs):

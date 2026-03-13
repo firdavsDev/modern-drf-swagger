@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-03-13
+
+### ✨ New Features
+
+- **Flexible URL Mounting**: API Portal can now be mounted at **any URL prefix**, not just `/portal/`
+  - Mount at `api/docs/`, `docs/`, `swagger/`, or any path you prefer
+  - Automatic detection of mount point - no configuration needed
+  - Works like popular tools (Swagger UI, ReDoc) with complete URL flexibility
+  - See [FLEXIBLE_URL_IMPLEMENTATION.md](FLEXIBLE_URL_IMPLEMENTATION.md) for technical details
+
+### 🔧 Improvements
+
+- **Dynamic URL Resolution**: All views now use Django's `reverse()` for URL generation
+- **JavaScript Integration**: Base template exposes `window.PORTAL_BASE_URL` for AJAX requests
+- **Documentation**: Updated README, QUICKSTART, and copilot instructions with flexible URL examples
+- **Testing**: Added `test_flexible_urls.py` to verify URL flexibility across different mount points
+
+### 📝 Changed Files
+
+**Backend:**
+- `api_portal/views/analytics_view.py` - Dynamic login URLs and portal base URL
+- `api_portal/views/docs_view.py` - Dynamic login URLs and portal base URL
+
+**Frontend:**
+- `api_portal/templates/api_portal/base.html` - Exposes portal base URL to JavaScript
+- `api_portal/static/api_portal/js/analytics.js` - Uses dynamic URL
+- `api_portal/static/api_portal/js/endpoint-list.js` - Uses dynamic URL
+- `api_portal/static/api_portal/js/docs.js` - Uses dynamic URL
+- `api_portal/static/api_portal/js/history.js` - Uses dynamic URL
+
+**Documentation:**
+- `README.md` - Added flexible URL examples
+- `QUICKSTART.md` - Added flexible URL examples
+- `.github/copilot-instructions.md` - Updated URL comments
+
 ## [1.0.2] - 2026-03-13
 
 ### 🐛 Bug Fixes

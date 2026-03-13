@@ -26,7 +26,7 @@ class AnalyticsController {
 
     try {
       const response = await fetch(
-        `/portal/analytics/?days=${days}&format=json`,
+        `${window.PORTAL_BASE_URL}/analytics/?days=${days}&format=json`,
         {
           headers: {
             Accept: "application/json",

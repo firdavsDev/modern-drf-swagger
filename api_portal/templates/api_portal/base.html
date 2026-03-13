@@ -27,6 +27,9 @@
           },
         },
       };
+
+      // API Portal base URL (allows portal to work at any URL prefix)
+      window.PORTAL_BASE_URL = "{{ portal_base_url|default:'/portal' }}";
     </script>
 
     {% block extra_head %}{% endblock %}
@@ -152,8 +155,9 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+        
         <!-- Theme Switcher - Top Right -->
-        <button
+        <!-- <button
           id="theme-toggle"
           class="fixed top-6 right-6 p-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full shadow-lg transition-all z-50"
           aria-label="Toggle theme"
@@ -186,7 +190,7 @@
               d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
             ></path>
           </svg>
-        </button>
+        </button> -->
 
         <div class="container mx-auto p-6">
           {% block content %} {% endblock %}

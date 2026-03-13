@@ -124,10 +124,23 @@ urlpatterns = [
     # Your API endpoints
     path('api/', include('myapp.urls')),
     
-    # API Portal (add this line)
+    # API Portal - you can use ANY URL prefix you want!
     path('portal/', include('api_portal.urls')),
 ]
 ```
+
+**💡 Flexible URL Mounting:** Unlike some API documentation tools, Modern DRF Swagger works at **any URL prefix**. Choose what works best for your project:
+
+```python
+# All of these work perfectly:
+path('portal/', include('api_portal.urls')),          # Default
+path('api/docs/', include('api_portal.urls')),        # Nested under API
+path('docs/', include('api_portal.urls')),            # Simple docs path
+path('swagger/', include('api_portal.urls')),         # Swagger-style path
+path('api-explorer/', include('api_portal.urls')),    # Descriptive path
+```
+
+The portal automatically detects its URL prefix and adjusts all internal links accordingly.
 
 ### Step 4: Run Migrations
 
@@ -396,7 +409,7 @@ DEBUG = True  # Required for development
 
 3. **Request history auto-cleanup**: Set `MAX_HISTORY_PER_USER` to a reasonable number (100-1000) to prevent database bloat.
 
-4. **Bookmarkable endpoints**: Share direct links like `http://localhost:8000/portal/#GET:/api/users/` with your team.
+4. **Bookmarkable endpoints**: Share direct links like `http://localhost:8000/api/docs/#GET:/api/users/` with your team.
 
 5. **Analytics for debugging**: Use the analytics dashboard to identify slow endpoints and high error rates.
 
