@@ -47,6 +47,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Rate limiting protection**: Minimum 500ms interval between requests with clear user feedback
 - **Request state tracking**: Prevents duplicate requests when one is already in progress
 - **Better error messages**: Clear warnings when trying to send requests too quickly or without proper permissions
+- **DRF Token auth prefix fix**: `rest_framework.authentication.TokenAuthentication` is now handled separately from bearer JWT auth
+  - Added dedicated `token` auth type in schema auto-detection and default auth methods
+  - Sends `Authorization: Token <token>` instead of incorrectly forcing `Bearer`
+- **API Key transport fix**: API keys now follow OpenAPI `in` location (`header`, `query`, `cookie`) instead of always being injected into headers
+  - Global auth now builds auth config by transport location
+  - Request builder forwards query-based keys as query params and cookie-based keys as cookies
+  - Multipart upload flow now preserves `_headers` and `_cookies` auth metadata
+- **Custom user model compatibility (management command)**: Fixed `list_permissions` crash on projects without a `username` field
+  - Command now reads the configured identifier via `USERNAME_FIELD` dynamically
+- **Send button loading spinner visibility**: Fixed invisible loader icon while request state shows `Sending...`
+  - Spinner now has explicit circular border styling and contrast for reliable visibility
 
 ### 💡 Use Cases
 
