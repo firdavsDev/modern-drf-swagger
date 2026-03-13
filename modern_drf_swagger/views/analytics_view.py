@@ -33,11 +33,11 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
-        portal_name = portal_settings.get("TITLE", "API Portal")
+        portal_name = portal_settings.get("TITLE", "Modern DRF Swagger")
         context["title"] = f"Analytics - {portal_name}"
         context["portal_name"] = portal_name
         context["portal_version"] = get_package_version()
-        # Get API portal base URL for JavaScript
+        # Get Modern DRF Swagger base URL for JavaScript
         context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
 
         # Add permission checker for template
@@ -192,11 +192,11 @@ class HistoryView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
-        portal_name = portal_settings.get("TITLE", "API Portal")
+        portal_name = portal_settings.get("TITLE", "Modern DRF Swagger")
         context["title"] = f"History - {portal_name}"
         context["portal_name"] = portal_name
         context["portal_version"] = get_package_version()
-        # Get API portal base URL for JavaScript
+        # Get Modern DRF Swagger base URL for JavaScript
         context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
 
         # Add permission checker for template

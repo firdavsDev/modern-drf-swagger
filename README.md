@@ -110,6 +110,9 @@ MODERN_DRF_SWAGGER = {
     # Schema Settings
     'SCHEMA_PATH_PREFIX': r'/api/',  # Only show endpoints starting with /api/
     
+    # Authentication Settings (optional - defaults to reading from OpenAPI schema)
+    'DEFAULT_AUTH_METHODS': ['bearer', 'basic', 'apikey'],  # Fallback if schema has no securitySchemes
+    
     # UI Settings
     'ENDPOINTS_COLLAPSIBLE': True,
     'ENDPOINTS_DEFAULT_COLLAPSED': False,

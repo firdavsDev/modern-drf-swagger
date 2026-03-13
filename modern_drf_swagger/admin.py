@@ -51,6 +51,7 @@ class RequestLogAdmin(admin.ModelAdmin):
         "timestamp",
     )
     list_filter = ("method", "response_status", "timestamp")
+    date_hierarchy = "timestamp"
 
     def get_search_fields(self, request):
         # Use dynamic USERNAME_FIELD for search
@@ -87,6 +88,7 @@ class UsageMetricAdmin(admin.ModelAdmin):
         "error_count",
         "average_latency",
     )
+    date_hierarchy = "date"
 
 
 @admin.register(TeamMember)
@@ -95,6 +97,7 @@ class TeamMemberAdmin(admin.ModelAdmin):
     list_filter = ("role", "team")
     search_fields = ("user__username", "user__email", "team__name")
     actions = [clear_permission_cache]
+    date_hierarchy = "created_at"
 
     def save_model(self, request, obj, form, change):
         """Clear cache when saving a team member"""
@@ -115,6 +118,7 @@ class EndpointPermissionAdmin(admin.ModelAdmin):
     list_display = ("team", "path", "methods", "created_at")
     list_filter = ("team",)
     search_fields = ("path", "methods", "team__name")
+    date_hierarchy = "created_at"
 
     def save_model(self, request, obj, form, change):
         """Clear cache for all team members when saving endpoint permission"""

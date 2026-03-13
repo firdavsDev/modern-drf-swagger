@@ -16,7 +16,7 @@ def get_package_version():
     Get the installed package version of modern-drf-swagger.
 
     Returns:
-        str: Version string (e.g., "1.0.3") or "dev" if not installed as package
+        str: Version string (e.g., "4") or "dev" if not installed as package
     """
     try:
         # Try to get version from installed package metadata
@@ -46,7 +46,7 @@ def get_package_version():
 
 def hide_from_portal(view_func):
     """
-    Decorator to hide a view from the API portal.
+    Decorator to hide a view from the Modern DRF Swagger portal.
     It adds a custom attribute to the view which our schema loader will check.
     """
 
@@ -84,7 +84,7 @@ Example configuration in your Django settings.py:
 
 MODERN_DRF_SWAGGER = {
     # Basic Info (also controls drf-spectacular)
-    'TITLE': 'My Company API Portal',
+    'TITLE': 'API Documentation',
     'DESCRIPTION': 'Complete API documentation for My Company',
     'VERSION': '2.0.0',
     
@@ -106,5 +106,5 @@ MODERN_DRF_SWAGGER = {
 }
 
 NOTE: You do NOT need to configure drf-spectacular separately!
-API Portal automatically configures it based on the settings above.
+Modern DRF Swagger automatically configures it based on the settings above.
 """

@@ -5,11 +5,11 @@ from django.conf import settings
 class ApiPortalConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "modern_drf_swagger"
-    verbose_name = "API Portal"
+    verbose_name = "Modern DRF Swagger"
 
     def ready(self):
         """
-        Auto-configure drf-spectacular when API Portal is loaded.
+        Auto-configure drf-spectacular when Modern DRF Swagger is loaded.
         This eliminates the need for manual configuration in settings.py.
         """
         # Import signals to register them
@@ -46,7 +46,7 @@ class ApiPortalConfig(AppConfig):
 
         # Build spectacular settings from MODERN_DRF_SWAGGER config
         spectacular_defaults = {
-            "TITLE": get_portal_setting("TITLE", "API Portal"),
+            "TITLE": get_portal_setting("TITLE", "Modern DRF Swagger"),
             "DESCRIPTION": get_portal_setting(
                 "DESCRIPTION", "API Documentation Portal"
             ),

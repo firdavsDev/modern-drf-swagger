@@ -1,0 +1,363 @@
+/**
+ * Global Authentication Manager
+ * Handles one-time authentication setup for all API requests
+ */
+
+class GlobalAuth {
+  constructor() {
+    this.authKey = "portal_global_auth";
+    this.init();
+  }
+
+  init() {
+    // Populate auth type selector from available schemes
+    this.populateAuthTypes();
+
+    // Setup auth type selector
+    const authTypeSelect = document.getElementById("auth-type");
+    if (authTypeSelect) {
+      authTypeSelect.addEventListener("change", () => {
+        this.switchAuthType(authTypeSelect.value);
+      });
+    }
+
+    // Load saved auth on page load
+    this.loadAuth();
+
+    // Update UI
+    this.updateAuthStatus();
+
+    // Make globally accessible
+    window.globalAuth = this;
+  }
+
+  populateAuthTypes() {
+    const authTypeSelect = document.getElementById("auth-type");
+    if (!authTypeSelect) return;
+
+    // Get available auth schemes from PORTAL_CONFIG
+    const authSchemes = window.PORTAL_CONFIG?.authSchemes || [];
+
+    // Clear existing options
+    authTypeSelect.innerHTML = "";
+
+    // If no schemes available, show default options
+    if (authSchemes.length === 0) {
+      authTypeSelect.innerHTML = `
+        <option value="bearer">Bearer Token (JWT)</option>
+        <option value="basic">Basic Auth</option>
+        <option value="apikey">API Key</option>
+      `;
+      return;
+    }
+
+    // Build options from available schemes
+    authSchemes.forEach((scheme) => {
+      const option = document.createElement("option");
+      option.value = scheme.type;
+
+      // Build display name
+      let displayName = scheme.name || scheme.type;
+      if (scheme.description) {
+        displayName = `${scheme.name} (${scheme.description})`;
+      }
+
+      option.textContent = displayName;
+      authTypeSelect.appendChild(option);
+    });
+
+    // Show the first auth type by default
+    if (authSchemes.length > 0) {
+      this.switchAuthType(authSchemes[0].type);
+    }
+  }
+
+  switchAuthType(type) {
+    const bearerSection = document.getElementById("bearer-auth-section");
+    const basicSection = document.getElementById("basic-auth-section");
+    const apikeySection = document.getElementById("apikey-auth-section");
+
+    // Hide all sections
+    bearerSection.classList.add("hidden");
+    basicSection.classList.add("hidden");
+    apikeySection.classList.add("hidden");
+
+    // Show selected section
+    switch (type) {
+      case "bearer":
+        bearerSection.classList.remove("hidden");
+        break;
+      case "basic":
+        basicSection.classList.remove("hidden");
+        break;
+      case "apikey":
+        apikeySection.classList.remove("hidden");
+        // Set default header name if empty
+        const apikeyHeaderInput = document.getElementById("apikey-header");
+        if (apikeyHeaderInput && !apikeyHeaderInput.value) {
+          apikeyHeaderInput.value = this.getDefaultApiKeyHeader();
+        }
+        break;
+    }
+  }
+
+  openAuthModal() {
+    const modal = document.getElementById("auth-modal");
+    if (modal) {
+      modal.classList.remove("hidden");
+
+      // Set default API key header if field is empty
+      const apikeyHeaderInput = document.getElementById("apikey-header");
+      if (apikeyHeaderInput && !apikeyHeaderInput.value) {
+        apikeyHeaderInput.value = this.getDefaultApiKeyHeader();
+      }
+
+      this.loadAuthToModal();
+    }
+  }
+
+  closeAuthModal() {
+    const modal = document.getElementById("auth-modal");
+    if (modal) {
+      modal.classList.add("hidden");
+    }
+  }
+
+  loadAuthToModal() {
+    const authData = this.getAuth();
+    if (!authData) return;
+
+    const authTypeSelect = document.getElementById("auth-type");
+    if (authTypeSelect) {
+      authTypeSelect.value = authData.type;
+      this.switchAuthType(authData.type);
+    }
+
+    switch (authData.type) {
+      case "bearer":
+        document.getElementById("bearer-token").value = authData.token || "";
+        break;
+      case "basic":
+        document.getElementById("basic-username").value =
+          authData.username || "";
+        document.getElementById("basic-password").value =
+          authData.password || "";
+        break;
+      case "apikey":
+        const defaultHeaderName = this.getDefaultApiKeyHeader();
+        document.getElementById("apikey-header").value =
+          authData.headerName || defaultHeaderName;
+        document.getElementById("apikey-value").value = authData.apiKey || "";
+        break;
+    }
+  }
+
+  /**
+   * Get default API key header name from auth schemes
+   */
+  getDefaultApiKeyHeader() {
+    const authSchemes = window.PORTAL_CONFIG?.authSchemes || [];
+    const apikeyScheme = authSchemes.find((s) => s.type === "apikey");
+    return apikeyScheme?.name || "X-API-Key";
+  }
+
+  saveAuth() {
+    const authType = document.getElementById("auth-type").value;
+    let authData = { type: authType };
+
+    switch (authType) {
+      case "bearer":
+        const token = document.getElementById("bearer-token").value.trim();
+        if (!token) {
+          showToast("Please enter a token", "error");
+          return;
+        }
+        authData.token = token;
+        break;
+
+      case "basic":
+        const username = document.getElementById("basic-username").value.trim();
+        const password = document.getElementById("basic-password").value.trim();
+        if (!username || !password) {
+          showToast("Please enter username and password", "error");
+          return;
+        }
+        authData.username = username;
+        authData.password = password;
+        break;
+
+      case "apikey":
+        const headerName = document
+          .getElementById("apikey-header")
+          .value.trim();
+        const apiKey = document.getElementById("apikey-value").value.trim();
+        if (!headerName || !apiKey) {
+          showToast("Please enter header name and API key", "error");
+          return;
+        }
+        authData.headerName = headerName;
+        authData.apiKey = apiKey;
+        break;
+    }
+
+    // Save to localStorage
+    localStorage.setItem(this.authKey, JSON.stringify(authData));
+
+    // Update UI
+    this.updateAuthStatus();
+
+    // Close modal
+    this.closeAuthModal();
+
+    // Show success message
+    showToast(
+      `${authType.charAt(0).toUpperCase() + authType.slice(1)} authentication configured`,
+      "success",
+    );
+  }
+
+  clearAuth() {
+    localStorage.removeItem(this.authKey);
+
+    // Clear all input fields
+    document.getElementById("bearer-token").value = "";
+    document.getElementById("basic-username").value = "";
+    document.getElementById("basic-password").value = "";
+    document.getElementById("apikey-header").value =
+      this.getDefaultApiKeyHeader();
+    document.getElementById("apikey-value").value = "";
+
+    // Update UI
+    this.updateAuthStatus();
+
+    // Close modal
+    this.closeAuthModal();
+
+    showToast("Authentication cleared", "info");
+  }
+
+  getAuth() {
+    const authDataStr = localStorage.getItem(this.authKey);
+    if (!authDataStr) return null;
+
+    try {
+      return JSON.parse(authDataStr);
+    } catch (e) {
+      console.error("Failed to parse auth data:", e);
+      return null;
+    }
+  }
+
+  loadAuth() {
+    // Just update status, don't need to do anything else
+    this.updateAuthStatus();
+  }
+
+  updateAuthStatus() {
+    const authData = this.getAuth();
+    const statusIndicator = document.getElementById("auth-status-indicator");
+    const authorizeBtn = document.getElementById("authorize-btn");
+
+    if (authData) {
+      // Authenticated
+      if (statusIndicator) {
+        statusIndicator.classList.remove("bg-gray-400", "dark:bg-gray-600");
+        statusIndicator.classList.add("bg-green-500", "dark:bg-green-400");
+        statusIndicator.title = `Authenticated (${authData.type})`;
+      }
+      if (authorizeBtn) {
+        authorizeBtn.classList.remove(
+          "text-gray-700",
+          "dark:text-gray-300",
+          "hover:bg-gray-200",
+          "dark:hover:bg-gray-700",
+        );
+        authorizeBtn.classList.add(
+          "text-green-700",
+          "dark:text-green-300",
+          "bg-green-50",
+          "dark:bg-green-900/20",
+          "hover:bg-green-100",
+          "dark:hover:bg-green-900/30",
+        );
+      }
+    } else {
+      // Not authenticated
+      if (statusIndicator) {
+        statusIndicator.classList.remove("bg-green-500", "dark:bg-green-400");
+        statusIndicator.classList.add("bg-gray-400", "dark:bg-gray-600");
+        statusIndicator.title = "Not authenticated";
+      }
+      if (authorizeBtn) {
+        authorizeBtn.classList.remove(
+          "text-green-700",
+          "dark:text-green-300",
+          "bg-green-50",
+          "dark:bg-green-900/20",
+          "hover:bg-green-100",
+          "dark:hover:bg-green-900/30",
+        );
+        authorizeBtn.classList.add(
+          "text-gray-700",
+          "dark:text-gray-300",
+          "hover:bg-gray-200",
+          "dark:hover:bg-gray-700",
+        );
+      }
+    }
+  }
+
+  /**
+   * Get authentication headers to be added to requests
+   * @returns {Object} Headers object
+   */
+  getAuthHeaders() {
+    const authData = this.getAuth();
+    if (!authData) return {};
+
+    const headers = {};
+
+    switch (authData.type) {
+      case "bearer":
+        headers["Authorization"] = `Bearer ${authData.token}`;
+        break;
+
+      case "basic":
+        const credentials = btoa(`${authData.username}:${authData.password}`);
+        headers["Authorization"] = `Basic ${credentials}`;
+        break;
+
+      case "apikey":
+        headers[authData.headerName] = authData.apiKey;
+        break;
+    }
+
+    return headers;
+  }
+
+  /**
+   * Check if user has configured authentication
+   * @returns {boolean}
+   */
+  isAuthenticated() {
+    return this.getAuth() !== null;
+  }
+
+  /**
+   * Get current auth type
+   * @returns {string|null} Auth type or null
+   */
+  getAuthType() {
+    const authData = this.getAuth();
+    return authData ? authData.type : null;
+  }
+}
+
+// Initialize on DOM ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    new GlobalAuth();
+  });
+} else {
+  new GlobalAuth();
+}

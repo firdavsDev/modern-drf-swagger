@@ -5,11 +5,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      {% block title %}{{ title|default:"API Portal" }}{% endblock %}
+      {% block title %}{{ title|default:"Modern DRF Swagger" }}{% endblock %}
     </title>
 
     <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Note: CDN usage is intentional for this developer tool (like Swagger UI) -->
+    <!-- The console warning is expected and can be safely ignored -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
 
     <!-- Custom CSS -->
     <link
@@ -19,6 +21,7 @@
 
     <!-- Tailwind Dark Mode Configuration -->
     <script>
+      // Suppress Tailwind CDN production warning
       tailwind.config = {
         darkMode: "class",
         theme: {
@@ -31,7 +34,7 @@
         },
       };
 
-      // API Portal base URL (allows portal to work at any URL prefix)
+      // Modern DRF Swagger base URL (allows portal to work at any URL prefix)
       window.PORTAL_BASE_URL = "{{ portal_base_url|default:'/portal' }}";
     </script>
 
@@ -51,7 +54,7 @@
             <h1
               class="text-2xl font-bold text-blue-600 dark:text-blue-400 min-w-0 break-words flex-1"
             >
-              {{ portal_name|default:"API Portal" }}
+              {{ portal_name|default:"Modern DRF Swagger" }}
             </h1>
             {% if portal_version %}
             <span
@@ -142,7 +145,38 @@
           </ul>
         </nav>
 
-        <div class="p-4 border-t border-gray-300 dark:border-gray-700">
+        <div
+          class="p-4 border-t border-gray-300 dark:border-gray-700 space-y-2"
+        >
+          <!-- Authorize -->
+          <button
+            onclick="window.globalAuth?.openAuthModal()"
+            id="authorize-btn"
+            class="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors group"
+          >
+            <div class="flex items-center">
+              <svg
+                class="w-5 h-5 mr-3 text-yellow-600 dark:text-yellow-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                ></path>
+              </svg>
+              <span>Authorize</span>
+            </div>
+            <span
+              id="auth-status-indicator"
+              class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-600"
+              title="Not authenticated"
+            ></span>
+          </button>
+
           <!-- Logout -->
           <a
             href="{% url 'modern_drf_swagger:logout' %}"
@@ -177,7 +211,172 @@
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
+    <!-- Authentication Modal -->
+    <div
+      id="auth-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full mx-4"
+      >
+        <div
+          class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700"
+        >
+          <h2
+            class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+          >
+            <svg
+              class="w-6 h-6 text-yellow-600 dark:text-yellow-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              ></path>
+            </svg>
+            Available Authorizations
+          </h2>
+          <button
+            onclick="window.globalAuth?.closeAuthModal()"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div class="p-6 space-y-4">
+          <!-- Auth Type Selector -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Authentication Type</label
+            >
+            <select
+              id="auth-type"
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="bearer">Bearer Token (JWT)</option>
+              <option value="basic">Basic Auth</option>
+              <option value="apikey">API Key</option>
+            </select>
+          </div>
+
+          <!-- Bearer Token Input -->
+          <div id="bearer-auth-section">
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Token</label
+            >
+            <input
+              type="text"
+              id="bearer-token"
+              placeholder="Paste your JWT token here"
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-blue-500"
+            />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Will be sent as: Authorization: Bearer {token}
+            </p>
+          </div>
+
+          <!-- Basic Auth Inputs -->
+          <div id="basic-auth-section" class="hidden space-y-3">
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >Username</label
+              >
+              <input
+                type="text"
+                id="basic-username"
+                placeholder="Enter username"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="basic-password"
+                placeholder="Enter password"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <!-- API Key Inputs -->
+          <div id="apikey-auth-section" class="hidden space-y-3">
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >Header Name</label
+              >
+              <input
+                type="text"
+                id="apikey-header"
+                placeholder="X-API-Key"
+                value="X-API-Key"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >API Key</label
+              >
+              <input
+                type="text"
+                id="apikey-value"
+                placeholder="Enter your API key"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+        >
+          <button
+            onclick="window.globalAuth?.saveAuth()"
+            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            Authorize
+          </button>
+          <button
+            onclick="window.globalAuth?.clearAuth()"
+            class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            Clear
+          </button>
+          <button
+            onclick="window.globalAuth?.closeAuthModal()"
+            class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Common JavaScript -->
+    <script src="{% static 'modern_drf_swagger/js/global-auth.js' %}"></script>
     <script>
       // Toast notification function
       function showToast(message, type = "info") {

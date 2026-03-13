@@ -11,10 +11,11 @@
 <script>
   // Pass Django settings to JavaScript
   window.PORTAL_CONFIG = {
-    endpointsCollapsible: {{ endpoints_collapsible|lower }},
-    endpointsDefaultCollapsed: {{ endpoints_default_collapsed|lower }},
-    canSendRequest: {{ can_send_request|default:"false"|lower }},
-    userRole: "{{ user_role|default:"" }}"
+    endpointsCollapsible: {% if endpoints_collapsible %}true{% else %}false{% endif %},
+    endpointsDefaultCollapsed: {% if endpoints_default_collapsed %}true{% else %}false{% endif %},
+    canSendRequest: {% if can_send_request %}true{% else %}false{% endif %},
+    userRole: "{{ user_role|default:"" }}",
+    authSchemes: {{ auth_schemes|safe }}
   };
 </script>
 {% endblock %} 

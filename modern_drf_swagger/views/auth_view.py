@@ -10,7 +10,7 @@ User = get_user_model()
 
 
 class LoginForm(forms.Form):
-    """Login form for API Portal"""
+    """Login form for Modern DRF Swagger"""
 
     username = forms.CharField(
         max_length=150,
@@ -44,7 +44,7 @@ class LoginForm(forms.Form):
 
 class PortalLoginView(FormView):
     """
-    Login view for API Portal.
+    Login view for Modern DRF Swagger.
 
     Authenticates users and stores API token in session for proxy requests.
     """
@@ -88,7 +88,7 @@ class PortalLoginView(FormView):
         from django.conf import settings
 
         portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
-        portal_name = portal_settings.get("TITLE", "API Portal")
+        portal_name = portal_settings.get("TITLE", "Modern DRF Swagger")
         context["title"] = f"Login - {portal_name}"
         context["portal_name"] = portal_name
         context["portal_version"] = get_package_version()

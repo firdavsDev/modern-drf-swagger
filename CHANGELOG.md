@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-06-15
+
+### ✨ New Features
+
+- **Global Authentication System**: One-time authentication setup for all API requests (like Swagger UI)
+  - Click "Authorize" button in sidebar to configure authentication once
+  - Supports multiple authentication types:
+    - Bearer Token (JWT) - Most common for REST APIs
+    - Basic Auth - Username and password
+    - API Key - Custom header-based authentication
+  - Credentials stored securely in browser's localStorage
+  - Automatically applied to all requests (no need to set headers for each request)
+  - Visual indicator shows authentication status (green dot = authenticated)
+  - Clear/update authentication anytime via the Authorize modal
+  - Custom headers in Headers tab still override global auth if needed
+- **Dynamic Authentication Configuration**: Authentication types are now dynamically configured
+  - Automatically detects authentication schemes from OpenAPI schema (drf-spectacular)
+  - Only shows authentication types that are actually available in your API
+  - Falls back to `MODERN_DRF_SWAGGER['DEFAULT_AUTH_METHODS']` setting if schema doesn't define securitySchemes
+  - API Key header names automatically populated from OpenAPI schema metadata
+  - Provides enterprise-level flexibility for different authentication setups
+
+### 🔧 Improvements
+
+- **Responsive Response Metadata**: Status, Latency, and Size cards now adapt to screen sizes
+  - Mobile (< 640px): Single column layout
+  - Tablet (≥ 640px): Two columns side-by-side
+  - Desktop (≥ 1024px): Three columns
+  - Font sizes and padding scale appropriately
+- **Better Headers Tab UX**: Updated placeholder and help text to guide users toward global auth
+- **Copy Buttons**: Example Value and Schema sections in Responses tab have copy buttons
+- **Improved Copy Button Implementation**: Using data attributes instead of inline onclick for better reliability
+
+### 🐛 Bug Fixes
+
+- **JavaScript Syntax Error**: Fixed Django template boolean rendering issues
+  - Changed from `{{ var|lower }}` to `{% if var %}true{% else %}false{% endif %}`
+  - Prevents "Uncaught SyntaxError: Unexpected end of input" errors
+  - Properly renders JavaScript booleans in PORTAL_CONFIG
+- **Copy Button Escaping Issues**: Replaced inline onclick handlers with event delegation
+  - Copy buttons now use data attributes to store content
+  - Eliminates complex template literal escaping issues
+  - Fixes "Uncaught SyntaxError" errors in copy buttons with large JSON
+- **Copy Button Truncation**: Fixed incomplete copying of JSON content
+  - Replaced HTML entity escaping with Base64 encoding for data attributes
+  - Uses `btoa(encodeURIComponent())` to encode and `decodeURIComponent(atob())` to decode
+  - Ensures full JSON content is preserved regardless of special characters or length
+  - Previously copy button would only copy first few characters (e.g., `[\n  {\n    `)
+- **Tailwind CDN Note**: The Tailwind CDN warning in console is expected behavior
+  - This tool is designed for API documentation/testing (like Swagger UI)
+  - Not intended as a production application itself
+  - The CDN approach is appropriate for developer tools
+  - Users deploying production apps should use their own build tools
+
+### 📝 Changed Files
+
+**Backend:**
+- None (all frontend changes)
+
+**Frontend:**
+- `modern_drf_swagger/templates/modern_drf_swagger/base.html` - Added Authorize button, authentication modal, improved Tailwind config
+- `modern_drf_swagger/templates/modern_drf_swagger/docs.html` - Fixed JavaScript boolean rendering
+- `modern_drf_swagger/static/modern_drf_swagger/js/global-auth.js` - New file handling global authentication
+- `modern_drf_swagger/static/modern_drf_swagger/js/request-editor.js` - Auto-inject global auth headers, fixed copy buttons with event delegation
+- `modern_drf_swagger/static/modern_drf_swagger/js/response-viewer.js` - Responsive response metadata cards
+
 ## [1.0.2] - 2026-03-13
 
 ### ⚠️ BREAKING CHANGES

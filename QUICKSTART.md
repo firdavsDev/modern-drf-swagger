@@ -338,6 +338,122 @@ class MyViewSet(viewsets.ModelViewSet):
 
 ---
 
+## 🔐 Configure Authentication Schemes
+
+Modern DRF Swagger **automatically detects** authentication methods from your OpenAPI schema. Users will only see authentication options that your API actually supports!
+
+### Automatic Detection (Recommended)
+
+Use drf-spectacular's `@extend_schema` decorator to define authentication on your views:
+
+#### Bearer Token (JWT) Authentication
+
+```python
+from drf_spectacular.utils import extend_schema
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+@extend_schema(
+    security=[{"Bearer": []}]  # Automatically detected!
+)
+class ProtectedAPIView(APIView):
+    """
+    This endpoint requires Bearer token authentication.
+    The portal will show "Bearer Token (JWT)" in the Authorize modal.
+    """
+    def get(self, request):
+        return Response({"message": "Authenticated!"})
+```
+
+#### Basic Authentication
+
+```python
+@extend_schema(
+    security=[{"BasicAuth": []}]
+)
+class BasicAuthView(APIView):
+    """
+    Portal will show "Basic Auth" username/password fields.
+    """
+    pass
+```
+
+#### API Key Authentication
+
+```python
+@extend_schema(
+    security=[{"ApiKeyAuth": []}]
+)
+class ApiKeyView(APIView):
+    """
+    Portal will show "API Key" with custom header field.
+    """
+    pass
+```
+
+#### Multiple Authentication Methods
+
+```python
+@extend_schema(
+    security=[
+        {"Bearer": []},
+        {"BasicAuth": []},
+    ]
+)
+class FlexibleAuthView(APIView):
+    """
+    Portal will show both Bearer and Basic Auth options.
+    """
+    pass
+```
+
+### Manual Configuration (Fallback)
+
+If your schema doesn't define `securitySchemes`, configure them manually:
+
+```python
+# settings.py
+MODERN_DRF_SWAGGER = {
+    # Only show these authentication types in the portal
+    'DEFAULT_AUTH_METHODS': ['bearer', 'basic', 'apikey'],
+    
+    # Or limit to specific methods:
+    # 'DEFAULT_AUTH_METHODS': ['bearer'],  # Only JWT
+}
+```
+
+### Define Security Schemes in Settings
+
+For advanced control, configure drf-spectacular's security schemes:
+
+```python
+# settings.py
+SPECTACULAR_SETTINGS = {
+    'SECURITY': [
+        {
+            'Bearer': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+                'description': 'JWT token obtained from /api/auth/login/',
+            }
+        },
+        {
+            'ApiKeyAuth': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'X-API-Key',
+                'description': 'Custom API key for service accounts',
+            }
+        }
+    ],
+}
+```
+
+**Pro Tip:** The portal automatically reads your authentication configuration and only shows relevant options in the "Authorize" modal!
+
+---
+
 ## 🐛 Troubleshooting
 
 ### Issue: "No endpoints found"

@@ -58,3 +58,87 @@ class PortalSchemaLoader:
         except Exception as e:
             logger.error(f"Failed to generate OpenAPI schema: {e}")
             return {}
+
+    def get_authentication_schemes(self, request=None):
+        """
+        Extract authentication schemes from OpenAPI schema components.
+        Returns a list of supported authentication types.
+        """
+        schema = self.get_schema(request)
+        schemes = []
+
+        # Check security schemes in components
+        components = schema.get("components", {})
+        security_schemes = components.get("securitySchemes", {})
+
+        for scheme_name, scheme_info in security_schemes.items():
+            scheme_type = scheme_info.get("type", "")
+            scheme_scheme = scheme_info.get("scheme", "")
+
+            if scheme_type == "http":
+                if scheme_scheme == "bearer":
+                    schemes.append(
+                        {
+                            "type": "bearer",
+                            "name": scheme_info.get("bearerFormat", "JWT"),
+                            "description": scheme_info.get(
+                                "description", "Bearer token authentication"
+                            ),
+                        }
+                    )
+                elif scheme_scheme == "basic":
+                    schemes.append(
+                        {
+                            "type": "basic",
+                            "name": "Basic Auth",
+                            "description": scheme_info.get(
+                                "description", "HTTP Basic authentication"
+                            ),
+                        }
+                    )
+            elif scheme_type == "apiKey":
+                schemes.append(
+                    {
+                        "type": "apikey",
+                        "name": scheme_info.get("name", "X-API-Key"),
+                        "in": scheme_info.get("in", "header"),
+                        "description": scheme_info.get(
+                            "description", "API key authentication"
+                        ),
+                    }
+                )
+
+        # If no schemes found, provide defaults based on settings
+        if not schemes:
+            portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
+            default_auth = portal_settings.get(
+                "DEFAULT_AUTH_METHODS", ["bearer", "basic", "apikey"]
+            )
+
+            if "bearer" in default_auth:
+                schemes.append(
+                    {
+                        "type": "bearer",
+                        "name": "JWT",
+                        "description": "Bearer token authentication",
+                    }
+                )
+            if "basic" in default_auth:
+                schemes.append(
+                    {
+                        "type": "basic",
+                        "name": "Basic Auth",
+                        "description": "HTTP Basic authentication",
+                    }
+                )
+            if "apikey" in default_auth:
+                schemes.append(
+                    {
+                        "type": "apikey",
+                        "name": "X-API-Key",
+                        "in": "header",
+                        "description": "API key authentication",
+                    }
+                )
+
+        return schemes

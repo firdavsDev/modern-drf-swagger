@@ -128,12 +128,12 @@ class RequestEditor {
                                 </label>
                                 <textarea id="request-headers" 
                                           class="dark-input w-full px-3 py-2 rounded-lg font-mono text-sm h-32"
-                                          placeholder='{\n  "Authorization": "Bearer YOUR_TOKEN_HERE",\n  "Custom-Header": "value"\n}'></textarea>
+                                          placeholder='{\n  "Custom-Header": "value"\n}'></textarea>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                     </svg>
-                                    ${endpoint.requiresAuth ? 'Authorization header pre-filled. Just paste your token after "Bearer "' : "JSON format required"}
+                                    Click "Authorize" in sidebar to set up global authentication (one-time setup)
                                 </p>
                             </div>
                         </div>
@@ -197,9 +197,6 @@ class RequestEditor {
 
     // Setup tab switching
     this.setupTabs();
-
-    // Set default headers for authenticated endpoints
-    this.initializeHeaders();
 
     // Setup real-time JSON validation
     this.setupJsonValidation();
@@ -397,23 +394,6 @@ class RequestEditor {
         }
       });
     });
-  }
-
-  initializeHeaders() {
-    const headersTextarea = document.getElementById("request-headers");
-    if (!headersTextarea) return;
-
-    // Only set default headers if textarea is empty and endpoint requires auth
-    if (
-      this.currentEndpoint &&
-      this.currentEndpoint.requiresAuth &&
-      !headersTextarea.value.trim()
-    ) {
-      const defaultHeaders = {
-        Authorization: "Bearer ",
-      };
-      headersTextarea.value = JSON.stringify(defaultHeaders, null, 2);
-    }
   }
 
   renderParameters(endpoint) {
@@ -877,8 +857,9 @@ class RequestEditor {
                       <pre class="text-xs font-mono text-gray-900 dark:text-gray-100">${this.syntaxHighlightJson(exampleJson)}</pre>
                     </div>
                     <button 
-                      onclick="window.requestEditor.copyToClipboard(\`${this.escapeForJS(exampleJson)}\`, 'Example copied')"
-                      class="absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                      class="copy-json-btn absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                      data-copy-content="${btoa(encodeURIComponent(exampleJson))}"
+                      data-success-message="Example copied"
                     >
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
@@ -895,8 +876,9 @@ class RequestEditor {
                       <pre class="text-xs font-mono text-gray-900 dark:text-gray-100">${this.syntaxHighlightJson(schemaJson)}</pre>
                     </div>
                     <button 
-                      onclick="window.requestEditor.copyToClipboard(\`${this.escapeForJS(schemaJson)}\`, 'Schema copied')"
-                      class="absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                      class="copy-json-btn absolute top-2 right-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs transition flex items-center gap-1.5 shadow-sm"
+                      data-copy-content="${btoa(encodeURIComponent(schemaJson))}"
+                      data-success-message="Schema copied"
                     >
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
@@ -923,7 +905,10 @@ class RequestEditor {
     html += "</div>";
 
     // Add event listener setup after render
-    setTimeout(() => this.setupResponseSchemaTabs(), 0);
+    setTimeout(() => {
+      this.setupResponseSchemaTabs();
+      this.setupCopyButtons();
+    }, 0);
 
     return html;
   }
@@ -1201,11 +1186,18 @@ class RequestEditor {
       .replace(/([{}\[\],:])/g, '<span class="json-punctuation">$1</span>');
   }
 
-  escapeForJS(str) {
-    return str
-      .replace(/`/g, "\\`")
-      .replace(/\$/g, "\\$")
-      .replace(/\\/g, "\\\\");
+  setupCopyButtons() {
+    const copyButtons = document.querySelectorAll(".copy-json-btn");
+    copyButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        // Decode Base64 content
+        const encodedContent = button.dataset.copyContent;
+        const content = decodeURIComponent(atob(encodedContent));
+        const successMessage =
+          button.dataset.successMessage || "Copied to clipboard";
+        this.copyToClipboard(content, successMessage);
+      });
+    });
   }
 
   copyToClipboard(text, successMessage = "Copied to clipboard") {
@@ -1329,6 +1321,13 @@ class RequestEditor {
           showToast("Invalid JSON in headers", "error");
           throw new Error("Invalid JSON");
         }
+      }
+
+      // Merge with global authentication headers
+      if (window.globalAuth) {
+        const globalAuthHeaders = window.globalAuth.getAuthHeaders();
+        // Global auth headers take precedence if not overridden in custom headers
+        customHeaders = { ...globalAuthHeaders, ...customHeaders };
       }
 
       // Build path with path parameters
