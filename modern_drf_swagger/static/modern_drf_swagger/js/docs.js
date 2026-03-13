@@ -124,8 +124,8 @@ class DocsController {
 
       const result = await response.json();
 
-      // Display response
-      this.responseViewer.displayResponse(result);
+      // Display response with request context for ChatGPT integration
+      this.responseViewer.displayResponse(result, payload);
 
       // Show success toast
       if (result.status >= 200 && result.status < 300) {
@@ -135,7 +135,7 @@ class DocsController {
       }
     } catch (error) {
       console.error("Request failed:", error);
-      this.responseViewer.displayError(error);
+      this.responseViewer.displayError(error, payload);
       showToast("Request failed: " + error.message, "error");
     }
   }
