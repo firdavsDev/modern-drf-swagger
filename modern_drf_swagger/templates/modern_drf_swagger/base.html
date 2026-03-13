@@ -44,9 +44,16 @@
     class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
   >
     <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar Overlay (for mobile) -->
+      <div
+        id="sidebar-overlay"
+        class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"
+        onclick="toggleSidebar()"
+      ></div>
+
       <!-- Sidebar -->
       <aside
-        class="w-64 bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-700 flex flex-col transition-colors duration-200"
+        class="sidebar w-64 bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-700 flex flex-col transition-all duration-300 z-50"
         id="sidebar"
       >
         <div class="p-6 border-b border-gray-300 dark:border-gray-700">
@@ -202,6 +209,29 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+        <!-- Sidebar Toggle Button -->
+        <button
+          id="sidebar-toggle"
+          onclick="toggleSidebar()"
+          class="fixed top-4 left-4 z-30 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Toggle sidebar"
+        >
+          <svg
+            id="sidebar-toggle-icon"
+            class="w-6 h-6 text-gray-700 dark:text-gray-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          </svg>
+        </button>
+
         <div class="container mx-auto p-6">
           {% block content %} {% endblock %}
         </div>
@@ -418,6 +448,133 @@
         // Always use dark mode
         html.classList.add("dark");
         localStorage.setItem("theme", "dark");
+      })();
+
+      // Sidebar toggle functionality
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+        const icon = document.getElementById("sidebar-toggle-icon");
+        const isOpen = sidebar.classList.contains("sidebar-open");
+
+        if (isOpen) {
+          sidebar.classList.remove("sidebar-open");
+          overlay.classList.add("hidden");
+          localStorage.setItem("sidebarState", "closed");
+          // Update icon to hamburger menu
+          icon.innerHTML = `
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          `;
+        } else {
+          sidebar.classList.add("sidebar-open");
+          // Show overlay only on mobile
+          if (window.innerWidth < 1024) {
+            overlay.classList.remove("hidden");
+          }
+          localStorage.setItem("sidebarState", "open");
+          // Update icon to X
+          icon.innerHTML = `
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          `;
+        }
+      }
+
+      // Initialize sidebar state
+      (function () {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+        const icon = document.getElementById("sidebar-toggle-icon");
+        const savedState = localStorage.getItem("sidebarState");
+        const isSmallScreen = window.innerWidth < 1024;
+
+        // On small screens, default to closed unless explicitly opened
+        // On large screens, respect saved state or default to open
+        if (isSmallScreen) {
+          if (savedState === "open") {
+            sidebar.classList.add("sidebar-open");
+            icon.innerHTML = `
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            `;
+          } else {
+            sidebar.classList.remove("sidebar-open");
+            icon.innerHTML = `
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            `;
+          }
+        } else {
+          // Large screens - default to open unless closed
+          if (savedState === "closed") {
+            sidebar.classList.remove("sidebar-open");
+            icon.innerHTML = `
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            `;
+          } else {
+            sidebar.classList.add("sidebar-open");
+            icon.innerHTML = `
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            `;
+          }
+        }
+
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener("resize", function () {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(function () {
+            const isSmallScreen = window.innerWidth < 1024;
+            const isOpen = sidebar.classList.contains("sidebar-open");
+
+            // Auto-close on small screens
+            if (isSmallScreen && isOpen) {
+              overlay.classList.remove("hidden");
+            } else {
+              overlay.classList.add("hidden");
+            }
+
+            // Auto-open on large screens if not explicitly closed
+            if (!isSmallScreen && !isOpen && savedState !== "closed") {
+              sidebar.classList.add("sidebar-open");
+              icon.innerHTML = `
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              `;
+            }
+          }, 250);
+        });
       })();
     </script>
 
