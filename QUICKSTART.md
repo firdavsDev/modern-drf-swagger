@@ -544,4 +544,3 @@ CSRF_COOKIE_SECURE = True
 
 - [GitHub Issues](https://github.com/firdavsDev/modern-drf-swagger/issues)
 - [GitHub Discussions](https://github.com/firdavsDev/modern-drf-swagger/discussions)
-

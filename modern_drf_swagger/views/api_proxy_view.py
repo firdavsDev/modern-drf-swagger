@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.http import JsonResponse
+
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
