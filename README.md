@@ -8,8 +8,6 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 ![Django](https://img.shields.io/badge/django-3.2%2B-green)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-> **Created by [DavronbekDev](https://davronbek.dev) • [GitHub](https://github.com/firdavsDev) • [Email](mailto:davronbekboltyev777@gmail.com)**
-
 ---
 
 ## 📸 Screenshots
@@ -170,105 +168,6 @@ Visit `http://localhost:8000/api/docs/` and login with your credentials.
 ---
 
 
-## Configuration Reference
-
-### API_PORTAL Settings
-
-**All configuration is centralized in the `API_PORTAL` dictionary.** No need to configure drf-spectacular separately!
-
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| `TITLE` | str | `'API Portal'` | Portal title (also used for OpenAPI schema) |
-| `DESCRIPTION` | str | `'API Documentation Portal'` | Portal description (also used for OpenAPI schema) |
-| `VERSION` | str | `'1.0.0'` | API version (also used for OpenAPI schema) |
-| `ANALYTICS_ENABLED` | bool | `True` | Enable/disable request logging |
-| `HISTORY_ENABLED` | bool | `True` | Enable/disable request history feature |
-| `MAX_HISTORY_PER_USER` | int | `1000` | Max history items per user (auto-deletes oldest) |
-| `ALLOW_ANONYMOUS` | bool | `False` | Allow unauthenticated access |
-| `SCHEMA_PATH_PREFIX` | str | `r'/api/'` | Filter endpoints by path prefix (passed to drf-spectacular) |
-| `EXCLUDE_PATHS` | list | `['/admin/', '/internal/']` | Paths to hide from portal |
-| `ENDPOINTS_COLLAPSIBLE` | bool | `True` | Enable endpoint group collapse/expand |
-| `ENDPOINTS_DEFAULT_COLLAPSED` | bool | `False` | Start with endpoint groups collapsed |
-
-**💡 Pro Tip:** API Portal automatically configures drf-spectacular using these settings. If you need advanced spectacular configuration, you can still set `SPECTACULAR_SETTINGS` in your Django settings and API Portal will merge them.
-
-### Automatic drf-spectacular Configuration
-
-When you add `api_portal` to `INSTALLED_APPS`, it automatically:
-
-1. ✅ Adds `drf_spectacular` to `INSTALLED_APPS` (if not already present)
-2. ✅ Sets `REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS']` to `'drf_spectacular.openapi.AutoSchema'`
-3. ✅ Configures `SPECTACULAR_SETTINGS` based on your `API_PORTAL` settings
-4. ✅ Merges with any existing `SPECTACULAR_SETTINGS` you've defined
-
-**You don't need to manually configure any of this!**
-
-### Hide Endpoints from Portal
-
-Use the `@hide_from_portal` decorator:
-
-```python
-from api_portal.conf import hide_from_portal
-from rest_framework import viewsets
-
-@hide_from_portal
-class InternalAPIViewSet(viewsets.ModelViewSet):
-    # This endpoint won't appear in the portal
-    queryset = InternalModel.objects.all()
-    serializer_class = InternalSerializer
-```
-
-Or use drf-spectacular's `@extend_schema(exclude=True)`.
-
-### URL Hash Routing (Bookmarkable Endpoints)
-
-Selected endpoints are automatically saved to the URL hash, allowing you to:
-
-- **Refresh without losing selection**: The selected endpoint is preserved after page refresh
-- **Share direct links**: Share URLs like `http://yoursite.com/portal/#GET:/api/tasks/` with teammates
-- **Use browser navigation**: Back/forward buttons work with endpoint selection
-- **Bookmark specific endpoints**: Save frequently-used endpoints as browser bookmarks
-
-Format: `#METHOD:/path/to/endpoint/` (e.g., `#GET:/api/users/`, `#POST:/api/tasks/`)
-
-### Auto-Cleanup Old Request Logs
-
-When `ANALYTICS_ENABLED` is `True`, request logs are automatically cleaned up to prevent database bloat:
-
-- **Per-user limit**: Each user can have up to `HISTORY_LIMIT` requests (default: 100)
-- **Automatic deletion**: When a new request exceeds the limit, the oldest logs are deleted
-- **Keeps most recent**: Always maintains the most recent `HISTORY_LIMIT - 1` logs
-- **Runs on each request**: Cleanup happens automatically when new requests are logged
-- **Anonymous users**: Not affected by cleanup (logs remain until manually deleted)
-
-Example: With `HISTORY_LIMIT: 50`, each user will have their oldest requests automatically deleted when reaching 51 logs.
-
-## Troubleshooting
-
-### Common Issues
-
-**"No endpoints found"**
-- Ensure drf-spectacular is configured correctly
-- Check `INSTALLED_APPS` includes `'drf_spectacular'`
-- Verify `DEFAULT_SCHEMA_CLASS` is set
-
-**"Permission denied" errors**
-- Check user is member of a team
-- Verify team has endpoint permissions
-- Superusers bypass all permissions
-
-**Analytics not updating**
-- Set `ANALYTICS_ENABLED: True` in settings
-- Check `RequestLog` and `UsageMetric` models in admin
-- Ensure requests are being proxied through `/portal/api-proxy/`
-
-**Static files not loading**
-- Run `python manage.py collectstatic` in production
-- Check `STATIC_URL` and `STATIC_ROOT` settings
-- Verify `django.contrib.staticfiles` in `INSTALLED_APPS`
-
----
-
 ## 🚀 Roadmap
 
 - [ ] WebSocket/GraphQL support
@@ -296,19 +195,6 @@ See [.github/copilot-instructions.md](.github/copilot-instructions.md) for devel
 MIT License - see [LICENSE](LICENSE) file for details.
 
 Copyright (c) 2026 [DavronbekDev](https://davronbek.dev)
-
-## 🙏 Credits
-
-**Author**: [DavronbekDev](https://davronbek.dev) (Davronbek Boltyev)  
-**Email**: [davronbekboltyev777@gmail.com](mailto:davronbekboltyev777@gmail.com)  
-**GitHub**: [@firdavsDev](https://github.com/firdavsDev)  
-**Repository**: [modern-drf-swagger](https://github.com/firdavsDev/modern-drf-swagger)
-
-Built with:
-- [Django REST Framework](https://www.django-rest-framework.org/)
-- [drf-spectacular](https://drf-spectacular.readthedocs.io/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Chart.js](https://www.chartjs.org/)
 
 ---
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modern-drf-swagger"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
   { name="DavronbekDev", email="davronbekboltyev777@gmail.com" },
 ]
