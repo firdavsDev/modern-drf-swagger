@@ -2,6 +2,6 @@
 Modern DRF Swagger - A modern API developer portal for Django REST Framework.
 """
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 default_app_config = "modern_drf_swagger.apps.ApiPortalConfig"

@@ -16,7 +16,7 @@ def get_package_version():
     Get the installed package version of modern-drf-swagger.
 
     Returns:
-        str: Version string (e.g., "1.0.2") or "dev" if not installed as package
+        str: Version string (e.g., "1.0.3") or "dev" if not installed as package
     """
     try:
         # Try to get version from installed package metadata
