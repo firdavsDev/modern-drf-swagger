@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Avg, Count, Q, Sum
 from django.http import JsonResponse
@@ -8,6 +9,8 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 
 from ..models import RequestLog, UsageMetric
+
+User = get_user_model()
 
 
 class AnalyticsView(LoginRequiredMixin, TemplateView):
@@ -63,9 +66,10 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         error_rate = (error_count / total_requests * 100) if total_requests > 0 else 0
 
         # Requests by user
+        username_field = f"user__{User.USERNAME_FIELD}"
         requests_by_user = (
             RequestLog.objects.filter(timestamp__gte=start_date, user__isnull=False)
-            .values("user__username")
+            .values(username_field)
             .annotate(count=Count("id"))
             .order_by("-count")[:10]
         )

@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-03-13
+
+### 🐛 Bug Fixes
+
+- **Custom User Model Compatibility**: Fixed compatibility issues with Django projects using custom User models
+  - Analytics view now uses `User.USERNAME_FIELD` dynamically instead of hardcoded `username`
+  - Admin search fields now adapt to custom User model fields
+  - Login form label and placeholder now display the correct username field name
+  - Error messages now show the correct field name (e.g., "Invalid email or password" instead of "Invalid username or password")
+- **Build Warnings**: Fixed setuptools deprecation warnings
+  - Updated license format to use SPDX expression (`license = "MIT"`)
+  - Removed deprecated license classifier
+  - Fixed package discovery warnings for static/template directories
+- **GitHub Actions**: Updated actions to support Node.js 24
+  - Updated `actions/checkout@v4` to `v4.2.2`
+  - Updated `actions/setup-python@v5` to `v5.4.0`
+  - Updated `softprops/action-gh-release@v1` to `v2`
+- **PyPI Package Page**: Fixed broken links and images on PyPI
+  - Screenshots now use absolute GitHub URLs
+  - Documentation links now redirect to GitHub properly
+
 ## [1.0.0] - 2026-03-12
 
 ### 🎉 Initial Release

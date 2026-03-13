@@ -1,8 +1,10 @@
 from django import forms
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, get_user_model, login
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import FormView
+
+User = get_user_model()
 
 
 class LoginForm(forms.Form):
@@ -10,9 +12,10 @@ class LoginForm(forms.Form):
 
     username = forms.CharField(
         max_length=150,
+        label=User.USERNAME_FIELD.replace("_", " ").title(),
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Username",
+                "placeholder": User.USERNAME_FIELD.replace("_", " ").title(),
                 "class": "dark-input w-full px-4 py-2 border rounded-lg transition-colors duration-200",
             }
         ),
@@ -59,7 +62,8 @@ class PortalLoginView(FormView):
         password = form.cleaned_data["password"]
         api_token = form.cleaned_data.get("api_token", "")
 
-        # Authenticate user
+        # Authenticate user - Django's authenticate handles custom USERNAME_FIELD automatically
+        # The 'username' kwarg name is just a convention; Django maps it to the actual USERNAME_FIELD
         user = authenticate(self.request, username=username, password=password)
 
         if user is not None:
@@ -73,7 +77,8 @@ class PortalLoginView(FormView):
             return super().form_valid(form)
         else:
             # Authentication failed
-            form.add_error(None, "Invalid username or password")
+            username_label = User.USERNAME_FIELD.replace("_", " ")
+            form.add_error(None, f"Invalid {username_label} or password")
             return self.form_invalid(form)
 
     def get_context_data(self, **kwargs):

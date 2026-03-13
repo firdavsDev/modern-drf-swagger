@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modern-drf-swagger"
-version = "1.0.1"
+version = "1.0.2"
 authors = [
   { name="DavronbekDev", email="davronbekboltyev777@gmail.com" },
 ]
@@ -49,8 +49,12 @@ classifiers = [
 "Author Website" = "https://davronbek.dev"
 
 [tool.setuptools]
-packages = ["api_portal", "api_portal.migrations", "api_portal.permissions", "api_portal.services", "api_portal.views"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api_portal*"]
+exclude = ["api_portal.static*", "api_portal.templates*"]
 
 [tool.setuptools.package-data]
 api_portal = ["templates/**/*", "static/**/*"]
