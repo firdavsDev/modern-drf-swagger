@@ -158,14 +158,14 @@ class ResponseViewer {
     return `
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <button id="headers-toggle" class="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                        </svg>
-                        Response Headers
-                        <span class="text-xs text-gray-500 dark:text-gray-400 font-normal ml-2 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded-full">${Object.keys(headers).length}</span>
-                    </h3>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            Response Headers
+                            <span class="text-xs text-gray-500 dark:text-gray-400 font-normal ml-2 bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded-full">${Object.keys(headers).length}</span>
+                        </h3>
                         <button 
                             onclick="event.stopPropagation(); window.responseViewer.copyHeaders();" 
                             class="px-3 py-1.5 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded text-sm transition text-gray-700 dark:text-gray-300 flex items-center gap-2"
@@ -175,10 +175,10 @@ class ResponseViewer {
                             </svg>
                             Copy
                         </button>
-                        <svg id="headers-icon" class="w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
                     </div>
+                    <svg id="headers-icon" class="w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform duration-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
                 </button>
                 <div id="headers-content" class="headers-collapsible-content">
                     <div class="p-4 code-block text-sm space-y-1 max-h-64 overflow-y-auto">

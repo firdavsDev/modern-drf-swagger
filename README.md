@@ -41,6 +41,8 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 - 📊 **Analytics Dashboard**: Track API usage, latency, and error rates with charts
 - 📝 **Request History**: Personal history with search, filtering, and request replay (auto-cleanup of old logs)
 - ⚡ **Real Request Proxy**: Execute actual HTTP requests with accurate latency measurement
+- 💻 **Code Generation**: Generate client code in 7 languages (Python, JavaScript, cURL, HTTPie, PHP, Java, Go)
+- ⌨️ **Keyboard Shortcuts**: Boost productivity with Cmd/Ctrl+Enter to send requests and Cmd/Ctrl+K to search
 - 🎨 **Syntax Highlighting**: JSON responses with color-coded syntax
 - 🔍 **Search & Filter**: Quickly find endpoints and past requests
 - 🔖 **Bookmarkable Endpoints**: URL hash routing preserves selected endpoint on refresh
@@ -99,7 +101,7 @@ MODERN_DRF_SWAGGER = {
     # Basic Info (automatically configures drf-spectacular)
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation',
-    'VERSION': '1.0.0',
+    'VERSION': '1.0.6',
     
     # Features
     'ANALYTICS_ENABLED': True,
@@ -200,12 +202,12 @@ Visit `http://localhost:8000/api/docs/` and login with your credentials.
 - [ ] Chat with AI for solving API issues (via OpenAI share button)
 - [ ] Mobile-friendly responsive design
 - [ ] Team/User permissions for analytics access
-- [ ] Generate client code from OpenAPI schema
-- [ ] Keyboard shortcuts (cmd+k for search)
+- [x] Generate client code from OpenAPI schema (✅ v1.0.5)
+- [x] Keyboard shortcuts - Cmd/Ctrl+K for search (✅ v1.0.5)
 - [ ] Resizable panels
 - [ ] Different layout modes (split, stacked)
-- [ ] Send request (Cmd+Enter)
-- [ ] Smart defaults based on schema
+- [x] Send request - Cmd/Ctrl+Enter (✅ v1.0.5)
+- [x] Smart defaults based on schema (✅ v1.0.6)
 
 ## 🤝 Contributing
 

@@ -7,7 +7,7 @@ djangorestframework>=3.14,<4.0
 
 # Modern DRF Swagger (install in development mode from parent directory)
 # Run: pip install -e ..
-# Or for production: modern-drf-swagger>=1.0.4
+# Or for production: modern-drf-swagger>=1.0.6
 
 # OpenAPI Schema Generation (auto-configured by modern-drf-swagger)
 drf-spectacular>=0.26,<1.0

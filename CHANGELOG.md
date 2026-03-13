@@ -5,6 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-03-13
+
+### 🐛 Bug Fixes
+- fix: Correct log entry sorting field from 'created_at' to 'timestamp'
+
+
+## [1.0.5] - 2026-03-13
+
+### ✨ New Features
+
+- **Code Generation**: Generate client code snippets in 7 programming languages
+  - 🐍 **Python** - Using `requests` library
+  - ⚡ **JavaScript** - Using `fetch` API  
+  - 🔧 **cURL** - Command-line ready
+  - 🦄 **HTTPie** - Modern CLI HTTP client
+  - 🐘 **PHP** - Using cURL extension
+  - ☕ **Java** - Using HttpURLConnection
+  - 🚀 **Go** - Using net/http package
+  - New "Code" tab in request editor for easy access
+  - One-click language switching with instant regeneration
+  - Copy-paste ready snippets with all parameters, headers, and authentication included
+  - Global authentication credentials automatically included in generated code
+  - Real-time code generation based on current endpoint configuration
+  - Perfect for API integration documentation and developer onboarding
+
+- **Keyboard Shortcuts**: Boost productivity with keyboard shortcuts
+  - ⌨️ **Cmd/Ctrl + Enter** - Send the current request
+  - 🔍 **Cmd/Ctrl + K** - Focus on endpoint search input
+  - Cross-platform support (Cmd on macOS, Ctrl on Windows/Linux)
+  - Visual feedback with toast notifications
+
+### 🔧 Improvements
+
+- Added `/generate-code/` API endpoint for code snippet generation
+- New `CodeGenerator` service class in backend for extensible code generation
+- Enhanced request editor UI with additional tab for code snippets
+- Language-specific syntax highlighting preparation (ready for future enhancement)
+- Keyboard shortcut system for improved developer experience
+- **Request rate limiting**: Added 500ms cooldown between requests to prevent spam
+- **Request state management**: Tracks active requests to prevent duplicate submissions
+- Better user feedback with specific warning messages for rate limiting
+
+### 🐛 Bug Fixes
+
+- **Fixed rapid request spam**: Users can no longer send multiple simultaneous requests by spamming the send button or Cmd/Ctrl+Enter
+- **Rate limiting protection**: Minimum 500ms interval between requests with clear user feedback
+- **Request state tracking**: Prevents duplicate requests when one is already in progress
+- **Better error messages**: Clear warnings when trying to send requests too quickly or without proper permissions
+- **DRF Token auth prefix fix**: `rest_framework.authentication.TokenAuthentication` is now handled separately from bearer JWT auth
+  - Added dedicated `token` auth type in schema auto-detection and default auth methods
+  - Sends `Authorization: Token <token>` instead of incorrectly forcing `Bearer`
+- **API Key transport fix**: API keys now follow OpenAPI `in` location (`header`, `query`, `cookie`) instead of always being injected into headers
+  - Global auth now builds auth config by transport location
+  - Request builder forwards query-based keys as query params and cookie-based keys as cookies
+  - Multipart upload flow now preserves `_headers` and `_cookies` auth metadata
+- **Custom user model compatibility (management command)**: Fixed `list_permissions` crash on projects without a `username` field
+  - Command now reads the configured identifier via `USERNAME_FIELD` dynamically
+- **Send button loading spinner visibility**: Fixed invisible loader icon while request state shows `Sending...`
+  - Spinner now has explicit circular border styling and contrast for reliable visibility
+
+### 💡 Use Cases
+
+- **Developers**: Copy-paste working code examples directly into projects
+- **Documentation**: Auto-generate code examples for API documentation
+- **Testing**: Quick script generation for testing endpoints
+- **Integration**: Speed up API integration with pre-configured client code
+- **Power Users**: Navigate and test endpoints faster with keyboard shortcuts
+
 ## [1.0.4] - 2026-06-15
 
 ### ✨ New Features

@@ -9,7 +9,6 @@ class RequestEditor {
     this.currentEndpoint = null;
     this.fullSchema = null;
     this.onSendCallback = null;
-    this.lastCurlCommand = null;
     // Make globally accessible for copy button
     window.requestEditor = this;
   }
@@ -154,32 +153,6 @@ class RequestEditor {
                     </div>
                 </div>
                 
-                <!-- cURL Command -->
-                <div id="curl-command-section" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hidden">
-                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
-                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            cURL Command
-                        </h3>
-                        <button 
-                            onclick="window.requestEditor.copyCurlCommand()" 
-                            class="px-3 py-1.5 bg-purple-600 dark:bg-purple-500 hover:bg-purple-700 dark:hover:bg-purple-600 text-white rounded text-sm transition flex items-center gap-2 shadow-sm"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                            Copy
-                        </button>
-                    </div>
-                    <div class="p-4">
-                        <div class="code-block max-h-48 overflow-x-auto">
-                            <pre id="curl-command-text" class="whitespace-pre-wrap font-mono text-sm text-gray-900 dark:text-gray-100"></pre>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Send Button -->
                 <button id="send-request-btn" 
                         class="w-full ${window.PORTAL_CONFIG?.canSendRequest === false ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"} text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
@@ -190,6 +163,21 @@ class RequestEditor {
                     ${window.PORTAL_CONFIG?.canSendRequest === false ? "View Only - No Send Permission" : "Send Request"}
                 </button>
                 ${window.PORTAL_CONFIG?.canSendRequest === false ? '<p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2 text-center">⚠️ You need DEVELOPER role or higher to send requests</p>' : ""}
+                
+                <!-- Code Generation Section -->
+                <div id="code-generation-section" class="mt-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                            Code Generation
+                        </h3>
+                    </div>
+                    <div class="p-4">
+                        ${window.codeGenerator ? window.codeGenerator.renderUI(endpoint, () => this.getRequestConfig()) : '<p class="text-gray-500">Code generator not available</p>'}
+                    </div>
+                </div>
             </div>
         `;
 
@@ -207,6 +195,16 @@ class RequestEditor {
       .addEventListener("click", () => {
         this.sendRequest();
       });
+
+    // Add event listener for smart defaults button (if it exists)
+    const smartDefaultsBtn = document.getElementById(
+      "populate-smart-defaults-btn",
+    );
+    if (smartDefaultsBtn) {
+      smartDefaultsBtn.addEventListener("click", () => {
+        this.populateSmartDefaults();
+      });
+    }
   }
 
   setupJsonValidation() {
@@ -629,10 +627,26 @@ class RequestEditor {
         }
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Request Body
-            <span class="text-gray-500 dark:text-gray-400 font-normal ml-2 text-xs">(JSON)</span>
-          </label>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Request Body
+              <span class="text-gray-500 dark:text-gray-400 font-normal ml-2 text-xs">(JSON)</span>
+            </label>
+            ${
+              schema
+                ? `
+            <button id="populate-smart-defaults-btn" 
+                    class="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-1.5 font-medium shadow-sm hover:shadow"
+                    title="Populate with smart default values based on schema">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              Smart Defaults
+            </button>
+            `
+                : ""
+            }
+          </div>
           <div class="relative">
             <textarea id="request-body" 
                       class="dark-input w-full px-4 py-3 rounded-lg font-mono text-sm leading-relaxed transition-all"
@@ -1212,31 +1226,467 @@ class RequestEditor {
       });
   }
 
-  generateExampleFromSchema(schema) {
-    // Simple schema to example generator
-    if (schema.example) {
+  normalizeSchema(schema, depth = 0) {
+    if (!schema || depth > 5) {
+      return schema;
+    }
+
+    let resolved = this.resolveSchemaRef(schema) || schema;
+
+    if (resolved.allOf && resolved.allOf.length > 0) {
+      const merged = { ...resolved, properties: {}, required: [] };
+      for (const part of resolved.allOf) {
+        const normalizedPart = this.normalizeSchema(part, depth + 1);
+        if (!normalizedPart) {
+          continue;
+        }
+        if (normalizedPart.properties) {
+          merged.properties = {
+            ...merged.properties,
+            ...normalizedPart.properties,
+          };
+        }
+        if (Array.isArray(normalizedPart.required)) {
+          merged.required = [...merged.required, ...normalizedPart.required];
+        }
+      }
+      merged.required = [...new Set(merged.required)];
+      delete merged.allOf;
+      resolved = merged;
+    }
+
+    if (resolved.oneOf && resolved.oneOf.length > 0) {
+      resolved = this.normalizeSchema(resolved.oneOf[0], depth + 1) || resolved;
+    }
+
+    if (resolved.anyOf && resolved.anyOf.length > 0) {
+      resolved = this.normalizeSchema(resolved.anyOf[0], depth + 1) || resolved;
+    }
+
+    return resolved;
+  }
+
+  generateExampleFromSchema(schema, depth = 0) {
+    schema = this.normalizeSchema(schema, depth);
+    if (!schema) {
+      return "{\n  \n}";
+    }
+
+    // Prevent infinite recursion
+    if (depth > 5) {
+      return null;
+    }
+
+    // Use existing example if available
+    if (schema.example !== undefined) {
       return JSON.stringify(schema.example, null, 2);
     }
 
-    if (schema.properties) {
-      const example = {};
-      for (const [key, prop] of Object.entries(schema.properties)) {
-        if (prop.type === "string") {
-          example[key] = prop.example || `example_${key}`;
-        } else if (prop.type === "integer" || prop.type === "number") {
-          example[key] = prop.example || 0;
-        } else if (prop.type === "boolean") {
-          example[key] = prop.example || false;
-        } else if (prop.type === "array") {
-          example[key] = [];
-        } else {
-          example[key] = null;
-        }
-      }
-      return JSON.stringify(example, null, 2);
+    // Use default value if available
+    if (schema.default !== undefined) {
+      return JSON.stringify(schema.default, null, 2);
+    }
+
+    // Handle different schema types
+    if (schema.type === "object" || schema.properties) {
+      return JSON.stringify(
+        this.generateSmartObjectExample(schema, depth),
+        null,
+        2,
+      );
+    }
+
+    if (schema.type === "array") {
+      return JSON.stringify(
+        this.generateSmartArrayExample(schema, depth),
+        null,
+        2,
+      );
+    }
+
+    // For primitive types at top level, wrap in an object
+    if (schema.type) {
+      return JSON.stringify(
+        this.generateSmartValue("value", schema, depth),
+        null,
+        2,
+      );
     }
 
     return "{\n  \n}";
+  }
+
+  generateSmartObjectExample(schema, depth = 0) {
+    schema = this.normalizeSchema(schema, depth);
+    const example = {};
+
+    if (!schema.properties) {
+      return example;
+    }
+
+    // Prioritize required fields
+    const requiredFields = schema.required || [];
+
+    for (const [key, prop] of Object.entries(schema.properties)) {
+      // Always include required fields, optionally include others (50% chance)
+      const shouldInclude = requiredFields.includes(key) || Math.random() > 0.5;
+
+      if (shouldInclude) {
+        example[key] = this.generateSmartValue(key, prop, depth + 1);
+      }
+    }
+
+    return example;
+  }
+
+  generateSmartArrayExample(schema, depth = 0) {
+    schema = this.normalizeSchema(schema, depth);
+
+    // Check if there's an items schema
+    if (!schema.items) {
+      return [];
+    }
+
+    // Generate 1-2 example items
+    const numItems = schema.minItems || 1;
+    const items = [];
+
+    for (let i = 0; i < numItems; i++) {
+      const item = this.generateSmartValue(
+        `item_${i}`,
+        schema.items,
+        depth + 1,
+      );
+      items.push(item);
+    }
+
+    return items;
+  }
+
+  generateSmartValue(fieldName, schema, depth = 0) {
+    schema = this.normalizeSchema(schema, depth);
+    if (!schema) {
+      return null;
+    }
+
+    // Check for example first
+    if (schema.example !== undefined) {
+      return schema.example;
+    }
+
+    // Check for default value
+    if (schema.default !== undefined) {
+      return schema.default;
+    }
+
+    // Handle enums
+    if (schema.enum && schema.enum.length > 0) {
+      return schema.enum[0];
+    }
+
+    // Handle different types
+    if (schema.type === "object" || schema.properties) {
+      return this.generateSmartObjectExample(schema, depth);
+    }
+
+    if (schema.type === "array") {
+      return this.generateSmartArrayExample(schema, depth);
+    }
+
+    if (schema.type === "string") {
+      return this.generateSmartString(fieldName, schema);
+    }
+
+    if (schema.type === "integer") {
+      return this.generateSmartInteger(fieldName, schema);
+    }
+
+    if (schema.type === "number") {
+      return this.generateSmartNumber(fieldName, schema);
+    }
+
+    if (schema.type === "boolean") {
+      return this.generateSmartBoolean(fieldName, schema);
+    }
+
+    // Default fallback
+    return null;
+  }
+
+  generateSmartString(fieldName, schema) {
+    const lowerKey = fieldName.toLowerCase();
+
+    // Check for format hints
+    if (schema.format) {
+      switch (schema.format) {
+        case "email":
+          return "user@example.com";
+        case "uri":
+        case "url":
+          return "https://example.com";
+        case "date":
+          return new Date().toISOString().split("T")[0];
+        case "date-time":
+          return new Date().toISOString();
+        case "time":
+          return "12:00:00";
+        case "uuid":
+          return "123e4567-e89b-12d3-a456-426614174000";
+        case "ipv4":
+          return "192.168.1.1";
+        case "ipv6":
+          return "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+        case "hostname":
+          return "example.com";
+        case "password":
+          return "********";
+        default:
+          break;
+      }
+    }
+
+    // Smart defaults based on field name patterns
+    if (lowerKey.includes("email") || lowerKey.includes("e-mail")) {
+      return "user@example.com";
+    }
+    if (
+      lowerKey.includes("phone") ||
+      lowerKey.includes("mobile") ||
+      lowerKey.includes("tel")
+    ) {
+      return "+1234567890";
+    }
+    if (
+      lowerKey.includes("url") ||
+      lowerKey.includes("link") ||
+      lowerKey.includes("website")
+    ) {
+      return "https://example.com";
+    }
+    if (lowerKey.includes("address") || lowerKey.includes("street")) {
+      return "123 Main St";
+    }
+    if (lowerKey.includes("city")) {
+      return "New York";
+    }
+    if (lowerKey.includes("state") || lowerKey.includes("province")) {
+      return "NY";
+    }
+    if (lowerKey.includes("country")) {
+      return "USA";
+    }
+    if (lowerKey.includes("zip") || lowerKey.includes("postal")) {
+      return "10001";
+    }
+    if (lowerKey.includes("name")) {
+      if (lowerKey.includes("first")) return "John";
+      if (lowerKey.includes("last")) return "Doe";
+      if (lowerKey.includes("user")) return "johndoe";
+      if (lowerKey.includes("company")) return "Acme Corp";
+      return "John Doe";
+    }
+    if (lowerKey.includes("title")) {
+      return "Example Title";
+    }
+    if (lowerKey.includes("description") || lowerKey.includes("bio")) {
+      return "This is an example description";
+    }
+    if (lowerKey.includes("username") || lowerKey === "user") {
+      return "johndoe";
+    }
+    if (lowerKey.includes("password") || lowerKey.includes("pwd")) {
+      return "********";
+    }
+    if (lowerKey.includes("token") || lowerKey.includes("key")) {
+      return "abc123def456";
+    }
+    if (lowerKey.includes("color") || lowerKey.includes("colour")) {
+      return "#3B82F6";
+    }
+    if (lowerKey.includes("code")) {
+      return "ABC123";
+    }
+    if (lowerKey.includes("status")) {
+      return "active";
+    }
+    if (lowerKey.includes("type") || lowerKey.includes("category")) {
+      return "general";
+    }
+    if (lowerKey.includes("tag")) {
+      return "example";
+    }
+    if (lowerKey.includes("slug")) {
+      return "example-slug";
+    }
+    if (
+      lowerKey.includes("content") ||
+      lowerKey.includes("text") ||
+      lowerKey.includes("message")
+    ) {
+      return "Example content";
+    }
+
+    // Check for length constraints
+    if (schema.maxLength) {
+      if (schema.maxLength <= 10) {
+        return "short";
+      }
+      if (schema.maxLength <= 50) {
+        return "Example text";
+      }
+    }
+
+    // Check for pattern (basic UUID detection)
+    if (schema.pattern && schema.pattern.includes("[0-9a-f]")) {
+      return "123e4567-e89b-12d3-a456-426614174000";
+    }
+
+    // Generic default
+    return `example_${fieldName}`;
+  }
+
+  generateSmartInteger(fieldName, schema) {
+    const lowerKey = fieldName.toLowerCase();
+
+    // Check for constraints
+    if (schema.minimum !== undefined) {
+      return schema.minimum;
+    }
+    if (schema.exclusiveMinimum !== undefined) {
+      return schema.exclusiveMinimum + 1;
+    }
+
+    // Smart defaults based on field name
+    if (lowerKey.includes("age")) {
+      return 25;
+    }
+    if (lowerKey.includes("year")) {
+      return new Date().getFullYear();
+    }
+    if (lowerKey.includes("month")) {
+      return new Date().getMonth() + 1;
+    }
+    if (lowerKey.includes("day")) {
+      return new Date().getDate();
+    }
+    if (
+      lowerKey.includes("count") ||
+      lowerKey.includes("quantity") ||
+      lowerKey.includes("qty")
+    ) {
+      return 1;
+    }
+    if (
+      lowerKey.includes("price") ||
+      lowerKey.includes("amount") ||
+      lowerKey.includes("cost")
+    ) {
+      return 100;
+    }
+    if (lowerKey.includes("page")) {
+      return 1;
+    }
+    if (lowerKey.includes("limit") || lowerKey.includes("size")) {
+      return 10;
+    }
+    if (lowerKey.includes("offset") || lowerKey.includes("skip")) {
+      return 0;
+    }
+    if (lowerKey.includes("percent") || lowerKey.includes("percentage")) {
+      return 50;
+    }
+    if (lowerKey.includes("score") || lowerKey.includes("rating")) {
+      return 5;
+    }
+    if (lowerKey.includes("priority")) {
+      return 1;
+    }
+    if (lowerKey === "id" || lowerKey.endsWith("_id")) {
+      return 1;
+    }
+
+    // Default
+    return 0;
+  }
+
+  generateSmartNumber(fieldName, schema) {
+    const lowerKey = fieldName.toLowerCase();
+
+    // Check for constraints
+    if (schema.minimum !== undefined) {
+      return schema.minimum;
+    }
+    if (schema.exclusiveMinimum !== undefined) {
+      return schema.exclusiveMinimum + 0.1;
+    }
+
+    // Smart defaults based on field name
+    if (
+      lowerKey.includes("price") ||
+      lowerKey.includes("amount") ||
+      lowerKey.includes("cost")
+    ) {
+      return 99.99;
+    }
+    if (
+      lowerKey.includes("rate") ||
+      lowerKey.includes("percentage") ||
+      lowerKey.includes("percent")
+    ) {
+      return 0.5;
+    }
+    if (lowerKey.includes("latitude") || lowerKey === "lat") {
+      return 40.7128;
+    }
+    if (
+      lowerKey.includes("longitude") ||
+      lowerKey === "lng" ||
+      lowerKey === "lon"
+    ) {
+      return -74.006;
+    }
+    if (lowerKey.includes("temperature") || lowerKey.includes("temp")) {
+      return 20.5;
+    }
+    if (lowerKey.includes("weight")) {
+      return 75.5;
+    }
+    if (lowerKey.includes("height")) {
+      return 175.0;
+    }
+    if (lowerKey.includes("distance")) {
+      return 10.5;
+    }
+    if (lowerKey.includes("score") || lowerKey.includes("rating")) {
+      return 4.5;
+    }
+
+    // Default
+    return 0.0;
+  }
+
+  generateSmartBoolean(fieldName, schema) {
+    const lowerKey = fieldName.toLowerCase();
+
+    // Smart defaults based on field name
+    if (lowerKey.includes("active") || lowerKey.includes("enabled")) {
+      return true;
+    }
+    if (lowerKey.includes("deleted") || lowerKey.includes("disabled")) {
+      return false;
+    }
+    if (lowerKey.includes("public") || lowerKey.includes("published")) {
+      return true;
+    }
+    if (lowerKey.includes("verified") || lowerKey.includes("confirmed")) {
+      return false;
+    }
+    if (lowerKey.includes("required") || lowerKey.includes("mandatory")) {
+      return false;
+    }
+
+    // Default
+    return false;
   }
 
   async sendRequest() {
@@ -1253,8 +1703,8 @@ class RequestEditor {
     const button = document.getElementById("send-request-btn");
     button.disabled = true;
     button.innerHTML = `
-            <div class="spinner w-5 h-5 border-2"></div>
-            Sending...
+          <span class="spinner w-5 h-5 border-2" aria-hidden="true"></span>
+          <span>Sending...</span>
         `;
 
     try {
@@ -1323,11 +1773,15 @@ class RequestEditor {
         }
       }
 
-      // Merge with global authentication headers
+      let authRequestConfig = { headers: {}, params: {}, cookies: {} };
+
+      // Merge with global authentication configuration
       if (window.globalAuth) {
-        const globalAuthHeaders = window.globalAuth.getAuthHeaders();
+        authRequestConfig = window.globalAuth.getAuthRequestConfig();
+        const globalAuthHeaders = authRequestConfig.headers;
         // Global auth headers take precedence if not overridden in custom headers
         customHeaders = { ...globalAuthHeaders, ...customHeaders };
+        Object.assign(params, authRequestConfig.params);
       }
 
       // Build path with path parameters
@@ -1345,10 +1799,8 @@ class RequestEditor {
         data: data,
         params: params,
         _headers: customHeaders,
+        _cookies: authRequestConfig.cookies,
       };
-
-      // Generate and display cURL command
-      this.generateCurlCommand(payload);
 
       if (this.onSendCallback) {
         await this.onSendCallback(payload);
@@ -1369,82 +1821,71 @@ class RequestEditor {
     }
   }
 
+  populateSmartDefaults() {
+    if (!this.currentEndpoint || !this.currentEndpoint.requestBody) {
+      return;
+    }
+
+    const bodyTextarea = document.getElementById("request-body");
+    if (!bodyTextarea) {
+      return;
+    }
+
+    // Get the schema
+    const content = this.currentEndpoint.requestBody.content;
+    const jsonMediaType = Object.keys(content || {}).find(
+      (mediaType) =>
+        mediaType === "application/json" || mediaType.endsWith("+json"),
+    );
+    const jsonContent = jsonMediaType ? content[jsonMediaType] : null;
+
+    if (!jsonContent?.schema) {
+      showToast("No schema available for smart defaults", "warning");
+      return;
+    }
+
+    try {
+      // Generate new smart defaults
+      const smartJson = this.generateExampleFromSchema(jsonContent.schema);
+
+      if (!smartJson || smartJson === "{\n  \n}") {
+        showToast(
+          "Could not derive smart defaults from this schema",
+          "warning",
+        );
+        return;
+      }
+
+      // Populate the textarea
+      bodyTextarea.value = smartJson;
+
+      // Trigger validation
+      bodyTextarea.dispatchEvent(new Event("input"));
+
+      // Show success message
+      showToast("Smart defaults populated successfully", "success");
+
+      // Visually highlight the textarea briefly
+      bodyTextarea.classList.add(
+        "ring-2",
+        "ring-purple-500",
+        "dark:ring-purple-400",
+      );
+      setTimeout(() => {
+        bodyTextarea.classList.remove(
+          "ring-2",
+          "ring-purple-500",
+          "dark:ring-purple-400",
+        );
+      }, 1000);
+    } catch (error) {
+      console.error("Failed to populate smart defaults:", error);
+      showToast("Failed to populate smart defaults", "error");
+    }
+  }
+
   onSend(callback) {
     this.onSendCallback = callback;
-  }
-
-  generateCurlCommand(payload) {
-    const baseUrl = window.location.origin;
-    let url = baseUrl + payload.path;
-
-    // Add query parameters
-    if (payload.params && Object.keys(payload.params).length > 0) {
-      const queryString = new URLSearchParams(payload.params).toString();
-      url += "?" + queryString;
-    }
-
-    let curlParts = [`curl -X ${payload.method}`];
-    curlParts.push(`'${url}'`);
-
-    // Add headers
-    const headers = payload._headers || {};
-    Object.entries(headers).forEach(([key, value]) => {
-      curlParts.push(`  -H '${key}: ${value}'`);
-    });
-
-    // Add content-type header if we have data
-    if (payload.data && !(payload.data instanceof FormData)) {
-      curlParts.push(`  -H 'Content-Type: application/json'`);
-    }
-
-    // Add data
-    if (payload.data) {
-      if (payload.data instanceof FormData) {
-        // For FormData, show form fields
-        const formFields = [];
-        for (let [key, value] of payload.data.entries()) {
-          if (value instanceof File) {
-            formFields.push(`  -F '${key}=@${value.name}'`);
-          } else {
-            formFields.push(`  -F '${key}=${value}'`);
-          }
-        }
-        curlParts = curlParts.concat(formFields);
-      } else {
-        // For JSON data
-        const jsonData = JSON.stringify(payload.data);
-        // Use double quotes for curl data and escape internal double quotes
-        const escapedData = jsonData
-          .replace(/\\/g, "\\\\")
-          .replace(/"/g, '\\"');
-        curlParts.push(`  -d "${escapedData}"`);
-      }
-    }
-
-    this.lastCurlCommand = curlParts.join(" \\\n");
-
-    // Display curl command
-    const curlSection = document.getElementById("curl-command-section");
-    const curlText = document.getElementById("curl-command-text");
-
-    if (curlSection && curlText) {
-      curlText.textContent = this.lastCurlCommand;
-      curlSection.classList.remove("hidden");
-    }
-  }
-
-  copyCurlCommand() {
-    if (!this.lastCurlCommand) return;
-
-    navigator.clipboard
-      .writeText(this.lastCurlCommand)
-      .then(() => {
-        showToast("cURL command copied to clipboard", "success");
-      })
-      .catch((err) => {
-        showToast("Failed to copy cURL command", "error");
-        console.error("Copy failed:", err);
-      });
   }
 
   escapeHtml(text) {

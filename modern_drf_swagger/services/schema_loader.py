@@ -129,7 +129,7 @@ class PortalSchemaLoader:
         # Map DRF authentication classes to portal auth types
         auth_class_mapping = {
             "rest_framework.authentication.BasicAuthentication": "basic",
-            "rest_framework.authentication.TokenAuthentication": "bearer",
+            "rest_framework.authentication.TokenAuthentication": "token",
             "rest_framework_simplejwt.authentication.JWTAuthentication": "bearer",
             "rest_framework.authentication.SessionAuthentication": None,  # Skip - handled by cookies
         }
@@ -157,6 +157,14 @@ class PortalSchemaLoader:
                         "description": "HTTP Basic authentication (username:password)",
                     }
                 )
+            if "token" in detected_types:
+                schemes.append(
+                    {
+                        "type": "token",
+                        "name": "DRF Token",
+                        "description": "Authorization header using the Token prefix",
+                    }
+                )
             if "bearer" in detected_types:
                 schemes.append(
                     {
@@ -172,6 +180,14 @@ class PortalSchemaLoader:
                 "DEFAULT_AUTH_METHODS", ["bearer", "basic", "apikey"]
             )
 
+            if "token" in default_auth:
+                schemes.append(
+                    {
+                        "type": "token",
+                        "name": "DRF Token",
+                        "description": "Authorization header using the Token prefix",
+                    }
+                )
             if "bearer" in default_auth:
                 schemes.append(
                     {

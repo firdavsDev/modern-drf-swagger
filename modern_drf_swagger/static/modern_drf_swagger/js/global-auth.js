@@ -85,19 +85,61 @@ class GlobalAuth {
     // Show selected section
     switch (type) {
       case "bearer":
+      case "token":
+        this.updateTokenAuthSection(type);
         bearerSection.classList.remove("hidden");
         break;
       case "basic":
         basicSection.classList.remove("hidden");
         break;
       case "apikey":
+        this.updateApiKeySection();
         apikeySection.classList.remove("hidden");
-        // Set default header name if empty
+        // Set default API key name if empty
         const apikeyHeaderInput = document.getElementById("apikey-header");
         if (apikeyHeaderInput && !apikeyHeaderInput.value) {
-          apikeyHeaderInput.value = this.getDefaultApiKeyHeader();
+          apikeyHeaderInput.value = this.getDefaultApiKeyName();
         }
         break;
+    }
+  }
+
+  getTokenAuthConfig(type) {
+    if (type === "token") {
+      return {
+        label: "DRF Token",
+        placeholder: "Paste your DRF token here",
+        helpText: "Will be sent as: Authorization: Token {token}",
+        successName: "Token",
+      };
+    }
+
+    if (type !== "bearer") {
+      return null;
+    }
+
+    return {
+      label: "Token",
+      placeholder: "Paste your JWT token here",
+      helpText: "Will be sent as: Authorization: Bearer {token}",
+      successName: "Bearer",
+    };
+  }
+
+  updateTokenAuthSection(type) {
+    const config = this.getTokenAuthConfig(type);
+    const tokenLabel = document.getElementById("bearer-token-label");
+    const tokenInput = document.getElementById("bearer-token");
+    const tokenHelp = document.getElementById("bearer-token-help");
+
+    if (tokenLabel) {
+      tokenLabel.textContent = config.label;
+    }
+    if (tokenInput) {
+      tokenInput.placeholder = config.placeholder;
+    }
+    if (tokenHelp) {
+      tokenHelp.textContent = config.helpText;
     }
   }
 
@@ -106,10 +148,10 @@ class GlobalAuth {
     if (modal) {
       modal.classList.remove("hidden");
 
-      // Set default API key header if field is empty
+      // Set default API key name if field is empty
       const apikeyHeaderInput = document.getElementById("apikey-header");
       if (apikeyHeaderInput && !apikeyHeaderInput.value) {
-        apikeyHeaderInput.value = this.getDefaultApiKeyHeader();
+        apikeyHeaderInput.value = this.getDefaultApiKeyName();
       }
 
       this.loadAuthToModal();
@@ -135,6 +177,7 @@ class GlobalAuth {
 
     switch (authData.type) {
       case "bearer":
+      case "token":
         document.getElementById("bearer-token").value = authData.token || "";
         break;
       case "basic":
@@ -144,21 +187,65 @@ class GlobalAuth {
           authData.password || "";
         break;
       case "apikey":
-        const defaultHeaderName = this.getDefaultApiKeyHeader();
+        this.updateApiKeySection();
+        const defaultHeaderName = this.getDefaultApiKeyName();
         document.getElementById("apikey-header").value =
-          authData.headerName || defaultHeaderName;
+          authData.keyName || authData.headerName || defaultHeaderName;
         document.getElementById("apikey-value").value = authData.apiKey || "";
         break;
     }
   }
 
   /**
-   * Get default API key header name from auth schemes
+   * Get API key scheme from auth schemes
    */
-  getDefaultApiKeyHeader() {
+  getApiKeyScheme() {
     const authSchemes = window.PORTAL_CONFIG?.authSchemes || [];
-    const apikeyScheme = authSchemes.find((s) => s.type === "apikey");
-    return apikeyScheme?.name || "X-API-Key";
+    return authSchemes.find((scheme) => scheme.type === "apikey") || null;
+  }
+
+  /**
+   * Get default API key name from auth schemes
+   */
+  getDefaultApiKeyName() {
+    return this.getApiKeyScheme()?.name || "X-API-Key";
+  }
+
+  /**
+   * Get the API key transport location from auth schemes
+   */
+  getApiKeyLocation() {
+    return this.getApiKeyScheme()?.in || "header";
+  }
+
+  updateApiKeySection() {
+    const location = this.getApiKeyLocation();
+    const keyNameLabel = document.getElementById("apikey-name-label");
+    const keyNameInput = document.getElementById("apikey-header");
+    const keyHelp = document.getElementById("apikey-help");
+
+    const labelByLocation = {
+      header: "Header Name",
+      query: "Query Parameter Name",
+      cookie: "Cookie Name",
+    };
+
+    const helpByLocation = {
+      header: "Will be sent as a request header",
+      query: "Will be appended as a query parameter",
+      cookie: "Will be sent as a request cookie",
+    };
+
+    if (keyNameLabel) {
+      keyNameLabel.textContent = labelByLocation[location] || "Key Name";
+    }
+    if (keyNameInput) {
+      keyNameInput.placeholder = this.getDefaultApiKeyName();
+    }
+    if (keyHelp) {
+      keyHelp.textContent =
+        helpByLocation[location] || "Will be sent with the request";
+    }
   }
 
   saveAuth() {
@@ -167,6 +254,7 @@ class GlobalAuth {
 
     switch (authType) {
       case "bearer":
+      case "token":
         const token = document.getElementById("bearer-token").value.trim();
         if (!token) {
           showToast("Please enter a token", "error");
@@ -195,7 +283,8 @@ class GlobalAuth {
           showToast("Please enter header name and API key", "error");
           return;
         }
-        authData.headerName = headerName;
+        authData.keyName = headerName;
+        authData.location = this.getApiKeyLocation();
         authData.apiKey = apiKey;
         break;
     }
@@ -210,8 +299,9 @@ class GlobalAuth {
     this.closeAuthModal();
 
     // Show success message
+    const tokenConfig = this.getTokenAuthConfig(authType);
     showToast(
-      `${authType.charAt(0).toUpperCase() + authType.slice(1)} authentication configured`,
+      `${tokenConfig ? tokenConfig.successName : authType.charAt(0).toUpperCase() + authType.slice(1)} authentication configured`,
       "success",
     );
   }
@@ -224,7 +314,7 @@ class GlobalAuth {
     document.getElementById("basic-username").value = "";
     document.getElementById("basic-password").value = "";
     document.getElementById("apikey-header").value =
-      this.getDefaultApiKeyHeader();
+      this.getDefaultApiKeyName();
     document.getElementById("apikey-value").value = "";
 
     // Update UI
@@ -308,18 +398,26 @@ class GlobalAuth {
   }
 
   /**
-   * Get authentication headers to be added to requests
-   * @returns {Object} Headers object
+   * Get authentication values grouped by request location
+   * @returns {{headers: Object, params: Object, cookies: Object}}
    */
-  getAuthHeaders() {
+  getAuthRequestConfig() {
     const authData = this.getAuth();
-    if (!authData) return {};
+    if (!authData) {
+      return { headers: {}, params: {}, cookies: {} };
+    }
 
     const headers = {};
+    const params = {};
+    const cookies = {};
 
     switch (authData.type) {
       case "bearer":
         headers["Authorization"] = `Bearer ${authData.token}`;
+        break;
+
+      case "token":
+        headers["Authorization"] = `Token ${authData.token}`;
         break;
 
       case "basic":
@@ -327,12 +425,33 @@ class GlobalAuth {
         headers["Authorization"] = `Basic ${credentials}`;
         break;
 
-      case "apikey":
-        headers[authData.headerName] = authData.apiKey;
+      case "apikey": {
+        const keyName =
+          authData.keyName ||
+          authData.headerName ||
+          this.getDefaultApiKeyName();
+        const location = authData.location || this.getApiKeyLocation();
+
+        if (location === "query") {
+          params[keyName] = authData.apiKey;
+        } else if (location === "cookie") {
+          cookies[keyName] = authData.apiKey;
+        } else {
+          headers[keyName] = authData.apiKey;
+        }
         break;
+      }
     }
 
-    return headers;
+    return { headers, params, cookies };
+  }
+
+  /**
+   * Get authentication headers to be added to requests
+   * @returns {Object} Headers object
+   */
+  getAuthHeaders() {
+    return this.getAuthRequestConfig().headers;
   }
 
   /**

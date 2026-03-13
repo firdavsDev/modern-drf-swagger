@@ -49,7 +49,7 @@ class APIProxyView(APIView):
             # Collect form data and files
             form_data = {}
             for key in request.POST:
-                if key not in ["method", "path", "params"]:
+                if key not in ["method", "path", "params", "_headers", "_cookies"]:
                     form_data[key] = request.POST[key]
 
             files = {}
