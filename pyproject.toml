@@ -8,11 +8,11 @@ version = "1.0.8"
 authors = [
   { name="DavronbekDev", email="davronbekboltyev777@gmail.com" },
 ]
-description = "A modern API developer portal for Django REST Framework projects."
+description = "A modern API developer swagger UI for Django REST Framework projects."
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
-keywords = ["django", "rest-framework", "api", "swagger", "openapi", "documentation", "portal"]
+keywords = ["django", "rest-framework", "api", "swagger", "openapi", "documentation", "developer-friendly"]
 dependencies = [
     "django>=3.2",
     "djangorestframework>=3.12",

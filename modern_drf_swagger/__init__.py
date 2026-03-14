@@ -1,5 +1,5 @@
 """
-Modern DRF Swagger - A modern API developer portal for Django REST Framework.
+Modern DRF Swagger - A modern API developer package for Django REST Framework.
 """
 
 __version__ = "1.0.8"

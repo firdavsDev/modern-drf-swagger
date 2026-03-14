@@ -203,7 +203,7 @@ class TaskEnvelopeAPIView(APIView):
             {
                 "status_code": 200,
                 "status": "success",
-                "message": "Malumotlar fetch qilindi",
+                "message": "Successfully fetched tasks",
                 "data": payload,
             }
         )

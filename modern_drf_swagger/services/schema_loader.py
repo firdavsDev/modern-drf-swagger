@@ -126,7 +126,7 @@ class PortalSchemaLoader:
         rest_framework_settings = getattr(settings, "REST_FRAMEWORK", {})
         auth_classes = rest_framework_settings.get("DEFAULT_AUTHENTICATION_CLASSES", [])
 
-        # Map DRF authentication classes to portal auth types
+        # Map DRF authentication classes to package auth types
         auth_class_mapping = {
             "rest_framework.authentication.BasicAuthentication": "basic",
             "rest_framework.authentication.TokenAuthentication": "token",

@@ -1,6 +1,6 @@
 # Modern DRF Swagger - Sample Project
 
-A demonstration Django project showcasing the **Modern DRF Swagger** API documentation portal with a complete Task Management API.
+A demonstration Django project showcasing the **Modern DRF Swagger** API documentation package with a complete Task Management API.
 
 ## 📋 Overview
 

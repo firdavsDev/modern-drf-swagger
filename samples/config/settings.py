@@ -165,5 +165,5 @@ MODERN_DRF_SWAGGER = {
     "EXCLUDE_PATHS": ["/admin/", "/internal/", "/health/"],  # Hide these paths
     # Note: DEFAULT_AUTH_METHODS is now auto-detected from REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']
     # Only set it manually if you need to override the auto-detection
-    "CODE_GENERATE_ENABLE": False,  # Disable code generation in the sample portal
+    "CODE_GENERATE_ENABLE": False,  # Disable code generation in the sample package
 }

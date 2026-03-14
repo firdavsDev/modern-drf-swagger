@@ -298,7 +298,7 @@ You should now see three main sections:
 
 ## 🧾 Document Custom Request and Response Bodies
 
-If your endpoint returns a custom payload and does not use `serializer_class`, the portal can still show request and response schemas, status codes, and example values.
+If your endpoint returns a custom payload and does not use `serializer_class`, the package can still show request and response schemas, status codes, and example values.
 
 Modern DRF Swagger reads this from your OpenAPI schema, so define it directly on the method with drf-spectacular's `@extend_schema` decorator.
 
@@ -379,7 +379,7 @@ class TaskEnvelopeAPIView(APIView):
         )
 ```
 
-This is enough for the portal to show:
+This is enough for the package to show:
 
 - request body fields
 - `200` and `500` response sections
@@ -399,7 +399,7 @@ from rest_framework import viewsets
 
 @hide_from_portal
 class InternalAPIViewSet(viewsets.ModelViewSet):
-    """This endpoint won't appear in the portal."""
+    """This endpoint won't appear in the package."""
     queryset = InternalModel.objects.all()
     serializer_class = InternalSerializer
 ```
@@ -454,7 +454,7 @@ from rest_framework.response import Response
 class ProtectedAPIView(APIView):
     """
     This endpoint requires Bearer token authentication.
-    The portal will show "Bearer Token (JWT)" in the Authorize modal.
+    The package will show "Bearer Token (JWT)" in the Authorize modal.
     """
     def get(self, request):
         return Response({"message": "Authenticated!"})
@@ -504,7 +504,7 @@ class FlexibleAuthView(APIView):
 
 ### Auto-Detection from REST_FRAMEWORK Settings
 
-**NEW!** The portal now automatically detects authentication methods from your DRF configuration:
+**NEW!** The package automatically detects authentication methods from your DRF configuration:
 
 ```python
 # settings.py
@@ -519,7 +519,7 @@ REST_FRAMEWORK = {
 # No need to configure DEFAULT_AUTH_METHODS - it's automatic! ✨
 ```
 
-The portal automatically maps:
+The package automatically maps:
 - `BasicAuthentication` → Basic Auth
 - `TokenAuthentication` / `JWTAuthentication` → Bearer Token  
 - `SessionAuthentication` → Handled via cookies (no UI needed)
@@ -567,7 +567,7 @@ SPECTACULAR_SETTINGS = {
 }
 ```
 
-**Pro Tip:** The portal automatically reads your authentication configuration and only shows relevant options in the "Authorize" modal!
+**Pro Tip:** The package automatically reads your authentication configuration and only shows relevant options in the "Authorize" modal!
 
 ---
 
@@ -581,7 +581,7 @@ SPECTACULAR_SETTINGS = {
 3. Ensure `SCHEMA_PATH_PREFIX` matches your URL structure
 4. Try visiting `/api/schema/` to see if the schema generates
 
-### Issue: "Permission denied" when accessing portal
+### Issue: "Permission denied" when accessing package
 
 **Solution:**
 1. Ensure the user is added to a team

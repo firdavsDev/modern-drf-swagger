@@ -13,7 +13,7 @@ def get_portal_setting(name, default=None):
 
 def get_package_version():
     """
-    Get the version to display in the portal UI.
+    Get the version to display in the package UI.
 
     Priority:
     1) settings.MODERN_DRF_SWAGGER["VERSION"]
@@ -40,7 +40,7 @@ def get_package_version():
 
 def hide_from_portal(view_func):
     """
-    Decorator to hide a view from the Modern DRF Swagger portal.
+    Decorator to hide a view from the Modern DRF Swagger package.
     It adds a custom attribute to the view which our schema loader will check.
     """
 

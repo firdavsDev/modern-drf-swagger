@@ -1010,3 +1010,179 @@ table td {
 .code-block .json-punctuation {
   color: #4b5563;
 }
+
+/* HTML Response Viewer Tabs */
+.html-response-viewer {
+  width: 100%;
+}
+
+.html-tab {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.html-tab.active {
+  border-bottom-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.dark .html-tab.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+.tab-pane {
+  animation: fadeIn 0.2s ease-in;
+}
+
+.tab-pane.hidden {
+  display: none;
+}
+
+/* HTML Preview iframe */
+.html-response-viewer iframe {
+  background-color: #ffffff;
+}
+
+.dark .html-response-viewer iframe {
+  background-color: #ffffff;
+}
+
+/* HTML Syntax Highlighting */
+.html-response-viewer .text-blue-600 {
+  color: #2563eb;
+}
+
+.dark .html-response-viewer .text-blue-600 {
+  color: #60a5fa;
+}
+
+.html-response-viewer .text-green-600 {
+  color: #16a34a;
+}
+
+.dark .html-response-viewer .text-green-600 {
+  color: #4ade80;
+}
+
+.html-response-viewer .text-yellow-600 {
+  color: #ca8a04;
+}
+
+.dark .html-response-viewer .text-yellow-600 {
+  color: #facc15;
+}
+
+/* Resizable Response Body Blocks */
+.resizable-code-block {
+  resize: vertical;
+  overflow: auto;
+  min-height: 200px;
+  max-height: 800px;
+  height: 400px;
+  position: relative;
+}
+
+/* Add visual indicator for resize handle in light mode */
+.resizable-code-block::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, transparent 50%, #d1d5db 50%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Dark mode resize indicator */
+.dark .resizable-code-block::after {
+  background: linear-gradient(135deg, transparent 50%, #4b5563 50%);
+}
+
+/* Resizable iframe container for HTML preview */
+.resizable-iframe-container {
+  resize: vertical;
+  overflow: hidden;
+  min-height: 300px;
+  max-height: 1000px;
+  height: 500px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.resizable-iframe-container::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, transparent 50%, #d1d5db 50%);
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 10;
+}
+
+.dark .resizable-iframe-container::after {
+  background: linear-gradient(135deg, transparent 50%, #4b5563 50%);
+}
+
+.resizable-iframe {
+  height: 100%;
+  flex: 1;
+}
+
+/* Enhanced scrollbar for resizable blocks */
+.resizable-code-block::-webkit-scrollbar,
+.resizable-iframe-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.resizable-code-block::-webkit-scrollbar-track,
+.resizable-iframe-container::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.dark .resizable-code-block::-webkit-scrollbar-track,
+.dark .resizable-iframe-container::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.resizable-code-block::-webkit-scrollbar-thumb,
+.resizable-iframe-container::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  border: 2px solid #f3f4f6;
+}
+
+.dark .resizable-code-block::-webkit-scrollbar-thumb,
+.dark .resizable-iframe-container::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-color: #1f2937;
+}
+
+.resizable-code-block::-webkit-scrollbar-thumb:hover,
+.resizable-iframe-container::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.dark .resizable-code-block::-webkit-scrollbar-thumb:hover,
+.dark .resizable-iframe-container::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Hover effect on resize area */
+.resizable-code-block:hover,
+.resizable-iframe-container:hover {
+  cursor: ns-resize;
+}
+
+.resizable-code-block:hover::after,
+.resizable-iframe-container:hover::after {
+  opacity: 1;
+}

@@ -1,6 +1,6 @@
 # Modern DRF Swagger 🚀
 
-A modern, team-based API developer portal for Django REST Framework projects with built-in analytics and granular access control.
+A modern, team-based API developer swagger UI for Django REST Framework projects with built-in analytics and granular access control.
 
 [![PyPI version](https://badge.fury.io/py/modern-drf-swagger.svg)](https://pypi.org/project/modern-drf-swagger/)
 ![Status](https://img.shields.io/badge/status-stable-green)
@@ -129,7 +129,7 @@ MODERN_DRF_SWAGGER = {
 
 **Note:** You don't need to configure `REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS']` or `SPECTACULAR_SETTINGS` - API Portal does this automatically!
 
-**Authentication is also auto-detected!** The portal automatically detects authentication methods from your `REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']` setting. No need to configure `DEFAULT_AUTH_METHODS` unless you want to override the auto-detection.
+**Authentication is also auto-detected!** The package automatically detects authentication methods from your `REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']` setting. No need to configure `DEFAULT_AUTH_METHODS` unless you want to override the auto-detection.
 
 ### 4. Add URL Routes
 
@@ -150,7 +150,7 @@ urlpatterns = [
 ]
 ```
 
-The portal automatically detects its mount point and adjusts all internal links!
+The package automatically detects its mount point and adjusts all internal links!
 
 ### 5. Run Migrations
 
@@ -175,7 +175,7 @@ Visit `http://localhost:8000/admin` to:
 Use Django admin to connect a team to specific API endpoints:
 
 1. Open `Admin -> Teams` and create or open a team.
-2. In `Team Members`, add the portal users who should use that team.
+2. In `Team Members`, add the developers who should use that team.
 3. Set each member role:
     - `SUPER_ADMIN` or `ADMIN`: full access to all endpoints.
     - `DEVELOPER`: can send requests only to endpoints granted to the team.
