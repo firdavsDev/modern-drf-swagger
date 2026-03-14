@@ -18,25 +18,27 @@ class RequestExecutor:
 
     def _extract_headers(self):
         headers = {}
-        # Forward relevant headers from portal UI
-        content_type = self.request.META.get("CONTENT_TYPE")
-        if content_type:
-            headers["Content-Type"] = content_type
+        selected_content_type = self.request.data.get("_content_type")
+        if selected_content_type:
+            headers["Content-Type"] = selected_content_type
 
-        # Extract Authentication Headers
         auth_header = self.request.META.get("HTTP_AUTHORIZATION")
         if auth_header:
             headers["Authorization"] = auth_header
 
-        # Extract and forward CSRF token (for session authentication)
         csrf_token = self.request.META.get("HTTP_X_CSRFTOKEN")
         if csrf_token:
             headers["X-CSRFToken"] = csrf_token
         elif "csrftoken" in self.request.COOKIES:
             headers["X-CSRFToken"] = self.request.COOKIES["csrftoken"]
 
-        # Custom headers sent via the Proxy
         custom_headers = self.request.data.get("_headers", {})
+        if isinstance(custom_headers, str):
+            try:
+                custom_headers = json.loads(custom_headers)
+            except json.JSONDecodeError:
+                custom_headers = {}
+
         if isinstance(custom_headers, dict):
             headers.update(custom_headers)
 
@@ -56,6 +58,40 @@ class RequestExecutor:
 
         return custom_cookies
 
+    def _get_header(self, name: str):
+        for header_name, header_value in self.headers.items():
+            if header_name.lower() == name.lower():
+                return header_value
+
+        return None
+
+    def _stringify_form_value(self, value):
+        if isinstance(value, (dict, list)):
+            return json.dumps(value)
+
+        return str(value)
+
+    def _build_multipart_fields(self, data):
+        if data is None:
+            return []
+
+        if not isinstance(data, dict):
+            return [("payload", (None, self._stringify_form_value(data)))]
+
+        multipart_fields = []
+        for key, value in data.items():
+            if isinstance(value, list):
+                for item in value:
+                    multipart_fields.append(
+                        (key, (None, self._stringify_form_value(item)))
+                    )
+            else:
+                multipart_fields.append(
+                    (key, (None, self._stringify_form_value(value)))
+                )
+
+        return multipart_fields
+
     def execute(self, method: str, path: str, data=None, params=None, files=None):
         url = urljoin(self.base_url, path.lstrip("/"))
 
@@ -65,17 +101,10 @@ class RequestExecutor:
         start_time = time.time()
 
         try:
-            # Execute the request internally or via HTTP
-            # Since DRF endpoints expect WSGI requests, HTTP requests via `requests` to self
-            # is one way. A cleaner way is using DRF's test client or Django's internal test client
-            # but `requests` closely resembles a true client.
-
-            # Prepare files for upload if present
             files_data = None
             if files:
                 files_data = {}
                 for key, file_obj in files.items():
-                    # Reset file pointer to beginning
                     file_obj.seek(0)
                     files_data[key] = (
                         file_obj.name,
@@ -83,25 +112,47 @@ class RequestExecutor:
                         file_obj.content_type,
                     )
 
-            # Choose between JSON and multipart form data
+            content_type = self._get_header("Content-Type") or ""
+            headers_without_content_type = {
+                key: value
+                for key, value in self.headers.items()
+                if key.lower() != "content-type"
+            }
+
             if files_data:
-                # For file uploads, use data (not json) and files parameters
                 response = requests.request(
                     method=method,
                     url=url,
-                    headers={
-                        k: v
-                        for k, v in self.headers.items()
-                        if k.lower() != "content-type"
-                    },  # Let requests set Content-Type
+                    headers=headers_without_content_type,
                     data=data,
                     files=files_data,
                     params=params,
                     cookies=cookies,
                     timeout=10,
                 )
+            elif content_type.startswith("multipart/form-data"):
+                response = requests.request(
+                    method=method,
+                    url=url,
+                    headers=headers_without_content_type,
+                    files=self._build_multipart_fields(data),
+                    params=params,
+                    cookies=cookies,
+                    timeout=10,
+                )
+            elif content_type.startswith(
+                "application/x-www-form-urlencoded"
+            ) or isinstance(data, (str, bytes)):
+                response = requests.request(
+                    method=method,
+                    url=url,
+                    headers=self.headers,
+                    data=data,
+                    params=params,
+                    cookies=cookies,
+                    timeout=10,
+                )
             else:
-                # Regular JSON request
                 response = requests.request(
                     method=method,
                     url=url,
@@ -112,7 +163,7 @@ class RequestExecutor:
                     timeout=10,
                 )
 
-            latency = (time.time() - start_time) * 1000  # ms
+            latency = (time.time() - start_time) * 1000
 
             return {
                 "status": response.status_code,

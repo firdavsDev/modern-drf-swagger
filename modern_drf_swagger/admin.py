@@ -1,5 +1,7 @@
+from django import forms
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 from .models import EndpointPermission, RequestLog, Team, TeamMember, UsageMetric
 from .permissions.endpoint_permissions import EndpointPermissionChecker
@@ -23,6 +25,38 @@ def clear_permission_cache(modeladmin, request, queryset):
 clear_permission_cache.short_description = "Clear permission cache for selected members"
 
 
+class EndpointPermissionAdminForm(forms.ModelForm):
+    class Meta:
+        model = EndpointPermission
+        fields = "__all__"
+
+    def clean_path(self):
+        path = self.cleaned_data.get("path", "")
+        normalized_path = EndpointPermissionChecker.normalize_path(path)
+
+        if normalized_path == "/":
+            raise ValidationError("Path must point to a specific API endpoint.")
+
+        return normalized_path
+
+    def clean_methods(self):
+        methods = self.cleaned_data.get("methods", "")
+        parsed_methods = EndpointPermissionChecker.parse_methods(methods)
+
+        if parsed_methods is EndpointPermissionChecker.ALL_METHODS:
+            return "*"
+
+        if not parsed_methods:
+            supported_methods = ", ".join(
+                sorted(EndpointPermissionChecker.SUPPORTED_HTTP_METHODS)
+            )
+            raise ValidationError(
+                f"Enter * for all methods, or a comma-separated list using: {supported_methods}."
+            )
+
+        return ",".join(sorted(parsed_methods))
+
+
 class TeamMemberInline(admin.TabularInline):
     model = TeamMember
     extra = 1
@@ -30,6 +64,7 @@ class TeamMemberInline(admin.TabularInline):
 
 class EndpointPermissionInline(admin.TabularInline):
     model = EndpointPermission
+    form = EndpointPermissionAdminForm
     extra = 1
 
 
@@ -115,6 +150,7 @@ class TeamMemberAdmin(admin.ModelAdmin):
 
 @admin.register(EndpointPermission)
 class EndpointPermissionAdmin(admin.ModelAdmin):
+    form = EndpointPermissionAdminForm
     list_display = ("team", "path", "methods", "created_at")
     list_filter = ("team",)
     search_fields = ("path", "methods", "team__name")

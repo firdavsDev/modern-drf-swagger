@@ -12,6 +12,7 @@ class GlobalAuth {
   init() {
     // Populate auth type selector from available schemes
     this.populateAuthTypes();
+    this.setupPasswordToggle();
 
     // Setup auth type selector
     const authTypeSelect = document.getElementById("auth-type");
@@ -29,6 +30,57 @@ class GlobalAuth {
 
     // Make globally accessible
     window.globalAuth = this;
+  }
+
+  setupPasswordToggle() {
+    const toggleButton = document.getElementById("basic-password-toggle");
+    if (!toggleButton) {
+      return;
+    }
+
+    toggleButton.addEventListener("click", () => {
+      const passwordInput = document.getElementById("basic-password");
+      if (!passwordInput) {
+        return;
+      }
+
+      const shouldShowPassword = passwordInput.type === "password";
+      passwordInput.type = shouldShowPassword ? "text" : "password";
+      this.updatePasswordToggleUi(shouldShowPassword);
+    });
+
+    this.updatePasswordToggleUi(false);
+  }
+
+  updatePasswordToggleUi(isVisible) {
+    const toggleButton = document.getElementById("basic-password-toggle");
+    const showIcon = document.getElementById("basic-password-toggle-icon-show");
+    const hideIcon = document.getElementById("basic-password-toggle-icon-hide");
+
+    if (!toggleButton || !showIcon || !hideIcon) {
+      return;
+    }
+
+    showIcon.classList.toggle("hidden", isVisible);
+    hideIcon.classList.toggle("hidden", !isVisible);
+    toggleButton.setAttribute(
+      "aria-label",
+      isVisible ? "Hide password" : "Show password",
+    );
+    toggleButton.setAttribute(
+      "title",
+      isVisible ? "Hide password" : "Show password",
+    );
+    toggleButton.setAttribute("aria-pressed", isVisible ? "true" : "false");
+  }
+
+  resetPasswordVisibility() {
+    const passwordInput = document.getElementById("basic-password");
+    if (passwordInput) {
+      passwordInput.type = "password";
+    }
+
+    this.updatePasswordToggleUi(false);
   }
 
   populateAuthTypes() {
@@ -147,6 +199,7 @@ class GlobalAuth {
     const modal = document.getElementById("auth-modal");
     if (modal) {
       modal.classList.remove("hidden");
+      this.resetPasswordVisibility();
 
       // Set default API key name if field is empty
       const apikeyHeaderInput = document.getElementById("apikey-header");
@@ -163,6 +216,8 @@ class GlobalAuth {
     if (modal) {
       modal.classList.add("hidden");
     }
+
+    this.resetPasswordVisibility();
   }
 
   loadAuthToModal() {
@@ -319,6 +374,7 @@ class GlobalAuth {
 
     // Update UI
     this.updateAuthStatus();
+    this.resetPasswordVisibility();
 
     // Close modal
     this.closeAuthModal();

@@ -41,6 +41,10 @@ Click the **"Copy"** button to copy the generated code to your clipboard, then p
 - Global authentication credentials (Bearer token, Basic auth, API key) are automatically included in generated code
 - Custom headers from the Headers tab are also included
 
+### Runtime Toggle
+- Set `MODERN_DRF_SWAGGER['CODE_GENERATE_ENABLE'] = False` to hide the Code Generation panel in the docs UI
+- When disabled, the backend `/generate-code/` endpoint returns `403` instead of generating snippets
+
 ### Real-time Configuration
 - Code is generated based on your current endpoint configuration
 - All parameters, query strings, headers, and body data are included
@@ -136,6 +140,8 @@ Code is generated via POST request to:
 ```
 /generate-code/
 ```
+
+The endpoint is only available to authenticated portal users and respects the `CODE_GENERATE_ENABLE` setting.
 
 ### Frontend Component
 The UI is implemented in:

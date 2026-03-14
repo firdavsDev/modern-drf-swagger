@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-03-14
+
+### ✨ New Features
+- **Flexible request body editors**: The docs request panel now supports JSON, multipart form data, URL-encoded forms, and raw text payloads.
+  - Automatically prefers multipart mode when the schema contains file fields
+  - Lets users switch between documented media types per operation
+  - Preserves the selected content type when requests are proxied
+
+- **More accurate endpoint permission handling**: Permission matching is now based on normalized paths and allowed methods instead of simple exact-path lookups.
+  - Supports saved paths with or without trailing slashes
+  - Matches documented path parameters such as `/api/v1/tasks/{id}/`
+  - Ignores query strings during permission evaluation
+  - Filters the generated schema down to only the methods each user can actually access
+
+### 🔧 Improvements
+- Added admin-side normalization and validation for endpoint permission paths and method lists
+- Added `CODE_GENERATE_ENABLE` setting so code generation can be disabled in both the UI and backend endpoint
+- Portal proxy now uses session authentication explicitly to avoid browser basic-auth prompts when project defaults include `BasicAuthentication`
+- Added sample endpoints and sample project updates for inline schema examples and multipart uploads
+- Refreshed README, quick start, usage, and sample docs for the latest configuration and permission behavior
+
+### 🐛 Bug Fixes
+- Fixed stale permission cache after endpoint permissions change by switching to per-user cache version invalidation
+- Fixed form and multipart proxy requests so the upstream request uses the correct payload shape and `Content-Type`
+- Fixed schema visibility so developers only see the endpoints and methods granted to their teams
+- Fixed request body examples for views documented with `@extend_schema` and `inline_serializer` without `serializer_class`
+
 ## [1.0.7] - 2026-03-14
 
 ### ✨ New Features

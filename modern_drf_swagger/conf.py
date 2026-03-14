@@ -56,15 +56,16 @@ def hide_from_portal(view_func):
 # All settings can be overridden via settings.MODERN_DRF_SWAGGER dictionary
 DEFAULT_CONFIG = {
     # Portal Settings
-    "TITLE": "Modern DRF Swagger",
+    "TITLE": "Modern Swagger",
     "DESCRIPTION": "API Documentation Portal",
-    "VERSION": "1.0.7",
+    "VERSION": "1.0.8",
     # Feature Toggles
     "ANALYTICS_ENABLED": True,
     "HISTORY_ENABLED": True,
+    "CODE_GENERATE_ENABLE": True,
     "MAX_HISTORY_PER_USER": 1000,
     "ALLOW_ANONYMOUS": False,
-    # Schema Settings (controls drf-spectacular internally)
+    # Schema Settings
     "SCHEMA_PATH_PREFIX": r"/api/",
     # UI Settings
     "ENDPOINTS_COLLAPSIBLE": True,
@@ -80,11 +81,12 @@ MODERN_DRF_SWAGGER = {
     # Basic Info (also controls drf-spectacular)
     'TITLE': 'API Documentation',
     'DESCRIPTION': 'Complete API documentation for My Company',
-    'VERSION': '2.0.0',
+    'VERSION': '1.0.8',
     
     # Features
     'ANALYTICS_ENABLED': True,
     'HISTORY_ENABLED': True,
+    'CODE_GENERATE_ENABLE': True,
     'MAX_HISTORY_PER_USER': 500,
     'ALLOW_ANONYMOUS': False,
     

@@ -7,7 +7,9 @@ A demonstration Django project showcasing the **Modern DRF Swagger** API documen
 This sample project provides a fully functional Django REST Framework application with:
 
 - **Task Management API** - CRUD operations for managing tasks
+- **Multipart Upload** - Task create and update endpoints support file attachments
 - **User Management API** - User endpoints for testing
+- **Inline Schema Example API** - Custom request and response documentation without `serializer_class`
 - **Modern API Portal** - Interactive API documentation and testing interface
 - **Team-based Access Control** - Demonstration of endpoint permissions
 - **Request Analytics** - API usage tracking and metrics
@@ -121,6 +123,7 @@ curl -X GET http://localhost:8000/api/v1/tasks/ \
 | GET | `/api/v1/tasks/my_tasks/` | Get current user's tasks |
 | GET | `/api/v1/tasks/todo/` | Get all TODO tasks |
 | POST | `/api/v1/tasks/{id}/complete/` | Mark task as complete |
+| POST | `/api/v1/task-envelope/` | Example endpoint documented with inline request and response schemas |
 
 ### User Management
 
@@ -166,7 +169,7 @@ Portal settings are configured in `config/settings.py`:
 MODERN_DRF_SWAGGER = {
     "TITLE": "API Swagger",
     "DESCRIPTION": "Complete API documentation for My Company",
-      "VERSION": "1.0.7",
+      "VERSION": "1.0.8",
     "ANALYTICS_ENABLED": True,
     "HISTORY_ENABLED": True,
     "MAX_HISTORY_PER_USER": 100,
@@ -175,6 +178,7 @@ MODERN_DRF_SWAGGER = {
     "ENDPOINTS_COLLAPSIBLE": True,
     "ENDPOINTS_DEFAULT_COLLAPSED": False,
     "EXCLUDE_PATHS": ["/admin/", "/internal/", "/health/"],
+      "CODE_GENERATE_ENABLE": False,
 }
 ```
 
@@ -189,6 +193,7 @@ MODERN_DRF_SWAGGER = {
 - **ALLOW_ANONYMOUS**: Allow unauthenticated portal access
 - **SCHEMA_PATH_PREFIX**: Filter endpoints by path prefix
 - **EXCLUDE_PATHS**: Hide specific paths from documentation
+- **CODE_GENERATE_ENABLE**: Show or hide code snippet generation in the portal
 
 ## 🧪 Testing the Portal
 

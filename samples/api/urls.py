@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-from api.views import TaskViewSet, UserViewSet
+from api.views import TaskEnvelopeAPIView, TaskViewSet, UserViewSet
 from rest_framework import routers
 
 # API Router
@@ -10,4 +10,5 @@ router.register(r"users", UserViewSet, basename="user")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("task-envelope/", TaskEnvelopeAPIView.as_view(), name="task-envelope"),
 ]

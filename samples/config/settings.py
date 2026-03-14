@@ -95,9 +95,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "uz"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Tashkent"
 
 USE_I18N = True
 
@@ -108,6 +108,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+MEDIA_URL = "media/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -118,19 +121,36 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.BasicAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    # "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    # renders
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+        # "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+    ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
     ],
 }
 
 
 MODERN_DRF_SWAGGER = {
     # Basic Info - controls the info section of the docs
-    "TITLE": "API Swagger Documentation",
+    "TITLE": "API Swagger",
     "DESCRIPTION": "Complete API documentation for My Company",
-    "VERSION": "1.0.7",
+    "VERSION": "1.0.8",
     # Feature Toggles
     "ANALYTICS_ENABLED": True,  # Track API usage
     "HISTORY_ENABLED": True,  # Save request history
@@ -145,4 +165,5 @@ MODERN_DRF_SWAGGER = {
     "EXCLUDE_PATHS": ["/admin/", "/internal/", "/health/"],  # Hide these paths
     # Note: DEFAULT_AUTH_METHODS is now auto-detected from REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']
     # Only set it manually if you need to override the auto-detection
+    "CODE_GENERATE_ENABLE": False,  # Disable code generation in the sample portal
 }

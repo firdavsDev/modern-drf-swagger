@@ -17,7 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    """Task serializer for testing API Portal"""
 
     created_by = UserSerializer(read_only=True)
 
@@ -27,6 +26,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "file",
             "status",
             "created_by",
             "created_at",

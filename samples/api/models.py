@@ -13,6 +13,7 @@ class Task(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    file = models.FileField(upload_to="task_files/", null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="todo")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tasks"

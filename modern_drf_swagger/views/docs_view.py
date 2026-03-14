@@ -50,6 +50,9 @@ class DocsView(LoginRequiredMixin, TemplateView):
         context["can_view_analytics"] = permission_checker.can_view_analytics()
         context["can_view_history"] = permission_checker.can_view_history()
         context["user_role"] = permission_checker.get_user_role()
+        context["code_generate_enable"] = portal_settings.get(
+            "CODE_GENERATE_ENABLE", True
+        )
 
         # Get authentication schemes from OpenAPI schema
         schema_loader = PortalSchemaLoader()
@@ -66,61 +69,20 @@ class SchemaView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy("modern_drf_swagger:login")
 
     def get(self, request, *args, **kwargs):
+        portal_user = request.user
+
         # Convert Django request to DRF Request for schema generation
         drf_request = Request(request)
+        drf_request.user = portal_user
 
         loader = PortalSchemaLoader()
         schema = loader.get_schema(drf_request)
 
         # Filter schema based on user permissions
-        if request.user and request.user.is_authenticated:
-            permission_checker = EndpointPermissionChecker(request.user)
-            allowed_endpoints = permission_checker.get_allowed_endpoints()
-
-            # If not None (meaning not superuser/super admin), filter the schema
-            if allowed_endpoints is not None:
-                filtered_paths = {}
-                allowed_paths = {ep["path"] for ep in allowed_endpoints}
-
-                for path, path_item in schema.get("paths", {}).items():
-                    if path in allowed_paths:
-                        # Further filter by methods
-                        allowed_methods_for_path = next(
-                            (
-                                ep["methods"]
-                                for ep in allowed_endpoints
-                                if ep["path"] == path
-                            ),
-                            "*",
-                        )
-
-                        if allowed_methods_for_path == "*":
-                            filtered_paths[path] = path_item
-                        else:
-                            # Filter specific methods
-                            allowed_methods = [
-                                m.strip().upper()
-                                for m in allowed_methods_for_path.split(",")
-                            ]
-                            filtered_path_item = {}
-                            for method in [
-                                "get",
-                                "post",
-                                "put",
-                                "patch",
-                                "delete",
-                                "options",
-                                "head",
-                            ]:
-                                if (
-                                    method.upper() in allowed_methods
-                                    and method in path_item
-                                ):
-                                    filtered_path_item[method] = path_item[method]
-
-                            if filtered_path_item:
-                                filtered_paths[path] = filtered_path_item
-
-                schema["paths"] = filtered_paths
+        if portal_user and portal_user.is_authenticated:
+            permission_checker = EndpointPermissionChecker(portal_user)
+            schema["paths"] = permission_checker.filter_schema_paths(
+                schema.get("paths", {})
+            )
 
         return JsonResponse(schema)

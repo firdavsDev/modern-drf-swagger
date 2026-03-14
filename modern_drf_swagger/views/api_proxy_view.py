@@ -1,7 +1,10 @@
+import json
+
 from django.conf import settings
 from django.http import JsonResponse
 
 from drf_spectacular.utils import extend_schema
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
@@ -18,6 +21,9 @@ class APIProxyView(APIView):
     Checks permissions before proxying requests.
     """
 
+    # Always use Django session auth for portal actions to avoid triggering
+    # browser native Basic auth prompts when project defaults use BasicAuthentication.
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -32,24 +38,35 @@ class APIProxyView(APIView):
 
         OR multipart form data with files
         """
-        # Check if this is a multipart upload (has files)
-        if request.FILES:
-            # Handle file upload
+
+        def _parse_json_field(value, default):
+            if value in (None, ""):
+                return default
+            if isinstance(value, str):
+                try:
+                    return json.loads(value)
+                except json.JSONDecodeError:
+                    return default
+            return value
+
+        content_type = request.content_type or ""
+        is_multipart_proxy_request = content_type.startswith("multipart/form-data")
+
+        if is_multipart_proxy_request:
             method = request.POST.get("method", "POST")
             path = request.POST.get("path", "/")
-            params = request.POST.get("params", {})
-            if isinstance(params, str):
-                import json
+            params = _parse_json_field(request.POST.get("params", {}), {})
 
-                try:
-                    params = json.loads(params)
-                except:
-                    params = {}
-
-            # Collect form data and files
             form_data = {}
             for key in request.POST:
-                if key not in ["method", "path", "params", "_headers", "_cookies"]:
+                if key not in [
+                    "method",
+                    "path",
+                    "params",
+                    "_headers",
+                    "_cookies",
+                    "_content_type",
+                ]:
                     form_data[key] = request.POST[key]
 
             files = {}
