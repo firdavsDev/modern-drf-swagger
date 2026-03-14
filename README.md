@@ -41,12 +41,14 @@ A modern, team-based API developer portal for Django REST Framework projects wit
 - 📊 **Analytics Dashboard**: Track API usage, latency, and error rates with charts
 - 📝 **Request History**: Personal history with search, filtering, and request replay (auto-cleanup of old logs)
 - ⚡ **Real Request Proxy**: Execute actual HTTP requests with accurate latency measurement
+- 🧾 **Request Body Modes**: Switch between JSON, multipart form-data, URL-encoded, and raw request bodies from the schema-driven editor
 - 💻 **Code Generation**: Generate client code in 7 languages (Python, JavaScript, cURL, HTTPie, PHP, Java, Go)
 - ⌨️ **Keyboard Shortcuts**: Boost productivity with Cmd/Ctrl+Enter to send requests and Cmd/Ctrl+K to search
 - 🎨 **Syntax Highlighting**: JSON responses with color-coded syntax
 - 🔍 **Search & Filter**: Quickly find endpoints and past requests
 - 🔖 **Bookmarkable Endpoints**: URL hash routing preserves selected endpoint on refresh
 - 📦 **Collapsible Groups**: Organize endpoints by tags with collapse/expand controls
+- 🔐 **Schema-Aware Permissions**: Team permissions affect both visible operations in the docs and which requests can be executed
 
 ## 🚀 Quick Start
 
@@ -83,7 +85,7 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     
-    # API Portal (auto-configures everything)
+    # New swagger UI (auto-configures everything)
     'modern_drf_swagger',
     
     # Your apps
@@ -101,11 +103,13 @@ MODERN_DRF_SWAGGER = {
     # Basic Info (automatically configures drf-spectacular)
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation',
-    'VERSION': '1.0.7',
+    'VERSION': '1.0.8',
     
     # Features
     'ANALYTICS_ENABLED': True,
-    'HISTORY_LIMIT': 100,
+    'HISTORY_ENABLED': True,
+    'MAX_HISTORY_PER_USER': 100,
+    'CODE_GENERATE_ENABLE': True,  # Show/hide Code Generation block in request panel
     'ALLOW_ANONYMOUS': False,
     
     # Schema Settings
@@ -141,12 +145,8 @@ urlpatterns = [
     path('api/', include('myapp.urls')),  # Your API
     
     # Choose ANY URL prefix that works for your project:
-    path('api/docs/', include('modern_drf_swagger.urls')),  # Nested under API (shown in docs)
-    # OR
-    # path('portal/', include('modern_drf_swagger.urls')),        # Default/simple path
-    # path('docs/', include('modern_drf_swagger.urls')),          # Short and sweet
-    # path('swagger/', include('modern_drf_swagger.urls')),       # Swagger-style
-    # path('api-explorer/', include('modern_drf_swagger.urls')),  # Descriptive
+    path('api/docs/', include('modern_drf_swagger.urls')),
+
 ]
 ```
 
@@ -169,6 +169,27 @@ Visit `http://localhost:8000/admin` to:
 1. Create teams
 2. Add team members with roles
 3. Grant endpoint permissions to teams
+
+### Assign Endpoint Permissions In Django Admin
+
+Use Django admin to connect a team to specific API endpoints:
+
+1. Open `Admin -> Teams` and create or open a team.
+2. In `Team Members`, add the portal users who should use that team.
+3. Set each member role:
+    - `SUPER_ADMIN` or `ADMIN`: full access to all endpoints.
+    - `DEVELOPER`: can send requests only to endpoints granted to the team.
+    - `VIEWER`: can only view the allowed documentation, not send requests.
+4. In `Endpoint Permissions`, add one row per allowed endpoint path.
+5. Enter the real OpenAPI path, for example `/api/v1/tasks/` or `/api/v1/tasks/{id}/`.
+6. Enter methods as `*` for all methods, or a comma-separated list like `GET,POST`.
+7. Save the team.
+
+Notes:
+- Paths are normalized automatically in admin, so `api/v1/tasks/` becomes `/api/v1/tasks` when saved.
+- Method values are normalized automatically, so `any`, `all`, or `*` are stored as `*`.
+- Permissions are matched by exact endpoint path, with support for path params like `/api/v1/tasks/{id}/`.
+- `/api/` is not a wildcard for all endpoints. Add each allowed endpoint path explicitly.
 
 ### 7. Access the Portal
 
@@ -204,8 +225,10 @@ Visit `http://localhost:8000/api/docs/` and login with your credentials.
 - [ ] Team/User permissions for analytics access
 - [x] Generate client code from OpenAPI schema (✅ v1.0.5)
 - [x] Keyboard shortcuts - Cmd/Ctrl+K for search (✅ v1.0.5)
-- [ ] Resizable panels
-- [ ] Different layout modes (split, stacked)
+- [x] Resizable panels (✅ v1.0.7)
+- [x] Different layout modes (split, stacked) (✅ v1.0.7)
+- [x] Request body media type switching (✅ v1.0.8)
+- [x] Schema-aware endpoint filtering by team permissions (✅ v1.0.8)
 - [x] Send request - Cmd/Ctrl+Enter (✅ v1.0.5)
 - [x] Smart defaults based on schema (✅ v1.0.6)
 

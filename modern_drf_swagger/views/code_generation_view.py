@@ -4,6 +4,7 @@ Code generation view for generating client code snippets.
 
 import json
 
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
@@ -30,6 +31,13 @@ def generate_code_view(request):
         return JsonResponse(
             {"error": "Authentication required. Please log in to use code generation."},
             status=401,
+        )
+
+    portal_settings = getattr(settings, "MODERN_DRF_SWAGGER", {})
+    if not portal_settings.get("CODE_GENERATE_ENABLE", True):
+        return JsonResponse(
+            {"error": "Code generation is disabled by MODERN_DRF_SWAGGER settings."},
+            status=403,
         )
 
     try:

@@ -44,7 +44,7 @@ A complete **Code Generation** system that allows developers to generate client 
 
 ### Documentation
 - `docs/CODE_GENERATION.md` - Complete usage guide
-- `CHANGELOG.md` - Version 1.1.0 release notes
+- `CHANGELOG.md` - Version 1.0.5 release notes, with later updates documented in subsequent releases
 - `README.md` - Added feature to features list
 
 ## 🔧 Technical Architecture
@@ -243,7 +243,7 @@ def _generate_python(method, url, headers, query_params, body):
 
 The Code Generation feature is a **major value-add** that differentiates Modern DRF Swagger from standard API documentation tools like Swagger UI or ReDoc. It transforms the portal from a read-only documentation tool into an **active developer productivity platform**.
 
-**Version**: 1.1.0  
+**Version**: 1.0.5  
 **Release Date**: March 13, 2026  
 **Status**: ✅ Complete and Ready for Production
 

@@ -160,6 +160,10 @@ Red text, persists until user fixes issue
 3. "Copied!" toast appears (green)
 4. Button remains enabled for re-copying
 
+## ⚙️ Feature Toggle
+
+If `MODERN_DRF_SWAGGER['CODE_GENERATE_ENABLE']` is set to `False`, the Code Generation panel is hidden and the generate endpoint is disabled server-side.
+
 ## 📋 Code Examples by Language
 
 ### Python Example

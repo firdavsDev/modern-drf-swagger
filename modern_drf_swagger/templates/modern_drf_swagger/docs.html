@@ -21,6 +21,7 @@
     endpointsCollapsible: {% if endpoints_collapsible %}true{% else %}false{% endif %},
     endpointsDefaultCollapsed: {% if endpoints_default_collapsed %}true{% else %}false{% endif %},
     canSendRequest: {% if can_send_request %}true{% else %}false{% endif %},
+    codeGenerationEnabled: {% if code_generate_enable %}true{% else %}false{% endif %},
     userRole: "{{ user_role|default:"" }}",
     authSchemes: {{ auth_schemes|safe }}
   };
@@ -30,12 +31,6 @@
 {% block content %}
 <div class="docs-layout-toolbar mb-3">
   <div class="docs-layout-toolbar__group">
-    <label
-      for="layout-mode-select"
-      class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400"
-    >
-      Layout
-    </label>
     <select
       id="layout-mode-select"
       class="dark-input rounded-md border px-2 py-1 text-sm"
@@ -53,12 +48,6 @@
       Reset Panels
     </button>
   </div>
-  <p
-    id="layout-mode-hint"
-    class="text-xs text-gray-500 dark:text-gray-400"
-  >
-    Drag separators to resize panels.
-  </p>
 </div>
 
 <div id="docs-workspace" class="docs-workspace layout-split">

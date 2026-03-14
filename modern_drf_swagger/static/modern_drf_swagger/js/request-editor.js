@@ -9,6 +9,7 @@ class RequestEditor {
     this.currentEndpoint = null;
     this.fullSchema = null;
     this.onSendCallback = null;
+    this.currentRequestMediaType = null;
     // Make globally accessible for copy button
     window.requestEditor = this;
   }
@@ -16,6 +17,7 @@ class RequestEditor {
   loadEndpoint(endpoint, fullSchema = null) {
     this.currentEndpoint = endpoint;
     this.fullSchema = fullSchema;
+    this.currentRequestMediaType = this.getPreferredRequestMediaType(endpoint);
     this.render();
   }
 
@@ -164,20 +166,26 @@ class RequestEditor {
                 </button>
                 ${window.PORTAL_CONFIG?.canSendRequest === false ? '<p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2 text-center">⚠️ You need DEVELOPER role or higher to send requests</p>' : ""}
                 
+                ${
+                  window.PORTAL_CONFIG?.codeGenerationEnabled !== false
+                    ? `
                 <!-- Code Generation Section -->
                 <div id="code-generation-section" class="mt-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
-                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                            </svg>
-                            Code Generation
-                        </h3>
-                    </div>
-                    <div class="p-4">
-                        ${window.codeGenerator ? window.codeGenerator.renderUI(endpoint, () => this.getRequestConfig()) : '<p class="text-gray-500">Code generator not available</p>'}
-                    </div>
+                  <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                      <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                      </svg>
+                      Code Generation
+                    </h3>
+                  </div>
+                  <div class="p-4">
+                    ${window.codeGenerator ? window.codeGenerator.renderUI(endpoint, () => this.getRequestConfig()) : '<p class="text-gray-500">Code generator not available</p>'}
+                  </div>
                 </div>
+                `
+                    : ""
+                }
             </div>
         `;
 
@@ -186,8 +194,7 @@ class RequestEditor {
     // Setup tab switching
     this.setupTabs();
 
-    // Setup real-time JSON validation
-    this.setupJsonValidation();
+    this.setupRequestBodyControls();
 
     // Add event listener for send button
     document
@@ -195,16 +202,48 @@ class RequestEditor {
       .addEventListener("click", () => {
         this.sendRequest();
       });
+  }
 
-    // Add event listener for smart defaults button (if it exists)
+  setupRequestBodyControls() {
+    this.setupRequestBodyMediaTypeSelector();
+    this.setupJsonValidation();
+    this.setupSmartDefaultsButton();
+  }
+
+  setupSmartDefaultsButton() {
     const smartDefaultsBtn = document.getElementById(
       "populate-smart-defaults-btn",
     );
-    if (smartDefaultsBtn) {
-      smartDefaultsBtn.addEventListener("click", () => {
-        this.populateSmartDefaults();
-      });
+    if (!smartDefaultsBtn) {
+      return;
     }
+
+    smartDefaultsBtn.addEventListener("click", () => {
+      this.populateSmartDefaults();
+    });
+  }
+
+  setupRequestBodyMediaTypeSelector() {
+    const mediaTypeSelect = document.getElementById("request-body-media-type");
+    if (!mediaTypeSelect) {
+      return;
+    }
+
+    mediaTypeSelect.addEventListener("change", (event) => {
+      this.currentRequestMediaType = event.target.value;
+
+      const bodyContent = document.getElementById("request-body-content");
+      if (!bodyContent || !this.currentEndpoint) {
+        return;
+      }
+
+      bodyContent.innerHTML = this.renderRequestBodyEditor(
+        this.currentEndpoint,
+        this.currentRequestMediaType,
+      );
+      this.setupJsonValidation();
+      this.setupSmartDefaultsButton();
+    });
   }
 
   setupJsonValidation() {
@@ -583,37 +622,183 @@ class RequestEditor {
       `;
     }
 
-    // Try to generate example JSON from schema
-    const content = endpoint.requestBody.content;
-    const jsonContent = content?.["application/json"];
-    const formDataContent = content?.["multipart/form-data"];
-    let exampleJson = "{\n  \n}";
-    let schemaDescription = "";
-    let hasFileFields = false;
-    let schema = null;
-
-    // Check for file fields in schema
-    if (formDataContent?.schema) {
-      schema = formDataContent.schema;
-      hasFileFields = this.hasFileFieldsInSchema(schema);
-    } else if (jsonContent?.schema) {
-      schema = jsonContent.schema;
-      hasFileFields = this.hasFileFieldsInSchema(schema);
+    const mediaTypes = this.getAvailableRequestMediaTypes(endpoint);
+    if (mediaTypes.length === 0) {
+      return `
+        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+          <p class="text-sm">Request body schema is not available</p>
+        </div>
+      `;
     }
 
-    if (schema) {
-      schemaDescription = schema.description || "";
-      if (!hasFileFields) {
-        exampleJson = this.generateExampleFromSchema(schema);
+    if (!mediaTypes.includes(this.currentRequestMediaType)) {
+      this.currentRequestMediaType =
+        this.getPreferredRequestMediaType(endpoint);
+    }
+
+    const selectedMediaType =
+      this.currentRequestMediaType ||
+      this.getPreferredRequestMediaType(endpoint);
+
+    return `
+      <div class="space-y-4">
+        ${
+          mediaTypes.length > 1
+            ? `
+        <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_16rem] sm:items-end">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Request Body Type
+            </label>
+          </div>
+          <div>
+            <select id="request-body-media-type"
+                    class="dark-input w-full px-3 py-2 rounded-lg text-sm border transition-colors duration-200">
+              ${mediaTypes
+                .map(
+                  (mediaType) => `
+                <option value="${this.escapeHtml(mediaType)}" ${mediaType === selectedMediaType ? "selected" : ""}>
+                  ${this.escapeHtml(this.getMediaTypeLabel(mediaType))}
+                </option>
+              `,
+                )
+                .join("")}
+            </select>
+          </div>
+        </div>
+        `
+            : `
+        <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-3 py-2">
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Request Body Type</span>
+          <span class="text-xs font-mono text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-full">
+            ${this.escapeHtml(this.getMediaTypeLabel(selectedMediaType))}
+          </span>
+        </div>
+        `
+        }
+
+        <div id="request-body-content">
+          ${this.renderRequestBodyEditor(endpoint, selectedMediaType)}
+        </div>
+      </div>
+    `;
+  }
+
+  getAvailableRequestMediaTypes(endpoint) {
+    return Object.keys(endpoint?.requestBody?.content || {});
+  }
+
+  getPreferredRequestMediaType(endpoint) {
+    const mediaTypes = this.getAvailableRequestMediaTypes(endpoint);
+    if (mediaTypes.length === 0) {
+      return null;
+    }
+
+    const multipartSchema = this.getSchemaForMediaType(
+      endpoint,
+      "multipart/form-data",
+    );
+    if (
+      mediaTypes.includes("multipart/form-data") &&
+      this.hasFileFieldsInSchema(multipartSchema)
+    ) {
+      return "multipart/form-data";
+    }
+
+    const preferredOrder = [
+      "application/json",
+      "multipart/form-data",
+      "application/x-www-form-urlencoded",
+      "text/plain",
+    ];
+
+    for (const mediaType of preferredOrder) {
+      if (mediaTypes.includes(mediaType)) {
+        return mediaType;
       }
     }
 
-    // Render form-data UI if schema has file fields
-    if (hasFileFields && schema) {
-      return this.renderFormDataBody(schema, schemaDescription);
+    return mediaTypes[0];
+  }
+
+  getSchemaForMediaType(endpoint, mediaType) {
+    const mediaContent = endpoint?.requestBody?.content?.[mediaType];
+    return this.normalizeSchema(mediaContent?.schema);
+  }
+
+  getMediaTypeLabel(mediaType) {
+    const labels = {
+      "application/json": "JSON",
+      "multipart/form-data": "Multipart Form",
+      "application/x-www-form-urlencoded": "Form URL Encoded",
+      "text/plain": "Plain Text",
+    };
+
+    return labels[mediaType] || mediaType;
+  }
+
+  getMediaTypeExample(mediaContent) {
+    if (!mediaContent) {
+      return null;
     }
 
-    // Render JSON UI
+    if (mediaContent.example !== undefined) {
+      return mediaContent.example;
+    }
+
+    const examples = mediaContent.examples || {};
+    const firstExample = Object.values(examples)[0];
+    if (firstExample && firstExample.value !== undefined) {
+      return firstExample.value;
+    }
+
+    return null;
+  }
+
+  renderRequestBodyEditor(endpoint, mediaType) {
+    const mediaContent = endpoint?.requestBody?.content?.[mediaType];
+    const schema = this.normalizeSchema(mediaContent?.schema);
+    const schemaDescription =
+      endpoint?.requestBody?.description || schema?.description || "";
+
+    if (mediaType === "application/json" || mediaType?.endsWith("+json")) {
+      return this.renderJsonRequestBody(
+        schema,
+        schemaDescription,
+        mediaType,
+        mediaContent,
+      );
+    }
+
+    if (
+      mediaType === "multipart/form-data" ||
+      mediaType === "application/x-www-form-urlencoded"
+    ) {
+      return this.renderFormBody(
+        schema,
+        schemaDescription,
+        mediaType,
+        mediaContent,
+      );
+    }
+
+    return this.renderRawRequestBody(
+      schema,
+      schemaDescription,
+      mediaType,
+      mediaContent,
+    );
+  }
+
+  renderJsonRequestBody(schema, schemaDescription, mediaType, mediaContent) {
+    const exampleValue = this.getMediaTypeExample(mediaContent);
+    const exampleJson =
+      exampleValue !== null
+        ? JSON.stringify(exampleValue, null, 2)
+        : schema
+          ? this.generateExampleFromSchema(schema)
+          : "{\n  \n}";
+
     return `
       <div class="space-y-3">
         ${
@@ -625,17 +810,17 @@ class RequestEditor {
         `
             : ""
         }
-        
+
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Request Body
-              <span class="text-gray-500 dark:text-gray-400 font-normal ml-2 text-xs">(JSON)</span>
+              <span class="text-gray-500 dark:text-gray-400 font-normal ml-2 text-xs">(${this.escapeHtml(this.getMediaTypeLabel(mediaType))})</span>
             </label>
             ${
               schema
                 ? `
-            <button id="populate-smart-defaults-btn" 
+            <button id="populate-smart-defaults-btn"
                     class="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-1.5 font-medium shadow-sm hover:shadow"
                     title="Populate with smart default values based on schema">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -648,10 +833,10 @@ class RequestEditor {
             }
           </div>
           <div class="relative">
-            <textarea id="request-body" 
+            <textarea id="request-body"
                       class="dark-input w-full px-4 py-3 rounded-lg font-mono text-sm leading-relaxed transition-all"
                       rows="12"
-                      spellcheck="false">${exampleJson}</textarea>
+                      spellcheck="false">${this.escapeHtml(exampleJson)}</textarea>
             <div id="json-validation-feedback" class="hidden absolute top-2 right-2"></div>
           </div>
           <div id="json-validation-message" class="mt-2 text-xs flex items-center gap-1 transition-all">
@@ -679,7 +864,17 @@ class RequestEditor {
     return false;
   }
 
-  renderFormDataBody(schema, schemaDescription) {
+  renderFormBody(schema, schemaDescription, mediaType, mediaContent) {
+    if (!schema || !schema.properties) {
+      return this.renderRawRequestBody(
+        schema,
+        schemaDescription,
+        mediaType,
+        mediaContent,
+      );
+    }
+
+    const formModeLabel = this.getMediaTypeLabel(mediaType);
     let html = `
       <div class="space-y-3">
         ${
@@ -695,7 +890,7 @@ class RequestEditor {
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Request Body
-            <span class="text-gray-500 dark:text-gray-400 font-normal ml-2 text-xs">(Form Data)</span>
+            <span class="text-gray-500 dark:text-gray-400 font-normal ml-2 text-xs">(${this.escapeHtml(formModeLabel)})</span>
           </label>
           <div id="form-data-fields" class="space-y-3">
     `;
@@ -749,13 +944,52 @@ class RequestEditor {
             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
             </svg>
-            Support for file uploads (multipart/form-data)
+            ${
+              mediaType === "multipart/form-data"
+                ? "Supports file uploads and multipart fields."
+                : "Fields will be submitted as application/x-www-form-urlencoded."
+            }
           </p>
         </div>
       </div>
     `;
 
     return html;
+  }
+
+  renderRawRequestBody(schema, schemaDescription, mediaType, mediaContent) {
+    const exampleValue = this.getMediaTypeExample(mediaContent);
+    const rawValue =
+      typeof exampleValue === "string"
+        ? exampleValue
+        : exampleValue !== null
+          ? JSON.stringify(exampleValue, null, 2)
+          : schema?.example || schema?.default || "";
+
+    return `
+      <div class="space-y-3">
+        ${
+          schemaDescription
+            ? `
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+          <p class="text-sm text-blue-800 dark:text-blue-300">${this.escapeHtml(schemaDescription)}</p>
+        </div>
+        `
+            : ""
+        }
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Request Body
+            <span class="text-gray-500 dark:text-gray-400 font-normal ml-2 text-xs">(${this.escapeHtml(this.getMediaTypeLabel(mediaType))})</span>
+          </label>
+          <textarea id="request-body-raw"
+                    class="dark-input w-full px-4 py-3 rounded-lg font-mono text-sm leading-relaxed transition-all"
+                    rows="10"
+                    spellcheck="false">${this.escapeHtml(rawValue)}</textarea>
+        </div>
+      </div>
+    `;
   }
 
   resolveSchemaRef(schema) {
@@ -1719,12 +1953,21 @@ class RequestEditor {
       // Get request body (JSON or form-data)
       let data = null;
       const bodyTextarea = document.getElementById("request-body");
+      const rawBodyTextarea = document.getElementById("request-body-raw");
       const formDataFields = document.querySelectorAll(".form-data-input");
+      const mediaTypeSelect = document.getElementById(
+        "request-body-media-type",
+      );
+      const selectedMediaType =
+        mediaTypeSelect?.value ||
+        this.currentRequestMediaType ||
+        this.getPreferredRequestMediaType(this.currentEndpoint);
 
-      // Check if using form-data (for file uploads)
-      if (formDataFields.length > 0) {
+      if (
+        formDataFields.length > 0 &&
+        selectedMediaType === "multipart/form-data"
+      ) {
         const formData = new FormData();
-        let hasFiles = false;
 
         formDataFields.forEach((input) => {
           const fieldName = input.dataset.fieldName;
@@ -1732,25 +1975,25 @@ class RequestEditor {
 
           if (fieldType === "file" && input.files && input.files.length > 0) {
             formData.append(fieldName, input.files[0]);
-            hasFiles = true;
           } else if (input.value) {
             formData.append(fieldName, input.value);
           }
         });
 
-        // If we have files, use FormData, otherwise convert to JSON
-        if (hasFiles) {
-          data = formData;
-        } else {
-          // Convert form data to JSON object
-          const jsonObj = {};
-          formDataFields.forEach((input) => {
-            if (input.value) {
-              jsonObj[input.dataset.fieldName] = input.value;
-            }
-          });
-          data = jsonObj;
-        }
+        data = formData;
+      } else if (
+        formDataFields.length > 0 &&
+        selectedMediaType === "application/x-www-form-urlencoded"
+      ) {
+        const formFields = {};
+        formDataFields.forEach((input) => {
+          if (input.value) {
+            formFields[input.dataset.fieldName] = input.value;
+          }
+        });
+        data = formFields;
+      } else if (rawBodyTextarea && rawBodyTextarea.value.trim()) {
+        data = rawBodyTextarea.value;
       } else if (bodyTextarea && bodyTextarea.value.trim()) {
         // JSON body
         try {
@@ -1798,6 +2041,7 @@ class RequestEditor {
         path: path,
         data: data,
         params: params,
+        _contentType: selectedMediaType,
         _headers: customHeaders,
         _cookies: authRequestConfig.cookies,
       };

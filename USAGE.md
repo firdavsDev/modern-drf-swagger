@@ -23,9 +23,12 @@ The main interface (`/api/docs/`) provides:
 **Features:**
 - Click any endpoint to load request form
 - Fill in parameters and body (JSON)
+- Switch between JSON, multipart form-data, URL-encoded, and raw request bodies when the schema exposes multiple media types
 - Click "Send Request" to execute
 - View response with status, latency, and size
 - Copy response to clipboard
+
+Permission filtering is schema-aware: if a team only has access to selected methods for a path, the docs view only shows those allowed operations.
 
 ### Analytics Dashboard
 
@@ -48,3 +51,13 @@ Access at `/api/docs/history/`:
 - Search by endpoint path
 - Click "View" to see full request/response details
 - Pagination support (50 per page)
+
+### Custom Request and Response Examples
+
+If a view does not use `serializer_class`, document the method with `@extend_schema` and `inline_serializer` so the portal can still render request and response schemas.
+
+Use `responses={200: OpenApiResponse(...), 500: OpenApiResponse(...)}` plus `OpenApiExample(...)` values for the example payloads shown in the UI.
+
+### Code Generation Toggle
+
+Set `MODERN_DRF_SWAGGER['CODE_GENERATE_ENABLE'] = False` if you want to hide the code generation panel and reject `/generate-code/` requests at the backend.

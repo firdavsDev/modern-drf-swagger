@@ -86,11 +86,12 @@ MODERN_DRF_SWAGGER = {
     # Basic Info for API Documentation
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation for My Company',
-    'VERSION': '1.0.7',
+    'VERSION': '1.0.8',
     
     # Feature Toggles
     'ANALYTICS_ENABLED': True,       # Track API usage
     'HISTORY_ENABLED': True,         # Save request history
+    'CODE_GENERATE_ENABLE': True,    # Enable code generation in docs request panel
     'MAX_HISTORY_PER_USER': 1000,   # Auto-cleanup old logs
     'ALLOW_ANONYMOUS': False,        # Require authentication
     
@@ -207,24 +208,26 @@ Login with your superuser credentials.
 
 By default, teams have NO access to endpoints. Grant specific permissions:
 
-1. Go to **API Portal** → **Endpoint Permissions**
-2. Click **Add Endpoint Permission**
+1. Go to **API Portal** → **Teams** and open the team, or go directly to **API Portal** → **Endpoint Permissions**.
+2. Add a permission row.
 3. Configure access:
-   - **Team**: Select the team
-   - **Path**: Enter endpoint path (e.g., `/api/users/`)
-   - **Allowed Methods**: 
-     - `GET,POST,PUT,DELETE` (comma-separated specific methods)
-     - `*` (all methods)
-4. Click **Save**
+     - **Team**: Select the team.
+     - **Path**: Enter the real documented endpoint path, for example `/api/v1/tasks/` or `/api/v1/tasks/{id}/`.
+     - **Allowed Methods**:
+         - `GET,POST,PUT,DELETE` for specific methods.
+         - `*` for all methods.
+4. Click **Save**.
 
 **Examples:**
-- Path: `/api/users/`, Methods: `GET` → Team can only view users
-- Path: `/api/tasks/`, Methods: `GET,POST,PUT,DELETE` → Full CRUD access
-- Path: `/api/`, Methods: `*` → Access to all endpoints under `/api/`
+- Path: `/api/v1/users/`, Methods: `GET` → Team can only view the users list endpoint.
+- Path: `/api/v1/tasks/`, Methods: `GET,POST` → Team can list and create tasks.
+- Path: `/api/v1/tasks/{id}/`, Methods: `GET,PATCH,DELETE` → Team can access task detail actions.
 
 **Note:** 
 - Super Admin users bypass ALL permission checks
-- Permissions are checked by path prefix match
+- Admin normalizes `any`, `all`, and `*` to `*` automatically
+- Paths are matched by normalized endpoint path, with support for path parameters such as `/api/v1/tasks/{id}/`
+- `/api/` is not treated as a wildcard path. Add each allowed endpoint path explicitly
 
 ---
 
@@ -265,6 +268,7 @@ You should now see three main sections:
 **Features:**
 - 🔖 Bookmarkable URLs (e.g., `#GET:/api/users/`)
 - ⚡ Real HTTP requests with accurate latency
+- 🧾 JSON, multipart form-data, URL-encoded, and raw request body editors
 - 🎨 Dark theme with syntax highlighting
 - 🔍 Search and filter endpoints
 
@@ -289,6 +293,99 @@ You should now see three main sections:
 - View detailed request/response data
 - Pagination support (50 per page)
 - Auto-cleanup when limit exceeded
+
+---
+
+## 🧾 Document Custom Request and Response Bodies
+
+If your endpoint returns a custom payload and does not use `serializer_class`, the portal can still show request and response schemas, status codes, and example values.
+
+Modern DRF Swagger reads this from your OpenAPI schema, so define it directly on the method with drf-spectacular's `@extend_schema` decorator.
+
+```python
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema, inline_serializer
+from rest_framework.response import Response
+from rest_framework.serializers import CharField, IntegerField
+from rest_framework.views import APIView
+
+
+class TaskEnvelopeAPIView(APIView):
+    @extend_schema(
+        request=inline_serializer(
+            name="TaskEnvelopeRequest",
+            fields={
+                "status": CharField(required=False),
+            },
+        ),
+        responses={
+            200: OpenApiResponse(
+                response=inline_serializer(
+                    name="TaskEnvelopeSuccessResponse",
+                    fields={
+                        "status_code": IntegerField(),
+                        "status": CharField(),
+                        "message": CharField(),
+                        "data": CharField(),
+                    },
+                ),
+                description="Success",
+                examples=[
+                    OpenApiExample(
+                        "Success",
+                        value={
+                            "status_code": 200,
+                            "status": "success",
+                            "message": "Malumotlar fetch qilindi",
+                            "data": "...",
+                        },
+                        response_only=True,
+                    )
+                ],
+            ),
+            500: OpenApiResponse(
+                response=inline_serializer(
+                    name="TaskEnvelopeErrorResponse",
+                    fields={
+                        "status_code": IntegerField(),
+                        "status": CharField(),
+                        "message": CharField(),
+                        "data": CharField(),
+                    },
+                ),
+                description="Server Error",
+                examples=[
+                    OpenApiExample(
+                        "ServerError",
+                        value={
+                            "status_code": 500,
+                            "status": "error",
+                            "message": "Xatolik",
+                            "data": "Internal server error",
+                        },
+                        response_only=True,
+                    )
+                ],
+            ),
+        },
+    )
+    def post(self, request):
+        return Response(
+            {
+                "status_code": 200,
+                "status": "success",
+                "message": "Malumotlar fetch qilindi",
+                "data": [],
+            }
+        )
+```
+
+This is enough for the portal to show:
+
+- request body fields
+- `200` and `500` response sections
+- example payloads in the response viewer
+
+If you want a fully working example, check the sample project endpoint at `/api/v1/task-envelope/`.
 
 ---
 

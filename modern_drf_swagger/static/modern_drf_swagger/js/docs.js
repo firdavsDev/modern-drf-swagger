@@ -414,6 +414,9 @@ class DocsController {
         const formData = payload.data;
         formData.append("method", payload.method);
         formData.append("path", payload.path);
+        if (payload._contentType) {
+          formData.append("_content_type", payload._contentType);
+        }
         if (payload.params) {
           formData.append("params", JSON.stringify(payload.params));
         }
