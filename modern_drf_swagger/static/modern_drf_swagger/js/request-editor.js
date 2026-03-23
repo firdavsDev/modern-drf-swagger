@@ -38,6 +38,7 @@ class RequestEditor {
     const hasBody = ["POST", "PUT", "PATCH"].includes(endpoint.method);
     const params = endpoint.parameters || [];
     const hasParams = params.length > 0;
+    const fullApiUrl = this.buildFullApiUrl();
 
     // Determine lock icon HTML
     const lockIcon = endpoint.requiresAuth
@@ -71,6 +72,23 @@ class RequestEditor {
                     </div>
                     ${endpoint.summary ? `<p class="text-gray-700 dark:text-gray-300 text-sm">${this.escapeHtml(endpoint.summary)}</p>` : ""}
                     ${endpoint.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-2">${this.escapeHtml(endpoint.description)}</p>` : ""}
+                    <div class="mt-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <div class="flex items-center justify-between gap-2 mb-1">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Full API URL</span>
+                        <button
+                          id="copy-full-url-btn"
+                          type="button"
+                          class="px-2.5 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition flex items-center gap-1"
+                          title="Copy full API URL"
+                        >
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                          </svg>
+                          Copy URL
+                        </button>
+                      </div>
+                      <code id="request-full-url" class="block text-xs sm:text-sm break-all font-mono text-gray-800 dark:text-gray-200">${this.escapeHtml(fullApiUrl)}</code>
+                    </div>
                 </div>
                 
                 <!-- Tabbed Interface -->
@@ -195,6 +213,7 @@ class RequestEditor {
     this.setupTabs();
 
     this.setupRequestBodyControls();
+    this.setupFullUrlPreview();
 
     // Add event listener for send button
     document
@@ -202,6 +221,65 @@ class RequestEditor {
       .addEventListener("click", () => {
         this.sendRequest();
       });
+  }
+
+  setupFullUrlPreview() {
+    const copyBtn = document.getElementById("copy-full-url-btn");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", () => {
+        this.copyToClipboard(this.buildFullApiUrl(), "API URL copied");
+      });
+    }
+
+    const inputs = document.querySelectorAll(
+      '[data-param-in="path"], [data-param-in="query"]',
+    );
+    inputs.forEach((input) => {
+      input.addEventListener("input", () => {
+        this.updateFullUrlPreview();
+      });
+    });
+  }
+
+  updateFullUrlPreview() {
+    const urlElement = document.getElementById("request-full-url");
+    if (!urlElement) {
+      return;
+    }
+
+    const fullUrl = this.buildFullApiUrl();
+    urlElement.textContent = fullUrl;
+    urlElement.title = fullUrl;
+  }
+
+  buildFullApiUrl() {
+    if (!this.currentEndpoint) {
+      return "";
+    }
+
+    let resolvedPath = this.currentEndpoint.path || "";
+    document.querySelectorAll('[data-param-in="path"]').forEach((input) => {
+      if (input.value) {
+        resolvedPath = resolvedPath.replace(
+          `{${input.dataset.paramName}}`,
+          encodeURIComponent(input.value),
+        );
+      }
+    });
+
+    const normalizedPath = resolvedPath.startsWith("/")
+      ? resolvedPath
+      : `/${resolvedPath}`;
+    const fullUrl = new URL(normalizedPath, window.location.origin);
+
+    document.querySelectorAll('[data-param-in="query"]').forEach((input) => {
+      const value = input.value;
+      if (value) {
+        fullUrl.searchParams.set(input.dataset.paramName, value);
+      }
+    });
+
+    return fullUrl.toString();
   }
 
   setupRequestBodyControls() {

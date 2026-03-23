@@ -103,7 +103,7 @@ MODERN_DRF_SWAGGER = {
     # Basic Info (automatically configures drf-spectacular)
     'TITLE': 'My Company API Portal',
     'DESCRIPTION': 'Complete API documentation',
-    'VERSION': '1.0.8',
+    'VERSION': '1.0.9',
     
     # Features
     'ANALYTICS_ENABLED': True,
