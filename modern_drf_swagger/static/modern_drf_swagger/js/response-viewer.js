@@ -108,7 +108,7 @@ class ResponseViewer {
                         </div>
                     </div>
                     <div class="p-4">
-                        <div class="code-block max-h-96">
+                        <div class="code-block resizable-code-block">
                             ${this.renderResponseBody(response.data)}
                         </div>
                     </div>
@@ -236,11 +236,154 @@ class ResponseViewer {
     }
 
     if (typeof data === "string") {
+      // Check if it's HTML content
+      if (this.isHtmlContent(data)) {
+        return this.renderHtmlTabs(data);
+      }
       return `<pre class="whitespace-pre-wrap">${this.escapeHtml(data)}</pre>`;
     }
 
     // JSON syntax highlighting
     return this.syntaxHighlightJson(data);
+  }
+
+  isHtmlContent(text) {
+    // Check if string contains HTML document tags (more strict detection)
+    // Only treat as HTML if it has DOCTYPE or <html> tag
+    return /<!DOCTYPE\s+html|<html[\s>]/i.test(text);
+  }
+
+  renderHtmlTabs(htmlContent) {
+    const tabId = `html-tabs-${Date.now()}`;
+    const escapedHtml = this.escapeHtmlAttribute(htmlContent);
+    return `
+      <div class="html-response-viewer">
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-300 dark:border-gray-600 mb-3">
+          <button 
+            class="html-tab active px-4 py-2 font-medium text-sm border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" 
+            onclick="window.responseViewer.switchHtmlTab(event, '${tabId}', 'preview')"
+          >
+            Preview
+          </button>
+          <button 
+            class="html-tab px-4 py-2 font-medium text-sm border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" 
+            onclick="window.responseViewer.switchHtmlTab(event, '${tabId}', 'pretty')"
+          >
+            Pretty
+          </button>
+          <button 
+            class="html-tab px-4 py-2 font-medium text-sm border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" 
+            onclick="window.responseViewer.switchHtmlTab(event, '${tabId}', 'raw')"
+          >
+            Raw
+          </button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="html-tab-content">
+          <!-- Preview Tab (Active by default) -->
+          <div id="${tabId}-preview" class="tab-pane active">
+            <div class="border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 resizable-iframe-container">
+              <iframe 
+                srcdoc='${escapedHtml}' 
+                class="w-full border-0 resizable-iframe"
+                sandbox="allow-same-origin"
+                title="HTML Preview"
+              ></iframe>
+            </div>
+          </div>
+
+          <!-- Pretty Tab (Formatted HTML) -->
+          <div id="${tabId}-pretty" class="tab-pane hidden">
+            <div class="resizable-code-block">
+              <pre class="whitespace-pre-wrap font-mono text-sm leading-relaxed">${this.highlightHtml(htmlContent)}</pre>
+            </div>
+          </div>
+
+          <!-- Raw Tab -->
+          <div id="${tabId}-raw" class="tab-pane hidden">
+            <div class="resizable-code-block">
+              <pre class="whitespace-pre-wrap font-mono text-sm">${this.escapeHtml(htmlContent)}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  switchHtmlTab(event, tabId, tabName) {
+    // Remove active class from all tabs
+    const tabButtons = event.target.parentElement.querySelectorAll(".html-tab");
+    tabButtons.forEach((btn) => {
+      btn.classList.remove(
+        "active",
+        "border-blue-600",
+        "text-blue-600",
+        "dark:text-blue-400",
+      );
+      btn.classList.add(
+        "border-transparent",
+        "text-gray-600",
+        "dark:text-gray-400",
+      );
+    });
+
+    // Add active class to clicked tab
+    event.target.classList.add(
+      "active",
+      "border-blue-600",
+      "text-blue-600",
+      "dark:text-blue-400",
+    );
+    event.target.classList.remove(
+      "border-transparent",
+      "text-gray-600",
+      "dark:text-gray-400",
+    );
+
+    // Hide all tab panes
+    const container = event.target.closest(".html-response-viewer");
+    const panes = container.querySelectorAll(".tab-pane");
+    panes.forEach((pane) => pane.classList.add("hidden"));
+
+    // Show selected tab pane
+    const selectedPane = document.getElementById(`${tabId}-${tabName}`);
+    if (selectedPane) {
+      selectedPane.classList.remove("hidden");
+    }
+  }
+
+  highlightHtml(html) {
+    // Simple HTML syntax highlighting
+    return this.escapeHtml(html)
+      .replace(
+        /(&lt;\/?[a-z][a-z0-9]*\b)/gi,
+        '<span class="text-blue-600 dark:text-blue-400">$1</span>',
+      )
+      .replace(
+        /(\s[a-z-]+)=&quot;/gi,
+        '<span class="text-green-600 dark:text-green-400">$1</span>=&quot;',
+      )
+      .replace(
+        /=&quot;([^&]*)&quot;/g,
+        '=&quot;<span class="text-yellow-600 dark:text-yellow-400">$1</span>&quot;',
+      )
+      .replace(
+        /(&lt;!--[\s\S]*?--&gt;)/g,
+        '<span class="text-gray-500 dark:text-gray-500 italic">$1</span>',
+      );
+  }
+
+  escapeHtmlAttribute(html) {
+    return html
+      .replace(/&/g, "&amp;")
+      .replace(/'/g, "&#39;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/`/g, "&#96;") // Escape backticks for template literals
+      .replace(/\$/g, "&#36;"); // Escape $ for template literals
   }
 
   syntaxHighlightJson(obj) {
@@ -424,21 +567,21 @@ class ResponseViewer {
       return;
     }
 
-    // Build the context for ChatGPT
-    let prompt =
-      "I'm getting an API error and need help solving it. Here are the details:\n\n";
+    // Build a detailed prompt for ChatGPT (aim for ~1000 chars to fit in URL)
+    let prompt = "I'm getting an API error. Help me debug it:\n\n";
 
     // Add request information if available
     if (this.currentRequest) {
-      prompt += "**Request Details:**\n";
-      prompt += `- Method: ${this.currentRequest.method || "Unknown"}\n`;
-      prompt += `- Endpoint: ${this.currentRequest.path || "Unknown"}\n`;
+      prompt += `REQUEST: ${this.currentRequest.method || "?"} ${this.currentRequest.path || ""}\n`;
 
       if (
         this.currentRequest.params &&
         Object.keys(this.currentRequest.params).length > 0
       ) {
-        prompt += `- Query Parameters: \`\`\`json\n${JSON.stringify(this.currentRequest.params, null, 2)}\n\`\`\`\n`;
+        const params = JSON.stringify(this.currentRequest.params);
+        if (params.length < 100) {
+          prompt += `Query: ${params}\n`;
+        }
       }
 
       if (
@@ -448,52 +591,92 @@ class ResponseViewer {
         const bodyData =
           typeof this.currentRequest.data === "string"
             ? this.currentRequest.data
-            : JSON.stringify(this.currentRequest.data, null, 2);
-        prompt += `- Request Body: \`\`\`json\n${bodyData}\n\`\`\`\n`;
-      }
+            : JSON.stringify(this.currentRequest.data);
 
-      if (
-        this.currentRequest.headers &&
-        Object.keys(this.currentRequest.headers).length > 0
-      ) {
-        prompt += `- Headers: \`\`\`json\n${JSON.stringify(this.currentRequest.headers, null, 2)}\n\`\`\`\n`;
+        // Include request body if it's reasonably small
+        if (bodyData.length < 200) {
+          prompt += `Body: ${bodyData}\n`;
+        } else {
+          prompt += `Body: ${bodyData.substring(0, 150)}...\n`;
+        }
       }
       prompt += "\n";
     }
 
     // Add response information if available
     if (this.currentResponse) {
-      prompt += "**Response Details:**\n";
-      prompt += `- Status Code: ${this.currentResponse.status}\n`;
+      prompt += `RESPONSE: Status ${this.currentResponse.status}\n`;
 
       if (this.currentResponse.data) {
         const responseData =
           typeof this.currentResponse.data === "string"
             ? this.currentResponse.data
-            : JSON.stringify(this.currentResponse.data, null, 2);
-        prompt += `- Response Body: \`\`\`json\n${responseData}\n\`\`\`\n`;
+            : JSON.stringify(this.currentResponse.data);
+
+        // Include response if it's small enough
+        if (responseData.length < 400) {
+          prompt += `Body: ${responseData}\n`;
+        } else {
+          // Extract just the error message if possible
+          let errorMsg = responseData.substring(0, 300);
+          try {
+            if (typeof this.currentResponse.data === "object") {
+              // Try to get error/detail/message fields
+              const data = this.currentResponse.data;
+              if (data.detail) errorMsg = data.detail;
+              else if (data.error) errorMsg = data.error;
+              else if (data.message) errorMsg = data.message;
+            }
+          } catch (e) {
+            // Use truncated version
+          }
+          prompt += `Error: ${errorMsg}...\n`;
+        }
       }
 
       if (this.currentResponse.latency) {
-        prompt += `- Latency: ${this.currentResponse.latency}ms\n`;
+        prompt += `Latency: ${this.currentResponse.latency}ms\n`;
       }
     }
 
-    // Add the question
-    prompt += "\n**Questions:**\n";
-    prompt += "1. What does this error mean?\n";
-    prompt += "2. What are the most likely causes?\n";
-    prompt += "3. How can I fix this issue?\n";
-    prompt +=
-      "4. Are there any best practices I should follow to prevent this in the future?\n";
+    // Add the questions
+    prompt += "\nWhat does this error mean and how can I fix it?";
 
-    // Encode the prompt for URL
+    // Try to use the prompt in URL if it's not too long
     const encodedPrompt = encodeURIComponent(prompt);
 
-    // Open ChatGPT with the pre-filled prompt
-    const chatGPTUrl = `https://chat.openai.com/?q=${encodedPrompt}`;
-    window.open(chatGPTUrl, "_blank");
+    // URL length limit check (most browsers support ~2000 chars, be conservative)
+    if (encodedPrompt.length > 1800) {
+      // If too long, create a shorter version
+      let shortPrompt = "Debug API error: ";
+      if (this.currentResponse) {
+        shortPrompt += `${this.currentResponse.status} `;
+      }
+      if (this.currentRequest) {
+        shortPrompt += `${this.currentRequest.method || "?"} ${this.currentRequest.path || ""}`;
+      }
 
-    showToast("Opening ChatGPT with error details...", "success");
+      // Copy full details to clipboard as fallback
+      navigator.clipboard
+        .writeText(prompt)
+        .then(() => {
+          showToast(
+            "Full details copied! Paste in ChatGPT for more context.",
+            "info",
+          );
+        })
+        .catch(() => {
+          console.log("Clipboard copy failed");
+        });
+
+      // Open with short prompt
+      const chatGPTUrl = `https://chat.openai.com/?q=${encodeURIComponent(shortPrompt)}`;
+      window.open(chatGPTUrl, "_blank");
+    } else {
+      // Use the full prompt in URL
+      const chatGPTUrl = `https://chat.openai.com/?q=${encodedPrompt}`;
+      window.open(chatGPTUrl, "_blank");
+      showToast("Opening ChatGPT with error details...", "success");
+    }
   }
 }

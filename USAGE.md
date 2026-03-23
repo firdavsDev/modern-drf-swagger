@@ -54,7 +54,7 @@ Access at `/api/docs/history/`:
 
 ### Custom Request and Response Examples
 
-If a view does not use `serializer_class`, document the method with `@extend_schema` and `inline_serializer` so the portal can still render request and response schemas.
+If a view does not use `serializer_class`, document the method with `@extend_schema` and `inline_serializer` so the package can still render request and response schemas.
 
 Use `responses={200: OpenApiResponse(...), 500: OpenApiResponse(...)}` plus `OpenApiExample(...)` values for the example payloads shown in the UI.
 

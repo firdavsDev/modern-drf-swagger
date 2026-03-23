@@ -1,6 +1,6 @@
 # Modern DRF Swagger - Sample Project
 
-A demonstration Django project showcasing the **Modern DRF Swagger** API documentation portal with a complete Task Management API.
+A demonstration Django project showcasing the **Modern DRF Swagger** API documentation package with a complete Task Management API.
 
 ## 📋 Overview
 
@@ -169,7 +169,7 @@ Portal settings are configured in `config/settings.py`:
 MODERN_DRF_SWAGGER = {
     "TITLE": "API Swagger",
     "DESCRIPTION": "Complete API documentation for My Company",
-      "VERSION": "1.0.8",
+      "VERSION": "1.0.9",
     "ANALYTICS_ENABLED": True,
     "HISTORY_ENABLED": True,
     "MAX_HISTORY_PER_USER": 100,

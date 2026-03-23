@@ -41,7 +41,7 @@ class DocsView(LoginRequiredMixin, TemplateView):
         )
 
         # Get Modern DRF Swagger base URL for JavaScript
-        # This allows the portal to work at any URL prefix
+        # This allows the package to work at any URL prefix
         context["portal_base_url"] = reverse("modern_drf_swagger:docs").rstrip("/")
 
         # Add permission checker for template

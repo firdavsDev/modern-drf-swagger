@@ -150,7 +150,7 @@ MODERN_DRF_SWAGGER = {
     # Basic Info - controls the info section of the docs
     "TITLE": "API Swagger",
     "DESCRIPTION": "Complete API documentation for My Company",
-    "VERSION": "1.0.8",
+    "VERSION": "1.0.9",
     # Feature Toggles
     "ANALYTICS_ENABLED": True,  # Track API usage
     "HISTORY_ENABLED": True,  # Save request history
@@ -165,5 +165,5 @@ MODERN_DRF_SWAGGER = {
     "EXCLUDE_PATHS": ["/admin/", "/internal/", "/health/"],  # Hide these paths
     # Note: DEFAULT_AUTH_METHODS is now auto-detected from REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']
     # Only set it manually if you need to override the auto-detection
-    "CODE_GENERATE_ENABLE": False,  # Disable code generation in the sample portal
+    "CODE_GENERATE_ENABLE": False,  # Disable code generation in the sample package
 }

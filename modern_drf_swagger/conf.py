@@ -13,7 +13,7 @@ def get_portal_setting(name, default=None):
 
 def get_package_version():
     """
-    Get the version to display in the portal UI.
+    Get the version to display in the package UI.
 
     Priority:
     1) settings.MODERN_DRF_SWAGGER["VERSION"]
@@ -40,7 +40,7 @@ def get_package_version():
 
 def hide_from_portal(view_func):
     """
-    Decorator to hide a view from the Modern DRF Swagger portal.
+    Decorator to hide a view from the Modern DRF Swagger package.
     It adds a custom attribute to the view which our schema loader will check.
     """
 
@@ -58,7 +58,7 @@ DEFAULT_CONFIG = {
     # Portal Settings
     "TITLE": "Modern Swagger",
     "DESCRIPTION": "API Documentation Portal",
-    "VERSION": "1.0.8",
+    "VERSION": "1.0.9",
     # Feature Toggles
     "ANALYTICS_ENABLED": True,
     "HISTORY_ENABLED": True,
@@ -81,7 +81,7 @@ MODERN_DRF_SWAGGER = {
     # Basic Info (also controls drf-spectacular)
     'TITLE': 'API Documentation',
     'DESCRIPTION': 'Complete API documentation for My Company',
-    'VERSION': '1.0.8',
+    'VERSION': '1.0.9',
     
     # Features
     'ANALYTICS_ENABLED': True,

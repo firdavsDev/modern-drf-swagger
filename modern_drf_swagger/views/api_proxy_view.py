@@ -21,7 +21,7 @@ class APIProxyView(APIView):
     Checks permissions before proxying requests.
     """
 
-    # Always use Django session auth for portal actions to avoid triggering
+    # Always use Django session auth for package actions to avoid triggering
     # browser native Basic auth prompts when project defaults use BasicAuthentication.
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]

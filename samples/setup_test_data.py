@@ -20,7 +20,7 @@ from api.models import Task
 
 
 def setup_test_data():
-    """Create test data for the portal"""
+    """Create test data for the package"""
     print("Setting up test data...")
 
     # Get or create admin user
